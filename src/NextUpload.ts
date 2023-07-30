@@ -1,6 +1,6 @@
 import bytes from 'bytes';
 import { type NextRequest, NextResponse } from 'next/server';
-import { Client } from 'minio';
+import { Client, PostPolicy } from 'minio';
 
 import { nanoid } from 'nanoid';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -9,6 +9,7 @@ import {
   HandlerAction,
   HandlerArgs,
   NextUploadConfig,
+  NextUploadRequest,
   RequiredField,
   SignedUrl,
   UploadTypeConfig,
@@ -82,8 +83,7 @@ export class NextUpload {
 
   public async generateSignedUrl(
     args: GetSignedUrlArgs,
-    headers: Headers,
-    body: any
+    request: NextUploadRequest
   ): Promise<SignedUrl> {
     const { id = nanoid(), type, name } = args;
 
@@ -95,9 +95,9 @@ export class NextUpload {
       throw new Error(`Upload type "${type}" not configured`);
     }
 
-    const config =
+    const config: UploadTypeConfig =
       typeof this.config.uploadTypes[type] === 'function'
-        ? await (this.config.uploadTypes[type] as any)(args, headers, body)
+        ? await (this.config.uploadTypes[type] as any)(args, request)
         : this.config.uploadTypes[type];
 
     let { path } = config;
@@ -106,10 +106,17 @@ export class NextUpload {
       path = [type, id, name].filter(Boolean).join('/');
     }
 
-    const postPolicy = await this.makePostPolicy({
-      ...config,
-      path,
-    });
+    const postPolicyFn =
+      typeof config.postPolicy === 'function'
+        ? config.postPolicy
+        : (x: any) => x;
+
+    const postPolicy: PostPolicy = await postPolicyFn(
+      await this.makePostPolicy({
+        ...config,
+        path,
+      })
+    );
 
     const presignedPostPolicy = await this.client.presignedPostPolicy(
       postPolicy
@@ -128,7 +135,13 @@ export class NextUpload {
 
     const body = await request.json();
 
-    return this.handler(json, request.headers, body);
+    return this.handler({
+      send: json,
+      request: {
+        body,
+        headers: request.headers,
+      },
+    });
   }
 
   public async pagesApiHandler(
@@ -137,32 +150,32 @@ export class NextUpload {
   ) {
     const { body, headers } = request;
 
-    const json = (data: any, options?: { status?: number }) => {
+    const json = async (data: any, options?: { status?: number }) =>
       response.status(options?.status || 200).json(data);
-    };
 
-    return this.handler(json, headers as any, body);
+    return this.handler({
+      send: json,
+      request: {
+        body,
+        headers: headers as any,
+      },
+    });
   }
 
-  private async handler(
-    json: (data: any, options?: { status?: number }) => void,
-    headers: Headers,
-    body: {
-      [key: string]: any;
-    }
-  ) {
-    if (!body) {
-      return json({ error: `No body` }, { status: 400 });
+  public async handler(args: HandlerArgs) {
+    const { send, request } = args;
+    if (!request.body) {
+      return send({ error: `No body` }, { status: 400 });
     }
 
-    const { action, args } = body as unknown as HandlerArgs;
+    const { action } = request.body;
 
     if (!action) {
-      return json({ error: `No action` }, { status: 400 });
+      return send({ error: `No action` }, { status: 400 });
     }
 
-    if (!args?.type) {
-      return json({ error: `No type` }, { status: 400 });
+    if (!request.body?.args) {
+      return send({ error: `Missing args in body` }, { status: 400 });
     }
 
     await this.init();
@@ -170,15 +183,15 @@ export class NextUpload {
     try {
       switch (action) {
         case HandlerAction.generateSignedUrl: {
-          const res = await this.generateSignedUrl(args, headers, body);
-          return json(res);
+          const res = await this.generateSignedUrl(request.body.args, request);
+          return send(res);
         }
         default: {
-          return json({ error: `Unknown action "${action}"` }, { status: 400 });
+          return send({ error: `Unknown action "${action}"` }, { status: 400 });
         }
       }
     } catch (error) {
-      return json({ error: (error as any).message }, { status: 500 });
+      return send({ error: (error as any).message }, { status: 500 });
     }
   }
 }

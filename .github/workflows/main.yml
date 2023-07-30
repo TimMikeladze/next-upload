@@ -41,5 +41,11 @@ jobs:
       - name: Build package
         run: yarn build
 
+      - name: Setup examples
+        run: cd examples/next-upload-example
+          yarn install --frozen-lockfile
+          yarn link next-upload
+          yarn build
+
       - name: Check commits messages
         uses: wagoid/commitlint-github-action@v5

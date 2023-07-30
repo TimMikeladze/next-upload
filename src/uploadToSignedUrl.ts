@@ -1,7 +1,7 @@
 import { UploadToSignedUrlOptions } from './types';
 
 export const uploadToSignedUrl = async (options: UploadToSignedUrlOptions) => {
-  const formData = new FormData();
+  const formData = options.formData || new FormData();
 
   const { file, signedUrl } = options;
 
