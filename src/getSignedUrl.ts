@@ -5,7 +5,7 @@ export const getSignedUrl = async (
 ): Promise<SignedUrl> => {
   const { config } = options;
 
-  const res = await fetch(config.path, {
+  const res = await fetch(config.api, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

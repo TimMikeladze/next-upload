@@ -1,4 +1,5 @@
 import type { ClientOptions } from 'minio';
+import { NextRequest } from 'next/server';
 
 export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
@@ -19,12 +20,15 @@ export interface UploadTypeConfig {
 }
 
 export interface NextUploadConfig {
+  api: string;
   bucket?: string;
   client: RequiredField<ClientOptions, 'region'>;
-  path: string;
   uploadTypes: {
     [uploadType: string]:
-      | ((args: GetSignedUrlArgs) => Promise<UploadTypeConfig>)
+      | ((
+          args: GetSignedUrlArgs,
+          request: NextRequest
+        ) => Promise<UploadTypeConfig>)
       | UploadTypeConfig;
   };
 }

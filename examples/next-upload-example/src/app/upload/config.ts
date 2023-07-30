@@ -14,7 +14,7 @@ export const nextUploadConfig: NextUploadConfig = {
     useSSL: process.env.MINIO_SSL === `true`,
     region: process.env.MINIO_REGION,
   },
-  path: `/upload`,
+  api: `/upload`,
   uploadTypes: {
     [NextUploadType.image]: {
       maxSize: '2mb',

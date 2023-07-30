@@ -79,7 +79,10 @@ export class NextUpload {
     return postPolicy;
   }
 
-  public async generateSignedUrl(args: GetSignedUrlArgs): Promise<SignedUrl> {
+  public async generateSignedUrl(
+    args: GetSignedUrlArgs,
+    request: NextRequest
+  ): Promise<SignedUrl> {
     const { id = nanoid(), type, name } = args;
 
     if (!type) {
@@ -92,7 +95,7 @@ export class NextUpload {
 
     const config =
       typeof this.config.uploadTypes[type] === 'function'
-        ? await (this.config.uploadTypes as any)[type](args)
+        ? await (this.config.uploadTypes[type] as any)(args, request)
         : this.config.uploadTypes[type];
 
     let { path } = config;
@@ -142,7 +145,7 @@ export class NextUpload {
     try {
       switch (action) {
         case HandlerAction.generateSignedUrl: {
-          const res = await this.generateSignedUrl(args);
+          const res = await this.generateSignedUrl(args, request);
           return json(res);
         }
         default: {
