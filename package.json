@@ -97,6 +97,7 @@
     "@storybook/testing-library": "0.2.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
+    "@types/minio": "^7.1.1",
     "@types/node": "18.16.19",
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
@@ -145,5 +146,10 @@
     "trim-newlines": ">=3.0.1",
     "yaml": ">=2.2.2",
     "semver": ">=6.3.1"
+  },
+  "dependencies": {
+    "graphql-tag": "^2.12.6",
+    "minio": "^7.1.1",
+    "nanoid": "^4.0.2"
   }
 }

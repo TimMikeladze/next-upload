@@ -1,1 +1,2 @@
-export * from './Example';
+export * from './typeDefs';
+export * from './NextUpload';
