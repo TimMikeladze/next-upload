@@ -4,7 +4,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 
 import toast from 'react-hot-toast';
-import styles from './app/page.module.css';
+import styles from '../app/page.module.css';
 
 export interface InstallCodeProps {
   textToCopy: string;

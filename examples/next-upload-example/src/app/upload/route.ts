@@ -1,3 +1,7 @@
-import { nextUpload } from './config';
+import { NextUpload } from 'next-upload';
+import { NextRequest } from 'next/server';
+import { nextUploadConfig } from './config';
 
-export const POST = nextUpload.handler;
+const nextUpload = new NextUpload(nextUploadConfig);
+
+export const POST = (request: NextRequest) => nextUpload.handler(request);

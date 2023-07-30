@@ -1,11 +1,11 @@
-import { NextUpload } from 'next-upload';
+import type { NextUploadConfig } from 'next-upload';
 
 // eslint-disable-next-line no-shadow
-export enum UploadType {
+export enum NextUploadType {
   image = `image`,
 }
 
-export const nextUpload = new NextUpload({
+export const nextUploadConfig: NextUploadConfig = {
   client: {
     secretKey: process.env.MINIO_SECRET_KEY,
     accessKey: process.env.MINIO_ACCESS_KEY,
@@ -16,6 +16,8 @@ export const nextUpload = new NextUpload({
   },
   path: `/upload`,
   uploadTypes: {
-    [UploadType.image]: {},
+    [NextUploadType.image]: {
+      maxSize: '2mb',
+    },
   },
-});
+};

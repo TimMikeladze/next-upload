@@ -1,8 +1,8 @@
+import bytes from 'bytes';
 import { NextResponse, type NextRequest } from 'next/server';
 import { Client } from 'minio';
 
 import { nanoid } from 'nanoid';
-import { getNameFromPackageJson } from './getNameFromPackageJson';
 import {
   GetSignedUrlArgs,
   HandlerAction,
@@ -22,7 +22,7 @@ export class NextUpload {
 
   constructor(config: NextUploadConfig) {
     this.config = config;
-    this.client = new Client(config.client);
+    this.client = new Client(this.config.client);
     this.bucket = config.bucket || NextUpload.bucketFromEnv();
   }
 
@@ -38,14 +38,14 @@ export class NextUpload {
     return this.config;
   }
 
-  public static bucketFromEnv() {
+  public static bucketFromEnv(project?: string) {
     if (process.env.VERCEL) {
       return NextUpload.bucketFromVercel();
     }
 
-    return [`localhost`, getNameFromPackageJson(), process.env.NODE_ENV].join(
-      '/'
-    );
+    return [`localhost`, project, process.env.NODE_ENV]
+      .filter(Boolean)
+      .join('-');
   }
 
   private static bucketFromVercel() {
@@ -53,7 +53,7 @@ export class NextUpload {
       process.env.VERCEL_GIT_REPO_OWNER,
       process.env.VERCEL_GIT_REPO_SLUG,
       process.env.VERCEL_ENV,
-    ].join('/');
+    ].join('-');
   }
 
   public async init() {
@@ -67,23 +67,24 @@ export class NextUpload {
   ) {
     const postPolicy = this.client.newPostPolicy();
 
-    const minSizeBytes = 1024;
+    const { maxSize, expirationSeconds = 60 * 5 } = config;
 
-    const { maxSizeBytes = minSizeBytes, expirationSeconds = 60 * 5 } = config;
+    const maxSizeBytes = bytes.parse(maxSize);
 
     postPolicy.setBucket(this.bucket);
     postPolicy.setKey(config.path);
-    postPolicy.setContentLengthRange(
-      minSizeBytes,
-      Math.max(maxSizeBytes, minSizeBytes)
-    );
+    postPolicy.setContentLengthRange(1024, Math.max(maxSizeBytes, 1024));
     postPolicy.setExpires(new Date(Date.now() + 1000 * expirationSeconds));
 
     return postPolicy;
   }
 
   public async generateSignedUrl(args: GetSignedUrlArgs): Promise<SignedUrl> {
-    const { id = nanoid(), type } = args;
+    const { id = nanoid(), type, name } = args;
+
+    if (!type) {
+      throw new Error(`Upload type not specified`);
+    }
 
     if (!this.config.uploadTypes[type]) {
       throw new Error(`Upload type "${type}" not configured`);
@@ -97,7 +98,7 @@ export class NextUpload {
     let { path } = config;
 
     if (!path) {
-      path = [args.type, args.id].filter(Boolean).join('/');
+      path = [type, id, name].filter(Boolean).join('/');
     }
 
     const postPolicy = await this.makePostPolicy({
@@ -116,23 +117,24 @@ export class NextUpload {
     };
   }
 
-  // public async saveUpload(args: SaveUploadArgs) {}
-
-  // public async pruneUploads() {
-  //   //
-  // }
-
   public async handler(request: NextRequest) {
-    const { body } = request;
+    // @ts-ignore
+    const { json } = NextResponse.default;
+
+    const body = await request.json();
 
     if (!body) {
-      return NextResponse.json({ error: `No body` }, { status: 400 });
+      return json({ error: `No body` }, { status: 400 });
     }
 
-    const { action, data } = body as unknown as HandlerArgs;
+    const { action, args } = body as unknown as HandlerArgs;
 
     if (!action) {
-      return NextResponse.json({ error: `No action` }, { status: 400 });
+      return json({ error: `No action` }, { status: 400 });
+    }
+
+    if (!args?.type) {
+      return json({ error: `No type` }, { status: 400 });
     }
 
     await this.init();
@@ -140,21 +142,15 @@ export class NextUpload {
     try {
       switch (action) {
         case HandlerAction.generateSignedUrl: {
-          const res = await this.generateSignedUrl(data);
-          return NextResponse.json(res);
+          const res = await this.generateSignedUrl(args);
+          return json(res);
         }
         default: {
-          return NextResponse.json(
-            { error: `Unknown action "${action}"` },
-            { status: 400 }
-          );
+          return json({ error: `Unknown action "${action}"` }, { status: 400 });
         }
       }
     } catch (error) {
-      return NextResponse.json(
-        { error: (error as any).message },
-        { status: 500 }
-      );
+      return json({ error: (error as any).message }, { status: 500 });
     }
   }
 }

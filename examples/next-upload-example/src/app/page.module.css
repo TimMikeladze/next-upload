@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 3rem;
+  padding: 2rem;
   min-height: 100vh;
 }
 
@@ -34,6 +34,10 @@
   flex-direction: row;
   align-items: center;
   gap: 0.5rem;
+}
+
+.example {
+  margin: 1rem 0rem;
 }
 
 .divider {

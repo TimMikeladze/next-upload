@@ -1,8 +1,6 @@
-import { UploadFileToSignedUrlOptions } from './types';
+import { UploadToSignedUrlOptions } from './types';
 
-export const uploadFileToSignedUrl = async (
-  options: UploadFileToSignedUrlOptions
-) => {
+export const uploadToSignedUrl = async (options: UploadToSignedUrlOptions) => {
   const formData = new FormData();
 
   const { file, signedUrl } = options;
@@ -17,5 +15,6 @@ export const uploadFileToSignedUrl = async (
     body: formData,
     method: `POST`,
     mode: `no-cors`,
+    ...options.requestInit,
   });
 };

@@ -4,7 +4,8 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkHtml from 'remark-html';
 import styles from './page.module.css';
-import InstallCode from '@/InstallCode';
+import InstallCode from '@/components/InstallCode';
+import FileUpload from '@/components/FileUpload';
 
 const textToCopy = 'npm install next-upload';
 
@@ -14,6 +15,7 @@ export default async function Home() {
   const contentHtml = String(
     await unified().use(remarkParse).use(remarkHtml).process(fileContents)
   );
+
   return (
     <main className={styles.main}>
       <div className={styles.description}>
@@ -37,6 +39,10 @@ export default async function Home() {
         </div>
       </div>
 
+      <div className={styles.divider} />
+      <div className={styles.example}>
+        <FileUpload />
+      </div>
       <div className={styles.divider} />
       <div
         className={styles.markdown}

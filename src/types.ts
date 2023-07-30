@@ -1,5 +1,4 @@
-import { ClientOptions } from 'minio';
-import { NextUpload } from './NextUpload';
+import type { ClientOptions } from 'minio';
 
 export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
@@ -10,12 +9,12 @@ export enum HandlerAction {
 
 export interface HandlerArgs {
   action: HandlerAction;
-  data: GetSignedUrlArgs;
+  args: GetSignedUrlArgs;
 }
 
 export interface UploadTypeConfig {
   expirationSeconds?: number;
-  maxSizeBytes?: number;
+  maxSize: number | string;
   path?: string;
 }
 
@@ -45,11 +44,11 @@ export interface Storage {
 
 export interface GetSignedUrlOptions {
   args: GetSignedUrlArgs;
-  nextUpload: NextUpload;
+  config: NextUploadConfig;
   requestInit?: any;
 }
 
-export interface UploadFileToSignedUrlOptions {
+export interface UploadToSignedUrlOptions {
   file: File;
   requestInit?: any;
   signedUrl: SignedUrl;
@@ -59,4 +58,11 @@ export interface SignedUrl {
   data: any;
   id: string;
   url: string;
+}
+
+export interface UploadOptions {
+  args: GetSignedUrlArgs;
+  config: NextUploadConfig;
+  file: File;
+  requestInit?: any;
 }
