@@ -1,8 +1,9 @@
 import bytes from 'bytes';
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { Client } from 'minio';
 
 import { nanoid } from 'nanoid';
+import { NextApiRequest, NextApiResponse } from 'next';
 import {
   GetSignedUrlArgs,
   HandlerAction,
@@ -81,7 +82,8 @@ export class NextUpload {
 
   public async generateSignedUrl(
     args: GetSignedUrlArgs,
-    request: NextRequest
+    headers: Headers,
+    body: any
   ): Promise<SignedUrl> {
     const { id = nanoid(), type, name } = args;
 
@@ -95,7 +97,7 @@ export class NextUpload {
 
     const config =
       typeof this.config.uploadTypes[type] === 'function'
-        ? await (this.config.uploadTypes[type] as any)(args, request)
+        ? await (this.config.uploadTypes[type] as any)(args, headers, body)
         : this.config.uploadTypes[type];
 
     let { path } = config;
@@ -120,12 +122,35 @@ export class NextUpload {
     };
   }
 
-  public async handler(request: NextRequest) {
+  public async POST(request: NextRequest) {
     // @ts-ignore
     const { json } = NextResponse.default;
 
     const body = await request.json();
 
+    return this.handler(json, request.headers, body);
+  }
+
+  public async pagesApiHandler(
+    request: NextApiRequest,
+    response: NextApiResponse
+  ) {
+    const { body, headers } = request;
+
+    const json = (data: any, options?: { status?: number }) => {
+      response.status(options?.status || 200).json(data);
+    };
+
+    return this.handler(json, headers as any, body);
+  }
+
+  private async handler(
+    json: (data: any, options?: { status?: number }) => void,
+    headers: Headers,
+    body: {
+      [key: string]: any;
+    }
+  ) {
     if (!body) {
       return json({ error: `No body` }, { status: 400 });
     }
@@ -145,7 +170,7 @@ export class NextUpload {
     try {
       switch (action) {
         case HandlerAction.generateSignedUrl: {
-          const res = await this.generateSignedUrl(args, request);
+          const res = await this.generateSignedUrl(args, headers, body);
           return json(res);
         }
         default: {

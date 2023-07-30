@@ -4,4 +4,4 @@ import { nextUploadConfig } from './config';
 
 const nextUpload = new NextUpload(nextUploadConfig);
 
-export const POST = (request: NextRequest) => nextUpload.handler(request);
+export const POST = (request: NextRequest) => nextUpload.POST(request);
