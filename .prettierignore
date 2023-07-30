@@ -8,3 +8,6 @@ yarn.lock
 .husky
 .gitignore
 .editorconfig
+*.template
+*.svg
+*.ico

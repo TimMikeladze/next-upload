@@ -11,7 +11,7 @@
   },
   "scripts": {
     "dev": "concurrently \"yarn build --watch\" \"yarn storybook\" \"yarn test\" ",
-    "build": "tsup --onSuccess \"yarn yalc publish\"",
+    "build": "tsup --onSuccess \"yarn link\"",
     "type-check": "tsc",
     "lint": "eslint --ignore-path .gitignore \"{src,tests}/**/*.+(ts|js|tsx)\"",
     "lint:fix": "yarn lint --fix && prettier --write .",
@@ -123,6 +123,7 @@
     "husky": "8.0.3",
     "jsdom": "^22.1.0",
     "lint-staged": "13.2.3",
+    "next": "^13.4.12",
     "prettier": "3.0.0",
     "prop-types": "15.8.1",
     "react": "18.2.0",
@@ -137,7 +138,8 @@
   },
   "peerDependencies": {
     "react": ">=17",
-    "react-dom": ">=17"
+    "react-dom": ">=17",
+    "next": ">=13"
   },
   "resolutions": {
     "glob-parent": ">=5.1.2",
