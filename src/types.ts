@@ -1,4 +1,4 @@
-import type { ClientOptions, PostPolicy } from 'minio';
+import type { Client, ClientOptions, PostPolicy } from 'minio';
 
 export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
@@ -19,10 +19,17 @@ export interface UploadTypeConfig {
   postPolicy?: (postPolicy: PostPolicy) => Promise<PostPolicy>;
 }
 
+export interface NextUploadS3Client
+  extends Pick<
+    Client,
+    'bucketExists' | 'makeBucket' | 'newPostPolicy' | 'presignedPostPolicy'
+  > {}
+
 export interface NextUploadConfig {
   api: string;
   bucket?: string;
   client: RequiredField<ClientOptions, 'region'>;
+  s3Client: () => Promise<NextUploadS3Client>;
   uploadTypes: {
     [uploadType: string]:
       | ((

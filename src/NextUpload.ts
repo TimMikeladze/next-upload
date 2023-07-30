@@ -10,13 +10,14 @@ import {
   HandlerArgs,
   NextUploadConfig,
   NextUploadRequest,
+  NextUploadS3Client,
   RequiredField,
   SignedUrl,
   UploadTypeConfig,
 } from './types';
 
 export class NextUpload {
-  private client: Client;
+  private client: NextUploadS3Client;
 
   private bucket: string;
 
