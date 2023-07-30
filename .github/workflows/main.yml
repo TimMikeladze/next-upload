@@ -42,7 +42,8 @@ jobs:
         run: yarn build
 
       - name: Setup examples
-        run: cd examples/next-upload-example
+        run: 
+          cd examples/next-upload-example
           yarn install --frozen-lockfile
           yarn link next-upload
           yarn build
