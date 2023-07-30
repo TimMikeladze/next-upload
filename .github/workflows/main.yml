@@ -1,0 +1,45 @@
+name: Main
+
+on: [push]
+
+jobs:
+  run-ci:
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    name: Run Type Check & Linters
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Check types
+        run: yarn type-check
+
+      - name: Check linting
+        run: yarn lint
+
+      - name: Run tests
+        run: yarn test:ci
+
+      - name: Build storybook
+        run: yarn build-storybook
+
+      - name: Build package
+        run: yarn build
+
+      - name: Check commits messages
+        uses: wagoid/commitlint-github-action@v5

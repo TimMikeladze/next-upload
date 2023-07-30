@@ -1,0 +1,149 @@
+{
+  "name": "next-upload",
+  "description": "",
+  "version": "0.0.0",
+  "author": "Tim Mikeladze <tim.mikeladze@gmail.com>",
+  "license": "MIT",
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:TimMikeladze/next-upload.git"
+  },
+  "scripts": {
+    "dev": "concurrently \"yarn build --watch\" \"yarn storybook\" \"yarn test\" ",
+    "build": "tsup --onSuccess \"yarn yalc publish\"",
+    "type-check": "tsc",
+    "lint": "eslint --ignore-path .gitignore \"{src,tests}/**/*.+(ts|js|tsx)\"",
+    "lint:fix": "yarn lint --fix && prettier --write .",
+    "test": "vitest",
+    "test:ci": "vitest run --coverage",
+    "prepare": "husky install",
+    "commit": "cz",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "deploy-storybook": "storybook-to-ghpages",
+    "release": "yarn build && yarn release-it"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "treeshake": true,
+    "sourcemap": "inline",
+    "minify": true,
+    "clean": true,
+    "dts": true,
+    "splitting": false,
+    "format": [
+      "cjs",
+      "esm"
+    ],
+    "external": [
+      "react"
+    ],
+    "injectStyle": false
+  },
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "lint-staged": {
+    "./{src,tests}/**/*.{ts,js,jsx,tsx}": [
+      "eslint --ignore-path .gitignore --fix"
+    ],
+    "*": "prettier --write"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/@ryansonshine/cz-conventional-changelog"
+    }
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore(release): v${version}"
+    },
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "publish": false
+    }
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "7.22.5",
+    "@babel/preset-env": "7.22.5",
+    "@babel/preset-react": "7.22.5",
+    "@babel/preset-typescript": "7.22.5",
+    "@commitlint/cli": "17.6.6",
+    "@commitlint/config-conventional": "17.6.6",
+    "@ryansonshine/commitizen": "4.2.8",
+    "@ryansonshine/cz-conventional-changelog": "3.3.4",
+    "@storybook/addon-essentials": "7.0.24",
+    "@storybook/addon-interactions": "7.0.24",
+    "@storybook/addon-links": "7.0.24",
+    "@storybook/blocks": "7.0.24",
+    "@storybook/react": "7.0.24",
+    "@storybook/react-webpack5": "7.0.24",
+    "@storybook/storybook-deployer": "2.8.16",
+    "@storybook/testing-library": "0.2.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^14.0.0",
+    "@types/node": "18.16.19",
+    "@types/react": "18.2.14",
+    "@types/react-dom": "18.2.6",
+    "@types/react-test-renderer": "18.0.0",
+    "@typescript-eslint/eslint-plugin": "5.60.1",
+    "@typescript-eslint/parser": "5.60.1",
+    "@vitejs/plugin-react": "^4.0.3",
+    "@vitest/coverage-v8": "^0.33.0",
+    "babel-loader": "9.1.2",
+    "concurrently": "8.2.0",
+    "eslint": "8.44.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-config-prettier": "8.8.0",
+    "eslint-plugin-import": "2.27.5",
+    "eslint-plugin-jsx-a11y": "6.7.1",
+    "eslint-plugin-prefer-arrow": "1.2.3",
+    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-react": "7.32.2",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "eslint-plugin-storybook": "0.6.12",
+    "eslint-plugin-typescript-sort-keys": "2.3.0",
+    "eslint-plugin-unused-imports": "2.0.0",
+    "husky": "8.0.3",
+    "jsdom": "^22.1.0",
+    "lint-staged": "13.2.3",
+    "prettier": "2.8.8",
+    "prop-types": "15.8.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-test-renderer": "18.2.0",
+    "release-it": "15.11.0",
+    "storybook": "7.0.24",
+    "tsup": "7.1.0",
+    "typescript": "5.1.6",
+    "vitest": "^0.33.0",
+    "yalc": "1.0.0-pre.53"
+  },
+  "peerDependencies": {
+    "react": ">=17",
+    "react-dom": ">=17"
+  },
+  "resolutions": {
+    "glob-parent": ">=5.1.2",
+    "parse-url": ">=8.1.0",
+    "trim": ">=0.0.3",
+    "trim-newlines": ">=3.0.1",
+    "yaml": ">=2.2.2",
+    "semver": ">=6.3.1"
+  }
+}
