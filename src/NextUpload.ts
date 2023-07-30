@@ -1,51 +1,20 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import * as Minio from 'minio';
+import { Client } from 'minio';
+
 import { nanoid } from 'nanoid';
 import { getNameFromPackageJson } from './getNameFromPackageJson';
-
-type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
-
-// eslint-disable-next-line no-shadow
-export enum HandlerAction {
-  generateSignedUploadUrl = 'generateSignedUploadUrl',
-}
-
-export interface HandlerArgs {
-  action: HandlerAction;
-  data: GetSignedUploadUrlArgs;
-}
-
-export interface UploadTypeConfig {
-  expirationSeconds?: number;
-  maxSizeBytes?: number;
-  path?: string;
-}
-
-export interface NextUploadConfig {
-  bucket?: string;
-  client: RequiredField<Minio.ClientOptions, 'region'>;
-  uploadTypes: {
-    [uploadType: string]:
-      | ((args: GetSignedUploadUrlArgs) => Promise<UploadTypeConfig>)
-      | UploadTypeConfig;
-  };
-}
-
-export interface GetSignedUploadUrlArgs {
-  data?: any;
-  id?: string;
-  name?: string;
-  type: string;
-}
-
-export interface SaveUploadArgs extends GetSignedUploadUrlArgs {}
-
-export interface Storage {
-  saveUpload(args: SaveUploadArgs): Promise<string>;
-}
+import {
+  GetSignedUrlArgs,
+  HandlerAction,
+  HandlerArgs,
+  NextUploadConfig,
+  RequiredField,
+  SignedUrl,
+  UploadTypeConfig,
+} from './types';
 
 export class NextUpload {
-  private client: Minio.Client;
+  private client: Client;
 
   private bucket: string;
 
@@ -53,8 +22,20 @@ export class NextUpload {
 
   constructor(config: NextUploadConfig) {
     this.config = config;
-    this.client = new Minio.Client(config.client);
+    this.client = new Client(config.client);
     this.bucket = config.bucket || NextUpload.bucketFromEnv();
+  }
+
+  public getBucket() {
+    return this.bucket;
+  }
+
+  public getClient() {
+    return this.client;
+  }
+
+  public getConfig() {
+    return this.config;
   }
 
   public static bucketFromEnv() {
@@ -101,7 +82,7 @@ export class NextUpload {
     return postPolicy;
   }
 
-  public async generateSignedUploadUrl(args: GetSignedUploadUrlArgs) {
+  public async generateSignedUrl(args: GetSignedUrlArgs): Promise<SignedUrl> {
     const { id = nanoid(), type } = args;
 
     if (!this.config.uploadTypes[type]) {
@@ -158,8 +139,8 @@ export class NextUpload {
 
     try {
       switch (action) {
-        case HandlerAction.generateSignedUploadUrl: {
-          const res = await this.generateSignedUploadUrl(data);
+        case HandlerAction.generateSignedUrl: {
+          const res = await this.generateSignedUrl(data);
           return NextResponse.json(res);
         }
         default: {

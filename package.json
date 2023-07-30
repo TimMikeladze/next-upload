@@ -150,7 +150,6 @@
     "semver": ">=7.5.2"
   },
   "dependencies": {
-    "graphql-tag": "^2.12.6",
     "minio": "^7.1.1",
     "nanoid": "^4.0.2"
   }
