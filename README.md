@@ -56,21 +56,15 @@ How your application handles file-uploads in the browser is up to you. The examp
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { upload } from 'next-upload/client';
-import { NextUploadType, nextUploadConfig } from '@/app/upload/config';
+import { nextUploadConfig } from '@/app/upload/config';
 
 const FileUpload = () => {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    await Promise.all(
-      acceptedFiles.map(async (file) => {
-        await upload({
-          file,
-          args: {
-            type: NextUploadType.image,
-            name: file.name,
-          },
-          config: nextUploadConfig,
-        });
-      })
+    await upload(
+      acceptedFiles.map((file) => ({
+        file,
+      })),
+      nextUploadConfig
     );
   }, []);
 
