@@ -7,17 +7,20 @@ export enum HandlerAction {
   generateSignedUrl = 'generateSignedUrl',
 }
 
-export interface HandlerArgs {
+export type HandlerArgs = {
   request: NextUploadRequest;
   send: (data: any, options?: { status?: number }) => Promise<void>;
-}
+};
 
-export interface UploadTypeConfig {
+type CommonConfig = {
   expirationSeconds?: number;
-  maxSize: number | string;
+  maxSize?: number | string;
+};
+
+export type UploadTypeConfig = CommonConfig & {
   path?: string;
   postPolicy?: (postPolicy: PostPolicy) => Promise<PostPolicy>;
-}
+};
 
 export abstract class NextUploadS3Client {
   // eslint-disable-next-line no-useless-constructor, @typescript-eslint/no-unused-vars
@@ -36,12 +39,12 @@ export abstract class NextUploadS3Client {
 
 type ClientConfig = RequiredField<ClientOptions, 'region'>;
 
-export interface NextUploadConfig {
-  api: string;
+export type NextUploadConfig = RequiredField<CommonConfig, 'maxSize'> & {
+  api?: string;
   bucket?: string;
   client: ClientConfig;
   s3Client?: (config: ClientConfig) => NextUploadS3Client;
-  uploadTypes: {
+  uploadTypes?: {
     [uploadType: string]:
       | ((
           args: GetSignedUrlArgs,
@@ -49,48 +52,46 @@ export interface NextUploadConfig {
         ) => Promise<UploadTypeConfig>)
       | UploadTypeConfig;
   };
-}
+};
 
-export interface NextUploadRequest {
+export type NextUploadRequest = {
   body?: any;
   headers?: Headers;
-}
+};
 
-export interface GetSignedUrlArgs {
+export type GetSignedUrlArgs = {
   data?: any;
   id?: string;
   name?: string;
-  type: string;
-}
+  type?: string;
+};
 
-export interface SaveUploadArgs extends GetSignedUrlArgs {}
+export type SaveUploadArgs = GetSignedUrlArgs;
 
 export interface Storage {
   saveUpload(args: SaveUploadArgs): Promise<string>;
 }
 
-export interface GetSignedUrlOptions {
-  args: GetSignedUrlArgs;
+export type GetSignedUrlOptions = GetSignedUrlArgs & {
   config: NextUploadConfig;
   requestInit?: any;
-}
+};
 
-export interface UploadToSignedUrlOptions {
+export type UploadToSignedUrlOptions = {
   file: File;
   formData?: FormData;
   requestInit?: any;
   signedUrl: SignedUrl;
-}
+};
 
-export interface SignedUrl {
+export type SignedUrl = {
   data: any;
   id: string;
   url: string;
-}
+};
 
-export interface UploadOptions {
-  args: GetSignedUrlArgs;
+export type UploadOptions = GetSignedUrlArgs & {
   config: NextUploadConfig;
   file: File;
   requestInit?: any;
-}
+};

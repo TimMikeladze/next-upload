@@ -17,6 +17,8 @@ import {
 } from './types';
 
 export class NextUpload {
+  private static DEFAULT_TYPE = `default`;
+
   private client: NextUploadS3Client;
 
   private bucket: string;
@@ -24,7 +26,10 @@ export class NextUpload {
   private config: NextUploadConfig;
 
   constructor(config: NextUploadConfig) {
-    this.config = config;
+    this.config = {
+      ...config,
+      api: config.api || `/upload`,
+    };
     this.client = config.s3Client
       ? config.s3Client(config.client)
       : new Client(config.client);
@@ -72,7 +77,10 @@ export class NextUpload {
   ) {
     const postPolicy = this.client.newPostPolicy();
 
-    const { maxSize, expirationSeconds = 60 * 5 } = config;
+    const {
+      maxSize = this.config.maxSize,
+      expirationSeconds = this.config.expirationSeconds || 60 * 5,
+    } = config;
 
     const maxSizeBytes = bytes.parse(maxSize);
 
@@ -88,20 +96,20 @@ export class NextUpload {
     args: GetSignedUrlArgs,
     request: NextUploadRequest
   ): Promise<SignedUrl> {
-    const { id = nanoid(), type, name } = args;
+    const { id = nanoid(), type = NextUpload.DEFAULT_TYPE, name } = args;
 
-    if (!type) {
-      throw new Error(`Upload type not specified`);
-    }
+    let config: UploadTypeConfig = {};
 
-    if (!this.config.uploadTypes[type]) {
+    if (type === NextUpload.DEFAULT_TYPE) {
+      config = {};
+    } else if (this.config.uploadTypes?.[type]) {
+      config =
+        typeof this.config.uploadTypes[type] === 'function'
+          ? await (this.config.uploadTypes[type] as any)(args, request)
+          : this.config.uploadTypes[type];
+    } else {
       throw new Error(`Upload type "${type}" not configured`);
     }
-
-    const config: UploadTypeConfig =
-      typeof this.config.uploadTypes[type] === 'function'
-        ? await (this.config.uploadTypes[type] as any)(args, request)
-        : this.config.uploadTypes[type];
 
     let { path } = config;
 
@@ -165,20 +173,17 @@ export class NextUpload {
     });
   }
 
-  public async handler(args: HandlerArgs) {
-    const { send, request } = args;
+  public async handler(handlerArgs: HandlerArgs) {
+    const { send, request } = handlerArgs;
+
     if (!request.body) {
       return send({ error: `No body` }, { status: 400 });
     }
 
-    const { action } = request.body;
+    const { action, args = {} } = request.body;
 
     if (!action) {
       return send({ error: `No action` }, { status: 400 });
-    }
-
-    if (!request.body?.args) {
-      return send({ error: `Missing args in body` }, { status: 400 });
     }
 
     await this.init();
@@ -186,7 +191,8 @@ export class NextUpload {
     try {
       switch (action) {
         case HandlerAction.generateSignedUrl: {
-          const res = await this.generateSignedUrl(request.body.args, request);
+          const res = await this.generateSignedUrl(args, request);
+
           return send(res);
         }
         default: {
@@ -194,6 +200,7 @@ export class NextUpload {
         }
       }
     } catch (error) {
+      console.error(error);
       return send({ error: (error as any).message }, { status: 500 });
     }
   }

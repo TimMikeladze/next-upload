@@ -1,11 +1,15 @@
-import type { NextUploadConfig } from 'next-upload';
+import { type NextUploadConfig } from 'next-upload';
 
-// eslint-disable-next-line no-shadow
-export enum NextUploadType {
-  image = `image`,
-}
+// export enum NextUploadType {
+//   image = `image`,
+// }
 
 export const nextUploadConfig: NextUploadConfig = {
+  // this is the path to the api route that will handle the upload
+  api: `/upload`,
+  // default max size for uploads
+  maxSize: '2mb',
+  // be sure to start minio with the following command: docker-compose up -d
   client: {
     secretKey: process.env.MINIO_SECRET_KEY,
     accessKey: process.env.MINIO_ACCESS_KEY,
@@ -14,10 +18,9 @@ export const nextUploadConfig: NextUploadConfig = {
     useSSL: process.env.MINIO_SSL === `true`,
     region: process.env.MINIO_REGION,
   },
-  api: `/upload`,
-  uploadTypes: {
-    [NextUploadType.image]: {
-      maxSize: '2mb',
-    },
-  },
+  // uploadTypes: {
+  //   [NextUploadType.image]: {
+  //     maxSize: '2mb',
+  //   },
+  // },
 };

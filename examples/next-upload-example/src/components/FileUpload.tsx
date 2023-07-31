@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { upload } from 'next-upload/client';
-import { NextUploadType, nextUploadConfig } from '@/app/upload/config';
+import { nextUploadConfig } from '@/app/upload/config';
 
 const FileUpload = () => {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -11,10 +11,7 @@ const FileUpload = () => {
       acceptedFiles.map(async (file) => {
         await upload({
           file,
-          args: {
-            type: NextUploadType.image,
-            name: file.name,
-          },
+          name: file.name,
           config: nextUploadConfig,
         });
       })

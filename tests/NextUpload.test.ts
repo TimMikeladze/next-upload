@@ -2,11 +2,6 @@ import { it, expect } from 'vitest';
 import { NextUpload, NextUploadConfig } from '../src';
 import { InMemoryS3Client } from '../src/InMemoryS3Client';
 
-// eslint-disable-next-line no-shadow
-enum NextUploadType {
-  image = `image`,
-}
-
 const inMemoryS3Client = new InMemoryS3Client();
 
 const nextUploadConfig: NextUploadConfig = {
@@ -20,11 +15,7 @@ const nextUploadConfig: NextUploadConfig = {
   },
   s3Client: () => inMemoryS3Client,
   api: `/upload`,
-  uploadTypes: {
-    [NextUploadType.image]: {
-      maxSize: '2mb',
-    },
-  },
+  maxSize: '10mb',
 };
 
 it(`initializes`, async () => {

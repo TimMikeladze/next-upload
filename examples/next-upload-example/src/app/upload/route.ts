@@ -1,4 +1,4 @@
-import { NextUpload } from 'next-upload';
+import { InMemoryS3Client, NextUpload } from 'next-upload';
 import { NextRequest } from 'next/server';
 import { nextUploadConfig } from './config';
 

@@ -19,22 +19,13 @@ First let's create a `NextUploadConfig` that defines how to connect to a storage
 **src/app/upload/config.ts**
 
 ```tsx
-export enum NextUploadType {
-  image = `image`,
-}
-
 export const nextUploadConfig: NextUploadConfig = {
+  maxSize: '10mb',
   client: {
     endPoint: `s3.us-west-1.amazonaws.com`,
     region: `us-west-1`,
     secretKey: `xxxxxx`,
     accessKey: `xxxxxx`,
-  },
-  api: `/upload`,
-  uploadTypes: {
-    [NextUploadType.image]: {
-      maxSize: '10mb',
-    },
   },
 };
 ```

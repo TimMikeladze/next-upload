@@ -5,6 +5,10 @@ export const getSignedUrl = async (
 ): Promise<SignedUrl> => {
   const { config } = options;
 
+  if (!config?.api) {
+    throw new Error(`config.api is required`);
+  }
+
   const res = await fetch(config.api, {
     method: 'POST',
     headers: {
@@ -13,7 +17,7 @@ export const getSignedUrl = async (
     },
     body: JSON.stringify({
       action: HandlerAction.generateSignedUrl,
-      args: options.args,
+      ...options,
       ...options.requestInit?.body,
     }),
     ...options.requestInit,
