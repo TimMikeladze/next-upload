@@ -1,5 +1,5 @@
 import styles from './page.module.css';
-import InstallCode from '@/components/InstallCode';
+import ExampleInstallCommand from '@/components/ExampleInstallCommand';
 import FileUpload from '@/components/FileUpload';
 
 const textToCopy = 'npm install next-upload';
@@ -8,7 +8,7 @@ export default async function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.description}>
-        <InstallCode textToCopy={textToCopy} />
+        <ExampleInstallCommand textToCopy={textToCopy} />
         <div className={styles.builtBy}>
           <div className={styles.row}>
             Leave a star on

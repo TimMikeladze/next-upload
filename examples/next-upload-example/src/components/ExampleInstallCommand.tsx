@@ -6,11 +6,11 @@
 import toast from 'react-hot-toast';
 import styles from '../app/page.module.css';
 
-export interface InstallCodeProps {
+export interface ExampleInstallCommandProps {
   textToCopy: string;
 }
 
-const InstallCode = (props: InstallCodeProps) => {
+const ExampleInstallCommand = (props: ExampleInstallCommandProps) => {
   const handleCopy = async () => {
     if (!navigator?.clipboard) {
       console.warn('Clipboard not supported');
@@ -38,4 +38,4 @@ const InstallCode = (props: InstallCodeProps) => {
   );
 };
 
-export default InstallCode;
+export default ExampleInstallCommand;
