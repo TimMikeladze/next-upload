@@ -1,10 +1,19 @@
 {
   "name": "next-upload",
-  "description": "",
-  "version": "0.0.0",
+  "description": "A turn-key solution for integrating Next.js with signed & secure file-uploads to an S3 compliant storage service such as R2, AWS, or Minio.",
+  "version": "0.0.1",
   "author": "Tim Mikeladze <tim.mikeladze@gmail.com>",
   "license": "MIT",
-  "keywords": [],
+  "keywords": [
+    "next",
+    "upload",
+    "next-upload",
+    "next.js uploads",
+    "next uploads",
+    "next s3",
+    "next r2",
+    "signed upload"
+  ],
   "repository": {
     "type": "git",
     "url": "git@github.com:TimMikeladze/next-upload.git"
