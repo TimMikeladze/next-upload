@@ -34,3 +34,10 @@ it(`initializes`, async () => {
 
   expect(inMemoryS3Client.regions.has(process.env.MINIO_REGION)).toEqual(true);
 });
+
+it(`bucket from env`, async () => {
+  expect(NextUpload.bucketFromEnv()).toEqual(`localhost-test`);
+  expect(NextUpload.bucketFromEnv(`next-upload`)).toEqual(
+    `localhost-next-upload-test`
+  );
+});
