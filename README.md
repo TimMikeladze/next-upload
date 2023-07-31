@@ -9,7 +9,7 @@ npm install next-upload
 
 yarn add next-upload
 
-pnpm install next-upload
+pnpm add next-upload
 ```
 
 ## Configuration
