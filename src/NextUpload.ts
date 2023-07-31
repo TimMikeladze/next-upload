@@ -25,7 +25,9 @@ export class NextUpload {
 
   constructor(config: NextUploadConfig) {
     this.config = config;
-    this.client = new Client(this.config.client);
+    this.client = config.s3Client
+      ? config.s3Client(config.client)
+      : new Client(config.client);
     this.bucket = config.bucket || NextUpload.bucketFromEnv();
   }
 

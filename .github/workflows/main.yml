@@ -6,10 +6,26 @@ jobs:
   run-ci:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      MINIO_REGION: us-west-1
+      MINIO_SSL: false
+      MINIO_PORT: 9000
+      MINIO_SECRET_KEY: password
+      MINIO_ACCESS_KEY: root
+      MINIO_ENDPOINT: localhost
 
     name: Run Type Check & Linters
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
+    services:
+      minio:
+        image: lazybit/minio
+        ports:
+          - 9000:9000
+        env:
+          MINIO_ROOT_USER: root
+          MINIO_ROOT_PASSWORD: password
+        options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
 
     steps:
       - name: Checkout repository
