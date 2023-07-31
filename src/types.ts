@@ -73,7 +73,6 @@ export interface Storage {
 }
 
 export type GetSignedUrlOptions = GetSignedUrlArgs & {
-  config: NextUploadConfig;
   requestInit?: any;
 };
 
@@ -91,7 +90,6 @@ export type SignedUrl = {
 };
 
 export type UploadOptions = GetSignedUrlArgs & {
-  config: NextUploadConfig;
   file: File;
   requestInit?: any;
 };

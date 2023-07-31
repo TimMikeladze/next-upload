@@ -1,10 +1,14 @@
-import { GetSignedUrlOptions, HandlerAction, SignedUrl } from './types';
+import {
+  GetSignedUrlOptions,
+  HandlerAction,
+  NextUploadConfig,
+  SignedUrl,
+} from './types';
 
 export const getSignedUrl = async (
-  options: GetSignedUrlOptions
+  options: GetSignedUrlOptions,
+  config: NextUploadConfig
 ): Promise<SignedUrl> => {
-  const { config } = options;
-
   if (!config?.api) {
     throw new Error(`config.api is required`);
   }

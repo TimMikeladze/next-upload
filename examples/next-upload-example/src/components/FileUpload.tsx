@@ -7,14 +7,11 @@ import { nextUploadConfig } from '@/app/upload/config';
 
 const FileUpload = () => {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    await Promise.all(
-      acceptedFiles.map(async (file) => {
-        await upload({
-          file,
-          name: file.name,
-          config: nextUploadConfig,
-        });
-      })
+    await upload(
+      acceptedFiles.map((file) => ({
+        file,
+      })),
+      nextUploadConfig
     );
   }, []);
 
