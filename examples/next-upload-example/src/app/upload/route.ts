@@ -1,7 +1,7 @@
-import { InMemoryS3Client, NextUpload } from 'next-upload';
+import { NextUpload } from 'next-upload';
+import { config } from './config';
 import { NextRequest } from 'next/server';
-import { nextUploadConfig } from './config';
 
-const nextUpload = new NextUpload(nextUploadConfig);
+const nup = new NextUpload(config);
 
-export const POST = (request: NextRequest) => nextUpload.POST(request);
+export const POST = (request: NextRequest) => nup.handler(request);

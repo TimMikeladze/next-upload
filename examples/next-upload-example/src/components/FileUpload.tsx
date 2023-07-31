@@ -3,15 +3,24 @@
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { upload } from 'next-upload/client';
-import { nextUploadConfig } from '@/app/upload/config';
+import { NextUploadType, config } from '@/app/upload/config';
+import toast from 'react-hot-toast';
 
 const FileUpload = () => {
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    await upload(
-      acceptedFiles.map((file) => ({
-        file,
-      })),
-      nextUploadConfig
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    toast.promise(
+      upload(
+        acceptedFiles.map((file) => ({
+          file,
+          type: NextUploadType.image,
+        })),
+        config
+      ),
+      {
+        loading: 'Uploading...',
+        success: 'Uploaded!',
+        error: 'Error uploading',
+      }
     );
   }, []);
 

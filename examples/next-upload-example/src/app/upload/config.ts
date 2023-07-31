@@ -1,14 +1,14 @@
 import { type NextUploadConfig } from 'next-upload';
 
-// export enum NextUploadType {
-//   image = `image`,
-// }
+export enum NextUploadType {
+  image = `image`,
+}
 
-export const nextUploadConfig: NextUploadConfig = {
+export const config: NextUploadConfig = {
   // this is the path to the api route that will handle the upload
   api: `/upload`,
   // default max size for uploads
-  maxSize: '2mb',
+  maxSize: '5mb',
   // be sure to start minio with the following command: docker-compose up -d
   client: {
     secretKey: process.env.MINIO_SECRET_KEY,
@@ -18,9 +18,7 @@ export const nextUploadConfig: NextUploadConfig = {
     useSSL: process.env.MINIO_SSL === `true`,
     region: process.env.MINIO_REGION,
   },
-  // uploadTypes: {
-  //   [NextUploadType.image]: {
-  //     maxSize: '2mb',
-  //   },
-  // },
+  uploadTypes: {
+    [NextUploadType.image]: {},
+  },
 };

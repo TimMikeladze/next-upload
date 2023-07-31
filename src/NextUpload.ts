@@ -1,5 +1,5 @@
 import bytes from 'bytes';
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server.js';
 import { Client, PostPolicy } from 'minio';
 
 import { nanoid } from 'nanoid';
@@ -140,14 +140,11 @@ export class NextUpload {
     };
   }
 
-  public async POST(request: NextRequest) {
-    // @ts-ignore
-    const { json } = NextResponse.default;
-
+  public async handler(request: NextRequest) {
     const body = await request.json();
 
-    return this.handler({
-      send: json,
+    return this.rawHandler({
+      send: NextResponse.json,
       request: {
         body,
         headers: request.headers,
@@ -164,7 +161,7 @@ export class NextUpload {
     const json = async (data: any, options?: { status?: number }) =>
       response.status(options?.status || 200).json(data);
 
-    return this.handler({
+    return this.rawHandler({
       send: json,
       request: {
         body,
@@ -173,7 +170,7 @@ export class NextUpload {
     });
   }
 
-  public async handler(handlerArgs: HandlerArgs) {
+  public async rawHandler(handlerArgs: HandlerArgs) {
     const { send, request } = handlerArgs;
 
     if (!request.body) {

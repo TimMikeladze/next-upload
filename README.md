@@ -30,18 +30,18 @@ export const nextUploadConfig: NextUploadConfig = {
 };
 ```
 
-Now to integrate with Next.js we need to create an HTTP route that will handle `next-upload` related requests such as generating signed URLs. In the example below we are using a `POST` route at `/upload` with the Next.js App router. If you are using the Pages router or a different framework you can leverage the `NextUpload.pagesApiHandler` or `NextUpload.handler` functions directly to achieve the same result.
+Now to integrate with Next.js we need to create an HTTP route that will handle `next-upload` related requests such as generating signed URLs. In the example below we are using a `POST` route at `/upload` with the Next.js App router. If you are using the Pages router or a different framework you can leverage the `NextUpload.pagesApiHandler` or `NextUpload.rawHandler` functions directly to achieve the same result.
 
 **src/app/upload/route.ts**
 
 ```tsx
 import { NextUpload } from 'next-upload';
+import { config } from './config';
 import { NextRequest } from 'next/server';
-import { nextUploadConfig } from './config';
 
-const nextUpload = new NextUpload(nextUploadConfig);
+const nup = new NextUpload(config);
 
-export const POST = (request: NextRequest) => nextUpload.POST(request);
+export const POST = (request: NextRequest) => nup.handler(request);
 ```
 
 At this point you can import helper functions from `next-upload/client` to send files to your storage service in one line of code.

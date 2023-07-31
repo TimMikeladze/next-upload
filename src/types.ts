@@ -1,4 +1,5 @@
 import type { ClientOptions, PostPolicy, PostPolicyResult } from 'minio';
+import { NextResponse } from 'next/server.js';
 
 export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
@@ -7,9 +8,14 @@ export enum HandlerAction {
   generateSignedUrl = 'generateSignedUrl',
 }
 
+export type SendFn = <JsonBody>(
+  body: JsonBody,
+  init?: { status?: number }
+) => NextResponse<JsonBody> | Promise<void>;
+
 export type HandlerArgs = {
   request: NextUploadRequest;
-  send: (data: any, options?: { status?: number }) => Promise<void>;
+  send: SendFn;
 };
 
 type CommonConfig = {
