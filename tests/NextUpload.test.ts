@@ -1,6 +1,7 @@
 import { it, expect, describe, beforeEach, afterEach } from 'vitest';
 import Keyv from 'keyv';
 import KeyvPostgres from '@keyv/postgres';
+import { nanoid } from 'nanoid';
 import { Asset, AssetStore, NextUpload, NextUploadConfig } from '../src';
 
 const nextUploadConfig: NextUploadConfig = {
@@ -66,6 +67,28 @@ describe(`NextUpload`, () => {
       bucket: 'localhost-test',
       verified: null,
     });
+  });
+
+  it(`generateSignedUrl - prevent duplicate ids`, async () => {
+    const nup = new NextUpload(nextUploadConfig, assetStore);
+
+    await nup.init();
+
+    const id = nanoid();
+
+    const signedUrl = await nup.generateSignedUrl({
+      id,
+    });
+
+    expect(signedUrl).toMatchObject({
+      id,
+    });
+
+    expect(
+      nup.generateSignedUrl({
+        id,
+      })
+    ).rejects.toThrowError(`${id} already exists`);
   });
 
   it(`generateSignedUrl & verify assets`, async () => {

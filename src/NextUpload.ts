@@ -12,7 +12,6 @@ import {
   NextUploadAssetStore,
   NextUploadConfig,
   NextUploadRequest,
-  NextUploadS3Client,
   RequiredField,
   SignedUrl,
   UploadTypeConfig,
@@ -21,7 +20,7 @@ import {
 export class NextUpload {
   private static DEFAULT_TYPE = `default`;
 
-  private client: NextUploadS3Client;
+  private client: Client;
 
   private bucket: string;
 
@@ -34,9 +33,7 @@ export class NextUpload {
       ...config,
       api: config.api || `/upload`,
     };
-    this.client = config.s3Client
-      ? config.s3Client(config.client)
-      : new Client(config.client);
+    this.client = new Client(config.client);
     this.bucket = config.bucket || NextUpload.bucketFromEnv();
 
     this.store = store;
@@ -130,6 +127,22 @@ export class NextUpload {
 
     if (!path) {
       path = [type, id, name].filter(Boolean).join('/');
+    }
+
+    let exists = false;
+
+    try {
+      if (await this.store?.find(id)) {
+        exists = true;
+      }
+      await this.client.statObject(this.bucket, path);
+      exists = true;
+    } catch (error) {
+      //
+    }
+
+    if (exists) {
+      throw new Error(`${id} already exists`);
     }
 
     const verifyAssets =
