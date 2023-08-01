@@ -12,6 +12,8 @@ jobs:
       MINIO_SECRET_KEY: password
       MINIO_ACCESS_KEY: root
       MINIO_ENDPOINT: localhost
+      PG_CONNECTION_STRING: postgres://postgres:password@localhost:5432
+      PG_DB: postgres
 
     name: Run Type Check & Linters
     runs-on: ubuntu-latest
@@ -28,6 +30,13 @@ jobs:
         options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
 
     steps:
+      - name: Set up PostgreSQL
+        uses: harmon758/postgresql-action@v1
+        with:
+          postgresql version: '14'
+          postgresql user: postgres
+          postgresql password: password
+
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
