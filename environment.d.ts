@@ -7,6 +7,8 @@ declare global {
       MINIO_REGION: string;
       MINIO_SECRET_KEY: string;
       MINIO_SSL?: 'true' | undefined;
+      PG_CONNECTION_STRING: string;
+      PG_DB: string;
     }
   }
 }

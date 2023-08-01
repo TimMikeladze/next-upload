@@ -1,16 +1,17 @@
 import bytes from 'bytes';
 import { type NextRequest, NextResponse } from 'next/server.js';
-import { Client, PostPolicy } from 'minio';
+import { Client, PostPolicy, BucketItem } from 'minio';
 
 import { nanoid } from 'nanoid';
 import { NextApiRequest, NextApiResponse } from 'next';
 import {
+  Asset,
   GetSignedUrlArgs,
   HandlerAction,
   HandlerArgs,
+  NextUploadAssetStore,
   NextUploadConfig,
   NextUploadRequest,
-  NextUploadS3Client,
   RequiredField,
   SignedUrl,
   UploadTypeConfig,
@@ -19,21 +20,23 @@ import {
 export class NextUpload {
   private static DEFAULT_TYPE = `default`;
 
-  private client: NextUploadS3Client;
+  private client: Client;
 
   private bucket: string;
 
   private config: NextUploadConfig;
 
-  constructor(config: NextUploadConfig) {
+  private store: NextUploadAssetStore | undefined;
+
+  constructor(config: NextUploadConfig, store?: NextUploadAssetStore) {
     this.config = {
       ...config,
       api: config.api || `/upload`,
     };
-    this.client = config.s3Client
-      ? config.s3Client(config.client)
-      : new Client(config.client);
+    this.client = new Client(config.client);
     this.bucket = config.bucket || NextUpload.bucketFromEnv();
+
+    this.store = store;
   }
 
   public getBucket() {
@@ -46,6 +49,10 @@ export class NextUpload {
 
   public getConfig() {
     return this.config;
+  }
+
+  public static namespaceFromEnv(project?: string) {
+    return NextUpload.bucketFromEnv(project);
   }
 
   public static bucketFromEnv(project?: string) {
@@ -72,6 +79,10 @@ export class NextUpload {
     }
   }
 
+  private static getDefaultExpirationSeconds() {
+    return 60 * 5;
+  }
+
   private async makePostPolicy(
     config: RequiredField<UploadTypeConfig, 'path'>
   ) {
@@ -79,7 +90,8 @@ export class NextUpload {
 
     const {
       maxSize = this.config.maxSize,
-      expirationSeconds = this.config.expirationSeconds || 60 * 5,
+      expirationSeconds = this.config.expirationSeconds ||
+        NextUpload.getDefaultExpirationSeconds(),
     } = config;
 
     const maxSizeBytes = bytes.parse(maxSize);
@@ -93,38 +105,73 @@ export class NextUpload {
   }
 
   public async generateSignedUrl(
-    args: GetSignedUrlArgs,
-    request: NextUploadRequest
+    args?: GetSignedUrlArgs,
+    request?: NextUploadRequest
   ): Promise<SignedUrl> {
-    const { id = nanoid(), type = NextUpload.DEFAULT_TYPE, name } = args;
+    const { id = nanoid(), type = NextUpload.DEFAULT_TYPE, name } = args || {};
 
-    let config: UploadTypeConfig = {};
+    let uploadTypeConfig: UploadTypeConfig = {};
 
     if (type === NextUpload.DEFAULT_TYPE) {
-      config = {};
+      uploadTypeConfig = {};
     } else if (this.config.uploadTypes?.[type]) {
-      config =
+      uploadTypeConfig =
         typeof this.config.uploadTypes[type] === 'function'
-          ? await (this.config.uploadTypes[type] as any)(args, request)
+          ? await (this.config.uploadTypes[type] as any)(args || {}, request)
           : this.config.uploadTypes[type];
     } else {
       throw new Error(`Upload type "${type}" not configured`);
     }
 
-    let { path } = config;
+    let { path } = uploadTypeConfig;
 
     if (!path) {
       path = [type, id, name].filter(Boolean).join('/');
     }
 
+    let exists = false;
+
+    try {
+      if (await this.store?.find(id)) {
+        exists = true;
+      }
+      await this.client.statObject(this.bucket, path);
+      exists = true;
+    } catch (error) {
+      //
+    }
+
+    if (exists) {
+      throw new Error(`${id} already exists`);
+    }
+
+    const verifyAssets =
+      uploadTypeConfig.verifyAssets || this.config.verifyAssets;
+
+    const verifyAssetsExpirationSeconds = Number(
+      uploadTypeConfig.verifyAssetsExpirationSeconds ||
+        this.config.verifyAssetsExpirationSeconds ||
+        uploadTypeConfig.expirationSeconds ||
+        this.config.expirationSeconds ||
+        NextUpload.getDefaultExpirationSeconds()
+    );
+
+    if (verifyAssets) {
+      if (!this.store) {
+        throw new Error(
+          `'verifyAssets' config requires NextUpload to be instantiated with a store`
+        );
+      }
+    }
+
     const postPolicyFn =
-      typeof config.postPolicy === 'function'
-        ? config.postPolicy
+      typeof uploadTypeConfig.postPolicy === 'function'
+        ? uploadTypeConfig.postPolicy
         : (x: any) => x;
 
     const postPolicy: PostPolicy = await postPolicyFn(
       await this.makePostPolicy({
-        ...config,
+        ...uploadTypeConfig,
         path,
       })
     );
@@ -133,11 +180,96 @@ export class NextUpload {
       postPolicy
     );
 
+    await this.store?.upsert?.(
+      {
+        id,
+        type,
+        name: '',
+        path,
+        bucket: this.bucket,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        verified: verifyAssets !== undefined ? !verifyAssets : null,
+      },
+      verifyAssets ? verifyAssetsExpirationSeconds * 1000 : 0
+    );
+
     return {
       id,
       data: presignedPostPolicy.formData,
       url: presignedPostPolicy.postURL,
     };
+  }
+
+  public async pruneAssets() {
+    if (!this.store) {
+      throw new Error(
+        `'pruneAssets' config requires NextUpload to be instantiated with a store`
+      );
+    }
+
+    const objects = await new Promise<BucketItem[]>((resolve, reject) => {
+      const objectsStream = this.client.listObjectsV2(this.bucket, '', true);
+
+      const res: BucketItem[] = [];
+
+      objectsStream.on('data', (obj) => {
+        res.push(obj);
+      });
+      objectsStream.on('end', () => {
+        resolve(res);
+      });
+      objectsStream.on('error', (error) => {
+        reject(error);
+      });
+    });
+
+    const assets: Asset[] = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for await (const [, value] of this.store.iterator()) {
+      assets.push(value);
+    }
+
+    const pathsToRemove: string[] = [];
+
+    objects.forEach((object) => {
+      const asset = assets.find((a) => a.path === object.name);
+
+      if (!asset || asset.verified === false) {
+        pathsToRemove.push(object.name);
+      }
+    });
+
+    await Promise.all([
+      Promise.all(
+        pathsToRemove.map((path) => this.client.removeObject(this.bucket, path))
+      ),
+    ]);
+  }
+
+  public async verifyAsset(id: string) {
+    if (!this.store) {
+      throw new Error(
+        `'verifyAsset' config requires NextUpload to be instantiated with a store`
+      );
+    }
+
+    const foundAsset = await this.store?.find(id);
+
+    if (!foundAsset) {
+      throw new Error(`Asset not found`);
+    }
+
+    const asset = await this.store?.upsert?.(
+      {
+        ...foundAsset,
+        verified: true,
+        updatedAt: new Date(),
+      },
+      0
+    );
+
+    return asset;
   }
 
   public async handler(request: NextRequest) {
@@ -177,7 +309,7 @@ export class NextUpload {
       return send({ error: `No body` }, { status: 400 });
     }
 
-    const { action, args = {} } = request.body;
+    const { action, args } = request.body;
 
     if (!action) {
       return send({ error: `No action` }, { status: 400 });

@@ -1,4 +1,5 @@
-import type { ClientOptions, PostPolicy, PostPolicyResult } from 'minio';
+/* eslint-disable max-classes-per-file */
+import type { ClientOptions, PostPolicy } from 'minio';
 import { NextResponse } from 'next/server.js';
 
 export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
@@ -21,6 +22,8 @@ export type HandlerArgs = {
 type CommonConfig = {
   expirationSeconds?: number;
   maxSize?: number | string;
+  verifyAssets?: boolean;
+  verifyAssetsExpirationSeconds?: number;
 };
 
 export type UploadTypeConfig = CommonConfig & {
@@ -28,19 +31,22 @@ export type UploadTypeConfig = CommonConfig & {
   postPolicy?: (postPolicy: PostPolicy) => Promise<PostPolicy>;
 };
 
-export abstract class NextUploadS3Client {
-  // eslint-disable-next-line no-useless-constructor, @typescript-eslint/no-unused-vars
-  constructor(config: ClientConfig) {
-    //
-  }
+export type Asset = {
+  bucket: string;
+  createdAt: Date;
+  id: string;
+  name: string;
+  path: string;
+  type: string;
+  updatedAt: Date;
+  verified: boolean | null;
+};
 
-  abstract bucketExists(bucketName: string): Promise<boolean>;
-
-  abstract makeBucket(bucketName: string, region: string): Promise<void>;
-
-  abstract newPostPolicy(): PostPolicy;
-
-  abstract presignedPostPolicy(policy: PostPolicy): Promise<PostPolicyResult>;
+export interface NextUploadAssetStore {
+  delete(id: string): Promise<void>;
+  find(id: string): Promise<Asset | undefined>;
+  iterator(): AsyncGenerator<any, void, any>;
+  upsert(args: Asset, ttl: number): Promise<Asset>;
 }
 
 type ClientConfig = RequiredField<ClientOptions, 'region'>;
@@ -49,7 +55,6 @@ export type NextUploadConfig = RequiredField<CommonConfig, 'maxSize'> & {
   api?: string;
   bucket?: string;
   client: ClientConfig;
-  s3Client?: (config: ClientConfig) => NextUploadS3Client;
   uploadTypes?: {
     [uploadType: string]:
       | ((

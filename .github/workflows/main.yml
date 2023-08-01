@@ -9,25 +9,28 @@ jobs:
       MINIO_REGION: us-west-1
       MINIO_SSL: false
       MINIO_PORT: 9000
-      MINIO_SECRET_KEY: password
       MINIO_ACCESS_KEY: root
+      MINIO_SECRET_KEY: password
       MINIO_ENDPOINT: localhost
+      PG_CONNECTION_STRING: postgres://postgres:password@localhost:5432
+      PG_DB: postgres
 
     name: Run Type Check & Linters
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    services:
-      minio:
-        image: lazybit/minio
-        ports:
-          - 9000:9000
-        env:
-          MINIO_ROOT_USER: root
-          MINIO_ROOT_PASSWORD: password
-        options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
-
     steps:
+      - name: Set up PostgreSQL
+        uses: harmon758/postgresql-action@v1
+        with:
+          postgresql version: '14'
+          postgresql user: postgres
+          postgresql password: password
+
+      - name: Setup minio
+        run: |
+          docker run -d -p 9000:9000 --name minio -e "MINIO_ROOT_USER=root" -e "MINIO_ROOT_PASSWORD=password" -v /tmp/data:/data -v /tmp/config:/root/.minio minio/minio server /data
+
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
