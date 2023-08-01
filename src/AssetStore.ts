@@ -20,4 +20,8 @@ export class AssetStore implements NextUploadAssetStore {
   async find(id: string): Promise<Asset | undefined> {
     return this.keyv.get(id);
   }
+
+  iterator() {
+    return this.keyv.iterator();
+  }
 }

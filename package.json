@@ -1,7 +1,7 @@
 {
   "name": "next-upload",
   "description": "A turn-key solution for integrating Next.js with signed & secure file-uploads to an S3 compliant storage service such as R2, AWS, or Minio.",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "Tim Mikeladze <tim.mikeladze@gmail.com>",
   "license": "MIT",
   "keywords": [
@@ -99,6 +99,7 @@
     "@babel/preset-typescript": "7.22.5",
     "@commitlint/cli": "17.6.7",
     "@commitlint/config-conventional": "17.6.7",
+    "@keyv/postgres": "^1.4.8",
     "@ryansonshine/commitizen": "4.2.8",
     "@ryansonshine/cz-conventional-changelog": "3.3.4",
     "@storybook/addon-essentials": "7.1.1",

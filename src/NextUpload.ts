@@ -1,10 +1,11 @@
 import bytes from 'bytes';
 import { type NextRequest, NextResponse } from 'next/server.js';
-import { Client, PostPolicy } from 'minio';
+import { Client, PostPolicy, BucketItem } from 'minio';
 
 import { nanoid } from 'nanoid';
 import { NextApiRequest, NextApiResponse } from 'next';
 import {
+  Asset,
   GetSignedUrlArgs,
   HandlerAction,
   HandlerArgs,
@@ -107,10 +108,10 @@ export class NextUpload {
   }
 
   public async generateSignedUrl(
-    args: GetSignedUrlArgs,
-    request: NextUploadRequest
+    args?: GetSignedUrlArgs,
+    request?: NextUploadRequest
   ): Promise<SignedUrl> {
-    const { id = nanoid(), type = NextUpload.DEFAULT_TYPE, name } = args;
+    const { id = nanoid(), type = NextUpload.DEFAULT_TYPE, name } = args || {};
 
     let uploadTypeConfig: UploadTypeConfig = {};
 
@@ -119,7 +120,7 @@ export class NextUpload {
     } else if (this.config.uploadTypes?.[type]) {
       uploadTypeConfig =
         typeof this.config.uploadTypes[type] === 'function'
-          ? await (this.config.uploadTypes[type] as any)(args, request)
+          ? await (this.config.uploadTypes[type] as any)(args || {}, request)
           : this.config.uploadTypes[type];
     } else {
       throw new Error(`Upload type "${type}" not configured`);
@@ -131,9 +132,8 @@ export class NextUpload {
       path = [type, id, name].filter(Boolean).join('/');
     }
 
-    const verifyAssets = !!(
-      uploadTypeConfig.verifyAssets ?? this.config.verifyAssets
-    );
+    const verifyAssets =
+      uploadTypeConfig.verifyAssets || this.config.verifyAssets;
 
     const verifyAssetsExpirationSeconds = Number(
       uploadTypeConfig.verifyAssetsExpirationSeconds ||
@@ -176,7 +176,7 @@ export class NextUpload {
         bucket: this.bucket,
         createdAt: new Date(),
         updatedAt: new Date(),
-        verified: !verifyAssets,
+        verified: verifyAssets !== undefined ? !verifyAssets : null,
       },
       verifyAssets ? verifyAssetsExpirationSeconds * 1000 : 0
     );
@@ -186,6 +186,52 @@ export class NextUpload {
       data: presignedPostPolicy.formData,
       url: presignedPostPolicy.postURL,
     };
+  }
+
+  public async pruneAssets() {
+    if (!this.store) {
+      throw new Error(
+        `'pruneAssets' config requires NextUpload to be instantiated with a store`
+      );
+    }
+
+    const objects = await new Promise<BucketItem[]>((resolve, reject) => {
+      const objectsStream = this.client.listObjectsV2(this.bucket, '', true);
+
+      const res: BucketItem[] = [];
+
+      objectsStream.on('data', (obj) => {
+        res.push(obj);
+      });
+      objectsStream.on('end', () => {
+        resolve(res);
+      });
+      objectsStream.on('error', (error) => {
+        reject(error);
+      });
+    });
+
+    const assets: Asset[] = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for await (const [, value] of this.store.iterator()) {
+      assets.push(value);
+    }
+
+    const pathsToRemove: string[] = [];
+
+    objects.forEach((object) => {
+      const asset = assets.find((a) => a.path === object.name);
+
+      if (!asset || asset.verified === false) {
+        pathsToRemove.push(object.name);
+      }
+    });
+
+    await Promise.all([
+      Promise.all(
+        pathsToRemove.map((path) => this.client.removeObject(this.bucket, path))
+      ),
+    ]);
   }
 
   public async verifyAsset(id: string) {
@@ -204,7 +250,7 @@ export class NextUpload {
     const asset = await this.store?.upsert?.(
       {
         ...foundAsset,
-        verified: false,
+        verified: true,
         updatedAt: new Date(),
       },
       0
@@ -250,7 +296,7 @@ export class NextUpload {
       return send({ error: `No body` }, { status: 400 });
     }
 
-    const { action, args = {} } = request.body;
+    const { action, args } = request.body;
 
     if (!action) {
       return send({ error: `No action` }, { status: 400 });

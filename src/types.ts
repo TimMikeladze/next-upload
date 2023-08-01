@@ -57,6 +57,8 @@ export abstract class NextUploadS3Client {
     recursive?: boolean,
     startAfter?: string
   ): BucketStream<BucketItem>;
+
+  abstract removeObject(bucketName: string, objectName: string): Promise<void>;
 }
 export type Asset = {
   bucket: string;
@@ -66,12 +68,13 @@ export type Asset = {
   path: string;
   type: string;
   updatedAt: Date;
-  verified: boolean;
+  verified: boolean | null;
 };
 
 export interface NextUploadAssetStore {
   delete(id: string): Promise<void>;
   find(id: string): Promise<Asset | undefined>;
+  iterator(): AsyncGenerator<any, void, any>;
   upsert(args: Asset, ttl: number): Promise<Asset>;
 }
 
