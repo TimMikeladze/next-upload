@@ -2,7 +2,7 @@
 import { PostPolicy } from 'minio';
 import { NextUploadS3Client } from './types';
 
-export class InMemoryS3Client implements NextUploadS3Client {
+export class InMemoryS3Client implements Partial<NextUploadS3Client> {
   public regions = new Set<string>();
 
   public buckets = new Map<string, any>();

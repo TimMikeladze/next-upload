@@ -8,6 +8,7 @@ import {
   GetSignedUrlArgs,
   HandlerAction,
   HandlerArgs,
+  NextUploadAssetStore,
   NextUploadConfig,
   NextUploadRequest,
   NextUploadS3Client,
@@ -25,7 +26,9 @@ export class NextUpload {
 
   private config: NextUploadConfig;
 
-  constructor(config: NextUploadConfig) {
+  private store: NextUploadAssetStore | undefined;
+
+  constructor(config: NextUploadConfig, store?: NextUploadAssetStore) {
     this.config = {
       ...config,
       api: config.api || `/upload`,
@@ -34,6 +37,8 @@ export class NextUpload {
       ? config.s3Client(config.client)
       : new Client(config.client);
     this.bucket = config.bucket || NextUpload.bucketFromEnv();
+
+    this.store = store;
   }
 
   public getBucket() {
@@ -46,6 +51,10 @@ export class NextUpload {
 
   public getConfig() {
     return this.config;
+  }
+
+  public static namespaceFromEnv(project?: string) {
+    return NextUpload.bucketFromEnv(project);
   }
 
   public static bucketFromEnv(project?: string) {
@@ -72,6 +81,10 @@ export class NextUpload {
     }
   }
 
+  private static getDefaultExpirationSeconds() {
+    return 60 * 5;
+  }
+
   private async makePostPolicy(
     config: RequiredField<UploadTypeConfig, 'path'>
   ) {
@@ -79,7 +92,8 @@ export class NextUpload {
 
     const {
       maxSize = this.config.maxSize,
-      expirationSeconds = this.config.expirationSeconds || 60 * 5,
+      expirationSeconds = this.config.expirationSeconds ||
+        NextUpload.getDefaultExpirationSeconds(),
     } = config;
 
     const maxSizeBytes = bytes.parse(maxSize);
@@ -98,12 +112,12 @@ export class NextUpload {
   ): Promise<SignedUrl> {
     const { id = nanoid(), type = NextUpload.DEFAULT_TYPE, name } = args;
 
-    let config: UploadTypeConfig = {};
+    let uploadTypeConfig: UploadTypeConfig = {};
 
     if (type === NextUpload.DEFAULT_TYPE) {
-      config = {};
+      uploadTypeConfig = {};
     } else if (this.config.uploadTypes?.[type]) {
-      config =
+      uploadTypeConfig =
         typeof this.config.uploadTypes[type] === 'function'
           ? await (this.config.uploadTypes[type] as any)(args, request)
           : this.config.uploadTypes[type];
@@ -111,20 +125,40 @@ export class NextUpload {
       throw new Error(`Upload type "${type}" not configured`);
     }
 
-    let { path } = config;
+    let { path } = uploadTypeConfig;
 
     if (!path) {
       path = [type, id, name].filter(Boolean).join('/');
     }
 
+    const verifyAssets = !!(
+      uploadTypeConfig.verifyAssets ?? this.config.verifyAssets
+    );
+
+    const verifyAssetsExpirationSeconds = Number(
+      uploadTypeConfig.verifyAssetsExpirationSeconds ||
+        this.config.verifyAssetsExpirationSeconds ||
+        uploadTypeConfig.expirationSeconds ||
+        this.config.expirationSeconds ||
+        NextUpload.getDefaultExpirationSeconds()
+    );
+
+    if (verifyAssets) {
+      if (!this.store) {
+        throw new Error(
+          `'verifyAssets' config requires NextUpload to be instantiated with a store`
+        );
+      }
+    }
+
     const postPolicyFn =
-      typeof config.postPolicy === 'function'
-        ? config.postPolicy
+      typeof uploadTypeConfig.postPolicy === 'function'
+        ? uploadTypeConfig.postPolicy
         : (x: any) => x;
 
     const postPolicy: PostPolicy = await postPolicyFn(
       await this.makePostPolicy({
-        ...config,
+        ...uploadTypeConfig,
         path,
       })
     );
@@ -133,11 +167,50 @@ export class NextUpload {
       postPolicy
     );
 
+    await this.store?.upsert?.(
+      {
+        id,
+        type,
+        name: '',
+        path,
+        bucket: this.bucket,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        verified: !verifyAssets,
+      },
+      verifyAssets ? verifyAssetsExpirationSeconds * 1000 : 0
+    );
+
     return {
       id,
       data: presignedPostPolicy.formData,
       url: presignedPostPolicy.postURL,
     };
+  }
+
+  public async verifyAsset(id: string) {
+    if (!this.store) {
+      throw new Error(
+        `'verifyAsset' config requires NextUpload to be instantiated with a store`
+      );
+    }
+
+    const foundAsset = await this.store?.find(id);
+
+    if (!foundAsset) {
+      throw new Error(`Asset not found`);
+    }
+
+    const asset = await this.store?.upsert?.(
+      {
+        ...foundAsset,
+        verified: false,
+        updatedAt: new Date(),
+      },
+      0
+    );
+
+    return asset;
   }
 
   public async handler(request: NextRequest) {

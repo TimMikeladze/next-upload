@@ -1,4 +1,11 @@
-import type { ClientOptions, PostPolicy, PostPolicyResult } from 'minio';
+/* eslint-disable max-classes-per-file */
+import type {
+  BucketItem,
+  BucketStream,
+  ClientOptions,
+  PostPolicy,
+  PostPolicyResult,
+} from 'minio';
 import { NextResponse } from 'next/server.js';
 
 export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
@@ -21,6 +28,8 @@ export type HandlerArgs = {
 type CommonConfig = {
   expirationSeconds?: number;
   maxSize?: number | string;
+  verifyAssets?: boolean;
+  verifyAssetsExpirationSeconds?: number;
 };
 
 export type UploadTypeConfig = CommonConfig & {
@@ -41,6 +50,29 @@ export abstract class NextUploadS3Client {
   abstract newPostPolicy(): PostPolicy;
 
   abstract presignedPostPolicy(policy: PostPolicy): Promise<PostPolicyResult>;
+
+  abstract listObjectsV2(
+    bucketName: string,
+    prefix?: string,
+    recursive?: boolean,
+    startAfter?: string
+  ): BucketStream<BucketItem>;
+}
+export type Asset = {
+  bucket: string;
+  createdAt: Date;
+  id: string;
+  name: string;
+  path: string;
+  type: string;
+  updatedAt: Date;
+  verified: boolean;
+};
+
+export interface NextUploadAssetStore {
+  delete(id: string): Promise<void>;
+  find(id: string): Promise<Asset | undefined>;
+  upsert(args: Asset, ttl: number): Promise<Asset>;
 }
 
 type ClientConfig = RequiredField<ClientOptions, 'region'>;

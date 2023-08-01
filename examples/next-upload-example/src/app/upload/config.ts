@@ -22,3 +22,5 @@ export const config: NextUploadConfig = {
     [NextUploadType.image]: {},
   },
 };
+
+export { NextUploadConfig };

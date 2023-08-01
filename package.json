@@ -139,6 +139,7 @@
     "eslint-plugin-unused-imports": "3.0.0",
     "husky": "8.0.3",
     "jsdom": "^22.1.0",
+    "keyv": "^4.5.3",
     "lint-staged": "13.2.3",
     "next": "^13.4.12",
     "prettier": "3.0.0",
