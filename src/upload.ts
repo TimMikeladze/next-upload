@@ -22,10 +22,18 @@ export const upload = async (
 
   return Promise.allSettled(
     optionsArray.map(async (x) => {
-      const signedUrl = await getSignedUrl(x, config);
+      const { requestInit, file, ...args } = x;
+      const signedUrl = await getSignedUrl(
+        {
+          args,
+          requestInit,
+        },
+        config
+      );
 
       const res = await uploadToSignedUrl({
-        ...x,
+        file,
+        requestInit,
         signedUrl,
       });
 

@@ -118,18 +118,26 @@ export class NextUpload {
       metadata = {},
     } = args || {};
 
-    let uploadTypeConfig: UploadTypeConfig = {};
+    const getConfig = async (valueOrFn: any): Promise<UploadTypeConfig> => {
+      if (typeof valueOrFn === 'function') {
+        return valueOrFn(args || {}, request);
+      }
 
-    if (type === NextUpload.DEFAULT_TYPE) {
-      uploadTypeConfig = {};
-    } else if (this.config.uploadTypes?.[type]) {
-      uploadTypeConfig =
-        typeof this.config.uploadTypes[type] === 'function'
-          ? await (this.config.uploadTypes[type] as any)(args || {}, request)
-          : this.config.uploadTypes[type];
-    } else {
+      return valueOrFn;
+    };
+
+    const defaultUploadTypeConfig = await getConfig(
+      this.config.uploadTypes?.[NextUpload.DEFAULT_TYPE] || {}
+    );
+
+    if (type !== NextUpload.DEFAULT_TYPE && !this.config.uploadTypes?.[type]) {
       throw new Error(`Upload type "${type}" not configured`);
     }
+
+    const uploadTypeConfig =
+      type !== NextUpload.DEFAULT_TYPE
+        ? await getConfig(this.config.uploadTypes?.[type])
+        : defaultUploadTypeConfig;
 
     let { path } = uploadTypeConfig;
 

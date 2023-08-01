@@ -9,11 +9,8 @@ export const getSignedUrl = async (
   options: GetSignedUrlOptions,
   config: NextUploadConfig
 ): Promise<SignedUrl> => {
-  if (!config?.api) {
-    throw new Error(`config.api is required`);
-  }
-
-  const res = await fetch(config.api, {
+  const api = config.api || `/upload`;
+  const res = await fetch(api, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -21,7 +18,7 @@ export const getSignedUrl = async (
     },
     body: JSON.stringify({
       action: HandlerAction.generateSignedUrl,
-      ...options,
+      args: options.args,
       ...options.requestInit?.body,
     }),
     ...options.requestInit,

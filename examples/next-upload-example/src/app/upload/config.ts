@@ -5,11 +5,7 @@ export enum NextUploadType {
 }
 
 export const config: NextUploadConfig = {
-  // this is the path to the api route that will handle the upload
-  api: `/upload`,
-  // default max size for uploads
-  maxSize: '5mb',
-  // be sure to start minio with the following command: docker-compose up -d
+  maxSize: process.env.NEXT_PUBLIC_MAX_SIZE || '1mb',
   client: {
     secretKey: process.env.MINIO_SECRET_KEY,
     accessKey: process.env.MINIO_ACCESS_KEY,
@@ -20,6 +16,11 @@ export const config: NextUploadConfig = {
   },
   uploadTypes: {
     [NextUploadType.image]: {},
+    // [NextUploadType.image]: async (args, { body, headers }) => {
+    //   return {
+    //     maxSize: process.env.NEXT_PUBLIC_MAX_SIZE || '5mb',
+    //   };
+    // },
   },
 };
 

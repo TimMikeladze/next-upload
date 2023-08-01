@@ -9,6 +9,7 @@ declare global {
       MINIO_SSL?: 'true' | undefined;
       PG_DB: string;
       PG_CONNECTION_STRING: string;
+      NEXT_PUBLIC_MAX_SIZE: string | undefined;
     }
   }
 }

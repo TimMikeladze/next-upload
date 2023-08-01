@@ -87,7 +87,8 @@ export interface Storage {
   saveUpload(args: SaveUploadArgs): Promise<string>;
 }
 
-export type GetSignedUrlOptions = GetSignedUrlArgs & {
+export type GetSignedUrlOptions = {
+  args?: GetSignedUrlArgs;
   requestInit?: any;
 };
 

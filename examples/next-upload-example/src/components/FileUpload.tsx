@@ -1,30 +1,39 @@
 'use client';
 
-import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { upload } from 'next-upload/client';
 import { NextUploadType, config } from '@/app/upload/config';
 import toast from 'react-hot-toast';
+import bytes from 'bytes';
 
 const FileUpload = () => {
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    toast.promise(
-      upload(
-        acceptedFiles.map((file) => ({
-          file,
-          type: NextUploadType.image,
-        })),
-        config
-      ),
-      {
-        loading: 'Uploading...',
-        success: 'Uploaded!',
-        error: 'Error uploading',
-      }
-    );
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: {
+      'image/*': ['.jpeg', '.png'],
+    },
+    maxSize: bytes.parse(config.maxSize),
+    onDropRejected: () =>
+      toast.error(`Maximum file upload size is ${config.maxSize}`),
+    onDropAccepted: (acceptedFiles) => {
+      return toast.promise(
+        upload(
+          acceptedFiles.map((file) => ({
+            file,
+            type: NextUploadType.image,
+            // metadata: {
+            //   lastModified: file.lastModified,
+            // },
+          })),
+          config
+        ),
+        {
+          loading: 'Uploading...',
+          success: 'Uploaded!',
+          error: 'Error uploading',
+        }
+      );
+    },
+  });
 
   return (
     <div {...getRootProps()}>
