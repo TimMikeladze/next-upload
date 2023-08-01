@@ -9,6 +9,7 @@ import {
   GetSignedUrlArgs,
   HandlerAction,
   HandlerArgs,
+  Metadata,
   NextUploadAssetStore,
   NextUploadConfig,
   NextUploadRequest,
@@ -84,7 +85,8 @@ export class NextUpload {
   }
 
   private async makePostPolicy(
-    config: RequiredField<UploadTypeConfig, 'path'>
+    config: RequiredField<UploadTypeConfig, 'path'>,
+    metadata: Metadata
   ) {
     const postPolicy = this.client.newPostPolicy();
 
@@ -100,6 +102,7 @@ export class NextUpload {
     postPolicy.setKey(config.path);
     postPolicy.setContentLengthRange(1024, Math.max(maxSizeBytes, 1024));
     postPolicy.setExpires(new Date(Date.now() + 1000 * expirationSeconds));
+    postPolicy.setUserMetaData(metadata);
 
     return postPolicy;
   }
@@ -108,7 +111,12 @@ export class NextUpload {
     args?: GetSignedUrlArgs,
     request?: NextUploadRequest
   ): Promise<SignedUrl> {
-    const { id = nanoid(), type = NextUpload.DEFAULT_TYPE, name } = args || {};
+    const {
+      id = nanoid(),
+      type = NextUpload.DEFAULT_TYPE,
+      name,
+      metadata = {},
+    } = args || {};
 
     let uploadTypeConfig: UploadTypeConfig = {};
 
@@ -130,6 +138,11 @@ export class NextUpload {
     }
 
     let exists = false;
+
+    const mergedMetadata = {
+      ...metadata,
+      ...uploadTypeConfig.metadata,
+    };
 
     try {
       if (await this.store?.find(id)) {
@@ -170,10 +183,13 @@ export class NextUpload {
         : (x: any) => x;
 
     const postPolicy: PostPolicy = await postPolicyFn(
-      await this.makePostPolicy({
-        ...uploadTypeConfig,
-        path,
-      })
+      await this.makePostPolicy(
+        {
+          ...uploadTypeConfig,
+          path,
+        },
+        mergedMetadata
+      )
     );
 
     const presignedPostPolicy = await this.client.presignedPostPolicy(
@@ -190,6 +206,7 @@ export class NextUpload {
         createdAt: new Date(),
         updatedAt: new Date(),
         verified: verifyAssets !== undefined ? !verifyAssets : null,
+        metadata: mergedMetadata,
       },
       verifyAssets ? verifyAssetsExpirationSeconds * 1000 : 0
     );

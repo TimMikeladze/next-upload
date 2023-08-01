@@ -2,6 +2,8 @@
 import type { ClientOptions, PostPolicy } from 'minio';
 import { NextResponse } from 'next/server.js';
 
+export type Metadata = Record<string, string | number>;
+
 export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 // eslint-disable-next-line no-shadow
@@ -27,6 +29,7 @@ type CommonConfig = {
 };
 
 export type UploadTypeConfig = CommonConfig & {
+  metadata?: Metadata;
   path?: string;
   postPolicy?: (postPolicy: PostPolicy) => Promise<PostPolicy>;
 };
@@ -35,6 +38,7 @@ export type Asset = {
   bucket: string;
   createdAt: Date;
   id: string;
+  metadata: Metadata;
   name: string;
   path: string;
   type: string;
@@ -71,8 +75,8 @@ export type NextUploadRequest = {
 };
 
 export type GetSignedUrlArgs = {
-  data?: any;
   id?: string;
+  metadata?: any;
   name?: string;
   type?: string;
 };

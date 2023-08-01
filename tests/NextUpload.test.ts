@@ -17,24 +17,24 @@ const nextUploadConfig: NextUploadConfig = {
   maxSize: '10mb',
 };
 
+let assetStore: AssetStore;
+let keyv: Keyv;
+
+beforeEach(() => {
+  keyv = new Keyv({
+    namespace: NextUpload.namespaceFromEnv(),
+    store: new KeyvPostgres({
+      uri: `${process.env.PG_CONNECTION_STRING}/${process.env.PG_DB}`,
+    }),
+  });
+  assetStore = new AssetStore(keyv);
+});
+
+afterEach(async () => {
+  await keyv.clear();
+});
+
 describe(`NextUpload`, () => {
-  let assetStore: AssetStore;
-  let keyv: Keyv;
-
-  beforeEach(() => {
-    keyv = new Keyv({
-      namespace: NextUpload.namespaceFromEnv(),
-      store: new KeyvPostgres({
-        uri: `${process.env.PG_CONNECTION_STRING}/${process.env.PG_DB}`,
-      }),
-    });
-    assetStore = new AssetStore(keyv);
-  });
-
-  afterEach(async () => {
-    await keyv.clear();
-  });
-
   it(`initializes`, async () => {
     const nup = new NextUpload(nextUploadConfig, assetStore);
 
@@ -45,86 +45,153 @@ describe(`NextUpload`, () => {
     expect(await client.bucketExists(nup.getBucket())).toBe(true);
   });
 
-  it(`generateSignedUrl`, async () => {
-    const nup = new NextUpload(nextUploadConfig, assetStore);
+  describe(`generateSignedUrl`, () => {
+    it(`generateSignedUrl`, async () => {
+      const nup = new NextUpload(nextUploadConfig, assetStore);
 
-    await nup.init();
+      await nup.init();
 
-    const signedUrl = await nup.generateSignedUrl();
+      const signedUrl = await nup.generateSignedUrl();
 
-    expect(signedUrl).toMatchObject({
-      id: expect.any(String),
-      url: expect.any(String),
-      data: expect.any(Object),
+      expect(signedUrl).toMatchObject({
+        id: expect.any(String),
+        url: expect.any(String),
+        data: expect.any(Object),
+      });
+
+      expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
+        id: signedUrl.id,
+        name: '',
+        path: `default/${signedUrl.id}`,
+        type: 'default',
+        updatedAt: expect.any(String),
+        bucket: 'localhost-test',
+        verified: null,
+      });
     });
 
-    expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
-      id: signedUrl.id,
-      name: '',
-      path: `default/${signedUrl.id}`,
-      type: 'default',
-      updatedAt: expect.any(String),
-      bucket: 'localhost-test',
-      verified: null,
-    });
-  });
+    it(`with id`, async () => {
+      const nup = new NextUpload(nextUploadConfig, assetStore);
 
-  it(`generateSignedUrl - prevent duplicate ids`, async () => {
-    const nup = new NextUpload(nextUploadConfig, assetStore);
+      await nup.init();
 
-    await nup.init();
+      const id = nanoid();
 
-    const id = nanoid();
-
-    const signedUrl = await nup.generateSignedUrl({
-      id,
-    });
-
-    expect(signedUrl).toMatchObject({
-      id,
-    });
-
-    expect(
-      nup.generateSignedUrl({
+      const signedUrl = await nup.generateSignedUrl({
         id,
-      })
-    ).rejects.toThrowError(`${id} already exists`);
-  });
+      });
 
-  it(`generateSignedUrl & verify assets`, async () => {
-    const nup = new NextUpload(
-      {
-        ...nextUploadConfig,
-        verifyAssets: true,
-      },
-      assetStore
-    );
+      expect(signedUrl).toMatchObject({
+        id,
+      });
 
-    await nup.init();
-
-    const signedUrl = await nup.generateSignedUrl();
-
-    expect(signedUrl).toMatchObject({
-      id: expect.any(String),
-      url: expect.any(String),
-      data: expect.any(Object),
+      expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
+        id,
+      });
     });
 
-    expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
-      id: signedUrl.id,
-      name: '',
-      path: `default/${signedUrl.id}`,
-      type: 'default',
-      updatedAt: expect.any(String),
-      bucket: 'localhost-test',
-      verified: false,
+    it(`with metadata`, async () => {
+      const nup = new NextUpload(nextUploadConfig, assetStore);
+
+      await nup.init();
+
+      const metadata = {
+        foo: 'bar',
+      };
+
+      const signedUrl = await nup.generateSignedUrl({
+        metadata,
+      });
+
+      expect(signedUrl.data).toHaveProperty('x-amz-meta-foo', 'bar');
+
+      expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
+        metadata,
+      });
     });
 
-    await nup.verifyAsset(signedUrl.id);
+    it(`prevent duplicate ids`, async () => {
+      const nup = new NextUpload(nextUploadConfig, assetStore);
 
-    expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
-      id: signedUrl.id,
-      verified: true,
+      await nup.init();
+
+      const id = nanoid();
+
+      const signedUrl = await nup.generateSignedUrl({
+        id,
+      });
+
+      expect(signedUrl).toMatchObject({
+        id,
+      });
+
+      expect(
+        nup.generateSignedUrl({
+          id,
+        })
+      ).rejects.toThrowError(`${id} already exists`);
+    });
+
+    it(`with type`, async () => {
+      const type = 'image';
+      const nup = new NextUpload(
+        {
+          ...nextUploadConfig,
+          uploadTypes: {
+            [type]: {},
+          },
+        },
+        assetStore
+      );
+
+      await nup.init();
+
+      const signedUrl = await nup.generateSignedUrl({
+        type,
+      });
+
+      const asset = await assetStore.find(signedUrl.id);
+
+      expect(asset).toMatchObject({
+        path: `${type}/${signedUrl.id}`,
+      });
+    });
+
+    it(`generateSignedUrl & verify assets`, async () => {
+      const nup = new NextUpload(
+        {
+          ...nextUploadConfig,
+          verifyAssets: true,
+        },
+        assetStore
+      );
+
+      await nup.init();
+
+      const signedUrl = await nup.generateSignedUrl();
+
+      expect(signedUrl).toMatchObject({
+        id: expect.any(String),
+        url: expect.any(String),
+        data: expect.any(Object),
+      });
+
+      expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
+        id: signedUrl.id,
+        name: '',
+        path: `default/${signedUrl.id}`,
+        type: 'default',
+        updatedAt: expect.any(String),
+        bucket: 'localhost-test',
+        verified: false,
+      });
+
+      await nup.verifyAsset(signedUrl.id);
+
+      expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
+        id: signedUrl.id,
+        verified: true,
+      });
     });
   });
 
