@@ -19,7 +19,7 @@ First let's create a `NextUploadConfig` that defines how to connect to a storage
 **src/app/upload/config.ts**
 
 ```tsx
-export const nextUploadConfig: NextUploadConfig = {
+export const config: NextUploadConfig = {
   maxSize: '10mb',
   client: {
     endPoint: `s3.us-west-1.amazonaws.com`,
@@ -56,7 +56,7 @@ How your application handles file-uploads in the browser is up to you. The examp
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { upload } from 'next-upload/client';
-import { nextUploadConfig } from '@/app/upload/config';
+import { config } from '@/app/upload/config';
 
 const FileUpload = () => {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -64,7 +64,7 @@ const FileUpload = () => {
       acceptedFiles.map((file) => ({
         file,
       })),
-      nextUploadConfig
+      config
     );
   }, []);
 
