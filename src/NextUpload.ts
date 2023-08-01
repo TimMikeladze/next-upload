@@ -240,11 +240,9 @@ export class NextUpload {
       }
     });
 
-    await Promise.all([
-      Promise.all(
-        pathsToRemove.map((path) => this.client.removeObject(this.bucket, path))
-      ),
-    ]);
+    await Promise.all(
+      pathsToRemove.map((path) => this.client.removeObject(this.bucket, path))
+    );
   }
 
   public async verifyAsset(id: string) {
