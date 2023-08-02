@@ -32,14 +32,14 @@ export const upload = async (
         config
       );
 
-      const res = await uploadToSignedUrl({
+      await uploadToSignedUrl({
         file,
         requestInit,
         signedUrl,
         metadata: x.metadata,
       });
 
-      return res;
+      return signedUrl;
     })
   );
 };
