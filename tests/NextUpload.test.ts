@@ -66,8 +66,9 @@ describe(`NextUpload`, () => {
         id: signedUrl.id,
         name: '',
         path: `default/${signedUrl.id}`,
-        type: 'default',
         updatedAt: expect.any(String),
+        createdAt: expect.any(String),
+        uploadType: 'default',
         bucket: 'localhost-test',
         verified: null,
         fileType,
@@ -141,12 +142,12 @@ describe(`NextUpload`, () => {
     });
 
     it(`with type`, async () => {
-      const type = 'image';
+      const uploadType = 'image';
       const nup = new NextUpload(
         {
           ...nextUploadConfig,
           uploadTypes: {
-            [type]: {},
+            [uploadType]: {},
           },
         },
         assetStore
@@ -155,14 +156,14 @@ describe(`NextUpload`, () => {
       await nup.init();
 
       const signedUrl = await nup.generateSignedUrl({
-        uploadType: type,
+        uploadType,
         fileType,
       });
 
       const asset = await assetStore.find(signedUrl.id);
 
       expect(asset).toMatchObject({
-        path: `${type}/${signedUrl.id}`,
+        path: `${uploadType}/${signedUrl.id}`,
       });
     });
 
@@ -191,7 +192,7 @@ describe(`NextUpload`, () => {
         id: signedUrl.id,
         name: '',
         path: `default/${signedUrl.id}`,
-        type: 'default',
+        uploadType: 'default',
         updatedAt: expect.any(String),
         bucket: 'localhost-test',
         verified: false,
