@@ -125,11 +125,15 @@ export class NextUpload {
   ): Promise<SignedUrl> {
     const {
       id = nanoid(),
-      type = NextUpload.DEFAULT_TYPE,
+      uploadType = NextUpload.DEFAULT_TYPE,
       name,
       metadata = {},
       fileType,
     } = args || {};
+
+    if (!fileType) {
+      throw new Error(`fileType is required`);
+    }
 
     const getConfig = async (valueOrFn: any): Promise<UploadTypeConfig> => {
       if (typeof valueOrFn === 'function') {
@@ -143,19 +147,22 @@ export class NextUpload {
       this.config.uploadTypes?.[NextUpload.DEFAULT_TYPE] || {}
     );
 
-    if (type !== NextUpload.DEFAULT_TYPE && !this.config.uploadTypes?.[type]) {
-      throw new Error(`Upload type "${type}" not configured`);
+    if (
+      uploadType !== NextUpload.DEFAULT_TYPE &&
+      !this.config.uploadTypes?.[uploadType]
+    ) {
+      throw new Error(`Upload type "${uploadType}" not configured`);
     }
 
     const uploadTypeConfig =
-      type !== NextUpload.DEFAULT_TYPE
-        ? await getConfig(this.config.uploadTypes?.[type])
+      uploadType !== NextUpload.DEFAULT_TYPE
+        ? await getConfig(this.config.uploadTypes?.[uploadType])
         : defaultUploadTypeConfig;
 
     let { path } = uploadTypeConfig;
 
     if (!path) {
-      path = [type, id, name].filter(Boolean).join('/');
+      path = [uploadType, id, name].filter(Boolean).join('/');
     }
 
     let exists = false;
@@ -233,15 +240,15 @@ export class NextUpload {
     await this.store?.upsert?.(
       {
         id,
-        type,
-        name: '',
         path,
+        name: '',
         bucket: this.bucket,
         createdAt: new Date(),
         updatedAt: new Date(),
         verified: verifyAssets !== undefined ? !verifyAssets : null,
         metadata: mergedMetadata,
         fileType,
+        uploadType,
       },
       verifyAssets ? verifyAssetsExpirationSeconds * 1000 : 0
     );

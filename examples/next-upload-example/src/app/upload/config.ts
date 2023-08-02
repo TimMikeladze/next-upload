@@ -16,11 +16,6 @@ export const config: NextUploadConfig = {
   },
   uploadTypes: {
     [NextUploadType.image]: {},
-    // [NextUploadType.image]: async (args, { body, headers }) => {
-    //   return {
-    //     maxSize: process.env.NEXT_PUBLIC_MAX_SIZE || '5mb',
-    //   };
-    // },
   },
 };
 

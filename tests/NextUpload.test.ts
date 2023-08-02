@@ -155,7 +155,7 @@ describe(`NextUpload`, () => {
       await nup.init();
 
       const signedUrl = await nup.generateSignedUrl({
-        type,
+        uploadType: type,
         fileType,
       });
 

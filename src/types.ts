@@ -42,8 +42,8 @@ export type Asset = {
   metadata: Metadata;
   name: string;
   path: string;
-  type: string;
   updatedAt: Date;
+  uploadType: string;
   verified: boolean | null;
 };
 
@@ -76,11 +76,11 @@ export type NextUploadRequest = {
 };
 
 export type GetSignedUrlArgs = {
-  fileType: string;
+  fileType?: string;
   id?: string;
   metadata?: any;
   name?: string;
-  type?: string;
+  uploadType?: string;
 };
 
 export type SaveUploadArgs = GetSignedUrlArgs;
