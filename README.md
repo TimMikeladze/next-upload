@@ -2,6 +2,8 @@
 
 A turn-key solution for integrating Next.js with signed & secure file-uploads to an S3 compliant storage service such as R2, AWS, or Minio.
 
+Check out this [example](https://github.com/TimMikeladze/next-upload/tree/master/examples/next-upload-example) of Next.js codebase showcasing an advanced implementation of `next-upload`.
+
 ## Install
 
 ```console
@@ -59,7 +61,7 @@ import { upload } from 'next-upload/client';
 import { config } from '@/app/upload/config';
 
 const FileUpload = () => {
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+  const onDropAccepted = useCallback(async (acceptedFiles: File[]) => {
     await upload(
       acceptedFiles.map((file) => ({
         file,
@@ -68,7 +70,9 @@ const FileUpload = () => {
     );
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDropAccepted,
+  });
 
   return (
     <div {...getRootProps()}>
@@ -84,3 +88,80 @@ const FileUpload = () => {
 
 export default FileUpload;
 ```
+
+## Asset Store
+
+It's often useful to save an additional reference to the uploaded file in your database. This can be used for things like displaying a list of files that have been uploaded or associating a file with a specific user within your application without having to query the storage service directly. `next-upload` provides an interface that can be implemented with any database of your choice. Out of the box `AssetStore` works with any [keyv](https://github.com/jaredwray/) enabled store. This includes popular databases such as Postgres, MySQL and Mongo.
+
+To use `AssetStore` you need to create a new instance specifying your database storage options and then pass it to the `NextUpload` constructor.
+
+**src/app/upload/route.ts**
+
+```tsx
+import { AssetStore, NextUpload } from 'next-upload';
+import { config } from './config';
+import { NextRequest } from 'next/server';
+import Keyv from 'keyv';
+import KeyvPostgres from '@keyv/postgres';
+
+const nup = new NextUpload(
+  config,
+  new AssetStore(
+    new Keyv({
+      namespace: NextUpload.namespaceFromEnv(),
+      store: new KeyvPostgres({
+        uri: process.env.PG_CONNECTION_STRING + '/' + process.env.PG_DB,
+      }),
+    })
+  )
+);
+
+export const POST = (request: NextRequest) => nup.handler(request);
+```
+
+### Retrieving Assets
+
+Once you have uploaded a file you can retrieve it from the database using the `AssetStore` instance.
+
+```tsx
+const assetStore = new AssetStore(
+  new Keyv({
+    namespace: NextUpload.namespaceFromEnv(),
+    store: new KeyvPostgres({
+      uri: process.env.PG_CONNECTION_STRING + '/' + process.env.PG_DB,
+    }),
+  })
+);
+
+await assetStore.find('id of the asset');
+```
+
+## Metadata
+
+Using an `AssetStore` enables you to save additional metadata about the file as part of the upload process. This can be useful for storing things like the original file name, user id of the uploader, or any other information you want to associate with the file.
+
+To get started simply pass a `metadata` object to the `upload` function.
+
+```tsx
+import { upload } from 'next-upload/client';
+
+await upload(
+  acceptedFiles.map((file) => ({
+    file,
+    metadata: {
+      userId: '123',
+    },
+  })),
+  config
+);
+```
+
+## Verifying uploads & Pruning assets
+
+Often times you will want to mark an upload as verified once it has been processed by your application.
+
+To enable verification, set the `verifyAssets` config to `true` and instantiate `NextUpload` with an `AssetStore` instance.
+
+Now any file that is uploaded will have a `verified` property set to `false` by default. Once you have processed the file you can mark it as verified by calling `NextUpload.verifyAsset(id)`.
+
+Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to delete any assets that have not been verified within a specified time period.

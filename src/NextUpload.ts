@@ -51,6 +51,10 @@ export class NextUpload {
     return this.config;
   }
 
+  public getStore() {
+    return this.store;
+  }
+
   public static namespaceFromEnv(project?: string) {
     return NextUpload.bucketFromEnv(project);
   }
