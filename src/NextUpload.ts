@@ -9,7 +9,6 @@ import {
   GetSignedUrlArgs,
   HandlerAction,
   HandlerArgs,
-  Metadata,
   NextUploadAssetStore,
   NextUploadConfig,
   NextUploadRequest,
@@ -86,7 +85,16 @@ export class NextUpload {
 
   private async makePostPolicy(
     config: RequiredField<UploadTypeConfig, 'path'>,
-    metadata: Metadata
+    {
+      fileType,
+      // metadata,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      id,
+    }: {
+      fileType: string;
+      id: string;
+      // metadata: Metadata;
+    }
   ) {
     const postPolicy = this.client.newPostPolicy();
 
@@ -100,15 +108,19 @@ export class NextUpload {
 
     postPolicy.setBucket(this.bucket);
     postPolicy.setKey(config.path);
-    postPolicy.setContentLengthRange(1024, Math.max(maxSizeBytes, 1024));
+    postPolicy.setContentLengthRange(1, Math.max(maxSizeBytes, 1024));
     postPolicy.setExpires(new Date(Date.now() + 1000 * expirationSeconds));
-    postPolicy.setUserMetaData(metadata);
+    postPolicy.setContentType(fileType);
+    // if (metadata && Object.keys(metadata).length > 0) {
+    //   postPolicy.setUserMetaData(metadata);
+    //   postPolicy.setContentDisposition(`attachment; filename=${id}`);
+    // }
 
     return postPolicy;
   }
 
   public async generateSignedUrl(
-    args?: GetSignedUrlArgs,
+    args: GetSignedUrlArgs,
     request?: NextUploadRequest
   ): Promise<SignedUrl> {
     const {
@@ -116,6 +128,7 @@ export class NextUpload {
       type = NextUpload.DEFAULT_TYPE,
       name,
       metadata = {},
+      fileType,
     } = args || {};
 
     const getConfig = async (valueOrFn: any): Promise<UploadTypeConfig> => {
@@ -151,6 +164,12 @@ export class NextUpload {
       ...metadata,
       ...uploadTypeConfig.metadata,
     };
+
+    if (Object.keys(mergedMetadata).length && !this.store) {
+      throw new Error(
+        `saving metadata requires NextUpload to be instantiated with a store`
+      );
+    }
 
     try {
       if (await this.store?.find(id)) {
@@ -190,13 +209,20 @@ export class NextUpload {
         ? uploadTypeConfig.postPolicy
         : (x: any) => x;
 
+    if (!args?.fileType) {
+      throw new Error(`fileType is required`);
+    }
+
     const postPolicy: PostPolicy = await postPolicyFn(
       await this.makePostPolicy(
         {
           ...uploadTypeConfig,
           path,
         },
-        mergedMetadata
+        {
+          id,
+          fileType,
+        }
       )
     );
 
@@ -215,6 +241,7 @@ export class NextUpload {
         updatedAt: new Date(),
         verified: verifyAssets !== undefined ? !verifyAssets : null,
         metadata: mergedMetadata,
+        fileType,
       },
       verifyAssets ? verifyAssetsExpirationSeconds * 1000 : 0
     );

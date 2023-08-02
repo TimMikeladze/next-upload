@@ -37,6 +37,7 @@ export type UploadTypeConfig = CommonConfig & {
 export type Asset = {
   bucket: string;
   createdAt: Date;
+  fileType: string;
   id: string;
   metadata: Metadata;
   name: string;
@@ -75,6 +76,7 @@ export type NextUploadRequest = {
 };
 
 export type GetSignedUrlArgs = {
+  fileType: string;
   id?: string;
   metadata?: any;
   name?: string;
@@ -95,6 +97,7 @@ export type GetSignedUrlOptions = {
 export type UploadToSignedUrlOptions = {
   file: File;
   formData?: FormData;
+  metadata?: Metadata;
   requestInit?: any;
   signedUrl: SignedUrl;
 };

@@ -18,9 +18,10 @@ export const upload = async (
     .map((x) => ({
       ...x,
       name: x.name || x.file.name,
+      fileType: x.file.type,
     }));
 
-  return Promise.allSettled(
+  return Promise.all(
     optionsArray.map(async (x) => {
       const { requestInit, file, ...args } = x;
       const signedUrl = await getSignedUrl(
@@ -35,6 +36,7 @@ export const upload = async (
         file,
         requestInit,
         signedUrl,
+        metadata: x.metadata,
       });
 
       return res;
