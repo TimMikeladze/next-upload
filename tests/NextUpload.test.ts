@@ -199,7 +199,7 @@ describe(`NextUpload`, () => {
         fileType,
       });
 
-      await nup.verifyAsset(signedUrl.id);
+      await nup.verifyAsset({ id: signedUrl.id });
 
       expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
         id: signedUrl.id,

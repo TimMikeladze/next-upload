@@ -23,6 +23,7 @@ export type HandlerArgs = {
 
 type CommonConfig = {
   expirationSeconds?: number;
+  includeObjectPathInSignedUrlResponse?: boolean;
   maxSize?: number | string;
   verifyAssets?: boolean;
   verifyAssetsExpirationSeconds?: number;
@@ -105,10 +106,28 @@ export type UploadToSignedUrlOptions = {
 export type SignedUrl = {
   data: any;
   id: string;
+  path: string | null;
   url: string;
 };
 
 export type UploadOptions = GetSignedUrlArgs & {
   file: File;
   requestInit?: any;
+};
+
+export type GetPresignedUrlArgs = {
+  expiry?: number;
+  path: string;
+  reqParams?: { [key: string]: any };
+  requestDate?: Date;
+};
+
+export type GetPresignedUrl = {
+  id: string;
+  url: string;
+};
+
+export type VerifyAssetArgs = {
+  id?: string;
+  path?: string;
 };

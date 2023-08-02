@@ -6,6 +6,8 @@ import { nanoid } from 'nanoid';
 import { NextApiRequest, NextApiResponse } from 'next';
 import {
   Asset,
+  GetPresignedUrl,
+  GetPresignedUrlArgs,
   GetSignedUrlArgs,
   HandlerAction,
   HandlerArgs,
@@ -15,6 +17,7 @@ import {
   RequiredField,
   SignedUrl,
   UploadTypeConfig,
+  VerifyAssetArgs,
 } from './types';
 
 export class NextUpload {
@@ -165,6 +168,11 @@ export class NextUpload {
 
     let { path } = uploadTypeConfig;
 
+    const includeObjectPathInSignedUrlResponse =
+      uploadTypeConfig.includeObjectPathInSignedUrlResponse !== undefined
+        ? uploadTypeConfig.includeObjectPathInSignedUrlResponse
+        : this.config.includeObjectPathInSignedUrlResponse;
+
     if (!path) {
       path = [uploadType, id, name].filter(Boolean).join('/');
     }
@@ -261,6 +269,7 @@ export class NextUpload {
       id,
       data: presignedPostPolicy.formData,
       url: presignedPostPolicy.postURL,
+      path: includeObjectPathInSignedUrlResponse ? path : null,
     };
   }
 
@@ -308,29 +317,75 @@ export class NextUpload {
     );
   }
 
-  public async verifyAsset(id: string) {
+  public async verifyAsset(
+    args: VerifyAssetArgs | VerifyAssetArgs[]
+  ): Promise<Asset[]> {
     if (!this.store) {
       throw new Error(
         `'verifyAsset' config requires NextUpload to be instantiated with a store`
       );
     }
 
-    const foundAsset = await this.store?.find(id);
+    const data = Array.isArray(args) ? args : [args];
 
-    if (!foundAsset) {
-      throw new Error(`Asset not found`);
-    }
+    // confirm all assets have id or path
+    data.forEach((x) => {
+      if (!x.id && !x.path) {
+        throw new Error(`id or path is required`);
+      }
+    });
 
-    const asset = await this.store?.upsert?.(
-      {
-        ...foundAsset,
-        verified: true,
-        updatedAt: new Date(),
-      },
-      0
+    return Promise.all(
+      data.map(async (x) => {
+        const id = x.id || NextUpload.getIdFromPath(x.path as string);
+        const foundAsset = await this.store?.find(id);
+
+        if (!foundAsset) {
+          throw new Error(`Asset not found`);
+        }
+
+        const asset = await this.store!.upsert(
+          {
+            ...foundAsset,
+            verified: true,
+            updatedAt: new Date(),
+          },
+          0
+        );
+
+        return asset;
+      })
     );
+  }
 
-    return asset;
+  public async getPresignedUrl(
+    args: GetPresignedUrlArgs | GetPresignedUrlArgs[]
+  ): Promise<GetPresignedUrl[]> {
+    await this.init();
+
+    const data = Array.isArray(args) ? args : [args];
+
+    return Promise.all(
+      data.map(async (x) => {
+        try {
+          const stat = await this.client.statObject(this.bucket, x.path);
+          if (!stat) {
+            throw new Error(`Not found`);
+          }
+        } catch {
+          throw new Error(`Not found`);
+        }
+
+        return {
+          id: NextUpload.getIdFromPath(x.path),
+          url: await this.client.presignedUrl(`GET`, this.bucket, x.path),
+        };
+      })
+    );
+  }
+
+  public static getIdFromPath(path: string) {
+    return path.split('/').slice(-2)[0];
   }
 
   public async handler(request: NextRequest) {
