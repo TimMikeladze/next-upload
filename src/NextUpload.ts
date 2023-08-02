@@ -42,22 +42,6 @@ export class NextUpload {
     this.store = store;
   }
 
-  public getBucket() {
-    return this.bucket;
-  }
-
-  public getClient() {
-    return this.client;
-  }
-
-  public getConfig() {
-    return this.config;
-  }
-
-  public getStore() {
-    return this.store;
-  }
-
   public static namespaceFromEnv(project?: string) {
     return NextUpload.bucketFromEnv(project);
   }
@@ -80,14 +64,34 @@ export class NextUpload {
     ].join('-');
   }
 
+  private static getDefaultExpirationSeconds() {
+    return 60 * 5;
+  }
+
+  public static getIdFromPath(path: string) {
+    return path.split('/').slice(-2)[0];
+  }
+
+  public getBucket() {
+    return this.bucket;
+  }
+
+  public getClient() {
+    return this.client;
+  }
+
+  public getConfig() {
+    return this.config;
+  }
+
+  public getStore() {
+    return this.store;
+  }
+
   public async init() {
     if (!(await this.client.bucketExists(this.bucket))) {
       await this.client.makeBucket(this.bucket, this.config.client.region);
     }
-  }
-
-  private static getDefaultExpirationSeconds() {
-    return 60 * 5;
   }
 
   private async makePostPolicy(
@@ -382,10 +386,6 @@ export class NextUpload {
         };
       })
     );
-  }
-
-  public static getIdFromPath(path: string) {
-    return path.split('/').slice(-2)[0];
   }
 
   public async handler(request: NextRequest) {

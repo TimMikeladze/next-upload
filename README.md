@@ -208,21 +208,39 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 ### Methods
 
+- [namespaceFromEnv](#gear-namespacefromenv)
+- [bucketFromEnv](#gear-bucketfromenv)
+- [getIdFromPath](#gear-getidfrompath)
 - [getBucket](#gear-getbucket)
 - [getClient](#gear-getclient)
 - [getConfig](#gear-getconfig)
 - [getStore](#gear-getstore)
-- [namespaceFromEnv](#gear-namespacefromenv)
-- [bucketFromEnv](#gear-bucketfromenv)
 - [init](#gear-init)
 - [generateSignedUrl](#gear-generatesignedurl)
 - [pruneAssets](#gear-pruneassets)
 - [verifyAsset](#gear-verifyasset)
 - [getPresignedUrl](#gear-getpresignedurl)
-- [getIdFromPath](#gear-getidfrompath)
 - [handler](#gear-handler)
 - [pagesApiHandler](#gear-pagesapihandler)
 - [rawHandler](#gear-rawhandler)
+
+#### :gear: namespaceFromEnv
+
+| Method             | Type                           |
+| ------------------ | ------------------------------ |
+| `namespaceFromEnv` | `(project?: string) => string` |
+
+#### :gear: bucketFromEnv
+
+| Method          | Type                           |
+| --------------- | ------------------------------ |
+| `bucketFromEnv` | `(project?: string) => string` |
+
+#### :gear: getIdFromPath
+
+| Method          | Type                       |
+| --------------- | -------------------------- |
+| `getIdFromPath` | `(path: string) => string` |
 
 #### :gear: getBucket
 
@@ -247,18 +265,6 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 | Method     | Type                         |
 | ---------- | ---------------------------- |
 | `getStore` | `() => NextUploadAssetStore` |
-
-#### :gear: namespaceFromEnv
-
-| Method             | Type                           |
-| ------------------ | ------------------------------ |
-| `namespaceFromEnv` | `(project?: string) => string` |
-
-#### :gear: bucketFromEnv
-
-| Method          | Type                           |
-| --------------- | ------------------------------ |
-| `bucketFromEnv` | `(project?: string) => string` |
 
 #### :gear: init
 
@@ -289,12 +295,6 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 | Method            | Type                                                                                 |
 | ----------------- | ------------------------------------------------------------------------------------ |
 | `getPresignedUrl` | `(args: GetPresignedUrlArgs or GetPresignedUrlArgs[]) => Promise<GetPresignedUrl[]>` |
-
-#### :gear: getIdFromPath
-
-| Method          | Type                       |
-| --------------- | -------------------------- |
-| `getIdFromPath` | `(path: string) => string` |
 
 #### :gear: handler
 
