@@ -165,3 +165,153 @@ To enable verification, set the `verifyAssets` config to `true` and instantiate 
 Now any file that is uploaded will have a `verified` property set to `false` by default. Once you have processed the file you can mark it as verified by calling `NextUpload.verifyAsset(id)`.
 
 Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to delete any assets that have not been verified within a specified time period.
+
+<!-- TSDOC_START -->
+
+## :toolbox: Functions
+
+- [getSignedUrl](#gear-getsignedurl)
+- [uploadToSignedUrl](#gear-uploadtosignedurl)
+- [upload](#gear-upload)
+
+### :gear: getSignedUrl
+
+| Function       | Type                                                                             |
+| -------------- | -------------------------------------------------------------------------------- |
+| `getSignedUrl` | `(options: GetSignedUrlOptions, config: NextUploadConfig) => Promise<SignedUrl>` |
+
+### :gear: uploadToSignedUrl
+
+| Function            | Type                                                       |
+| ------------------- | ---------------------------------------------------------- |
+| `uploadToSignedUrl` | `(options: UploadToSignedUrlOptions) => Promise<Response>` |
+
+### :gear: upload
+
+| Function | Type                                                                                            |
+| -------- | ----------------------------------------------------------------------------------------------- |
+| `upload` | `(options: UploadOptions or UploadOptions[], config: NextUploadConfig) => Promise<SignedUrl[]>` |
+
+## :factory: AssetStore
+
+### Methods
+
+- [iterator](#gear-iterator)
+
+#### :gear: iterator
+
+| Method     | Type        |
+| ---------- | ----------- |
+| `iterator` | `() => any` |
+
+## :factory: NextUpload
+
+### Methods
+
+- [getBucket](#gear-getbucket)
+- [getClient](#gear-getclient)
+- [getConfig](#gear-getconfig)
+- [getStore](#gear-getstore)
+- [namespaceFromEnv](#gear-namespacefromenv)
+- [bucketFromEnv](#gear-bucketfromenv)
+- [init](#gear-init)
+- [generateSignedUrl](#gear-generatesignedurl)
+- [pruneAssets](#gear-pruneassets)
+- [verifyAsset](#gear-verifyasset)
+- [getPresignedUrl](#gear-getpresignedurl)
+- [getIdFromPath](#gear-getidfrompath)
+- [handler](#gear-handler)
+- [pagesApiHandler](#gear-pagesapihandler)
+- [rawHandler](#gear-rawhandler)
+
+#### :gear: getBucket
+
+| Method      | Type           |
+| ----------- | -------------- |
+| `getBucket` | `() => string` |
+
+#### :gear: getClient
+
+| Method      | Type           |
+| ----------- | -------------- |
+| `getClient` | `() => Client` |
+
+#### :gear: getConfig
+
+| Method      | Type                     |
+| ----------- | ------------------------ |
+| `getConfig` | `() => NextUploadConfig` |
+
+#### :gear: getStore
+
+| Method     | Type                         |
+| ---------- | ---------------------------- |
+| `getStore` | `() => NextUploadAssetStore` |
+
+#### :gear: namespaceFromEnv
+
+| Method             | Type                           |
+| ------------------ | ------------------------------ |
+| `namespaceFromEnv` | `(project?: string) => string` |
+
+#### :gear: bucketFromEnv
+
+| Method          | Type                           |
+| --------------- | ------------------------------ |
+| `bucketFromEnv` | `(project?: string) => string` |
+
+#### :gear: init
+
+| Method | Type                  |
+| ------ | --------------------- |
+| `init` | `() => Promise<void>` |
+
+#### :gear: generateSignedUrl
+
+| Method              | Type                                                                          |
+| ------------------- | ----------------------------------------------------------------------------- |
+| `generateSignedUrl` | `(args: GetSignedUrlArgs, request?: NextUploadRequest) => Promise<SignedUrl>` |
+
+#### :gear: pruneAssets
+
+| Method        | Type                  |
+| ------------- | --------------------- |
+| `pruneAssets` | `() => Promise<void>` |
+
+#### :gear: verifyAsset
+
+| Method        | Type                                                               |
+| ------------- | ------------------------------------------------------------------ |
+| `verifyAsset` | `(args: VerifyAssetArgs or VerifyAssetArgs[]) => Promise<Asset[]>` |
+
+#### :gear: getPresignedUrl
+
+| Method            | Type                                                                                 |
+| ----------------- | ------------------------------------------------------------------------------------ |
+| `getPresignedUrl` | `(args: GetPresignedUrlArgs or GetPresignedUrlArgs[]) => Promise<GetPresignedUrl[]>` |
+
+#### :gear: getIdFromPath
+
+| Method          | Type                       |
+| --------------- | -------------------------- |
+| `getIdFromPath` | `(path: string) => string` |
+
+#### :gear: handler
+
+| Method    | Type                                                               |
+| --------- | ------------------------------------------------------------------ | ------------------------------- |
+| `handler` | `(request: NextRequest) => Promise<void or NextResponse<SignedUrl> | NextResponse<{ error: any; }>>` |
+
+#### :gear: pagesApiHandler
+
+| Method            | Type                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------ | ------------------------------- |
+| `pagesApiHandler` | `(request: NextApiRequest, response: NextApiResponse) => Promise<void or NextResponse<SignedUrl> | NextResponse<{ error: any; }>>` |
+
+#### :gear: rawHandler
+
+| Method       | Type                                                                   |
+| ------------ | ---------------------------------------------------------------------- | ------------------------------- |
+| `rawHandler` | `(handlerArgs: HandlerArgs) => Promise<void or NextResponse<SignedUrl> | NextResponse<{ error: any; }>>` |
+
+<!-- TSDOC_END -->

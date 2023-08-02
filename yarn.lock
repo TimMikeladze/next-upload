@@ -12778,6 +12778,11 @@ tsconfig-paths@^3.14.2:
     minimist "^1.2.6"
     strip-bom "^3.0.0"
 
+tsdoc-markdown@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/tsdoc-markdown/-/tsdoc-markdown-0.0.4.tgz#d8ff202c1b128ac97ffd62c209da6063e79cc72f"
+  integrity sha512-/z9E0gniO2KzM5vLh2Wq7wc2RYkWxeBzlCfuISoJTRYkZgyWKhI299AiXkNy7TgvFnMxx7522wuTyHO1tS5vIg==
+
 tslib@^1.13.0, tslib@^1.8.1:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
