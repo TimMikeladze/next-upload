@@ -174,6 +174,7 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 - [uploadToPresignedUrl](#gear-uploadtopresignedurl)
 - [upload](#gear-upload)
 - [getPresignedUrl](#gear-getpresignedurl)
+- [useNextUpload](#gear-usenextupload)
 
 ### :gear: generatePresignedPostPolicy
 
@@ -198,6 +199,12 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 | Function          | Type                                                                                        |
 | ----------------- | ------------------------------------------------------------------------------------------- |
 | `getPresignedUrl` | `(options: GetPresignedUrlOptions, config: NextUploadConfig) => Promise<GetPresignedUrl[]>` |
+
+### :gear: useNextUpload
+
+| Function        | Type                                                                                                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useNextUpload` | `(config: NextUploadConfig) => { files: File[]; setFiles: Dispatch<SetStateAction<File[]>>; signedPostPolicies: SignedPostPolicy[]; ... 4 more ...; reset: () => void; }` |
 
 ## :factory: AssetStore
 

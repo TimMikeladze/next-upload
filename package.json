@@ -1,7 +1,7 @@
 {
   "name": "next-upload",
   "description": "A turn-key solution for integrating Next.js with signed & secure file-uploads to an S3 compliant storage service such as R2, AWS, or Minio.",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "author": "Tim Mikeladze <tim.mikeladze@gmail.com>",
   "license": "MIT",
   "keywords": [
@@ -20,7 +20,7 @@
   },
   "scripts": {
     "dev": "concurrently \"yarn build --watch\" \"yarn storybook\" \"yarn test\" ",
-    "build": "tsup --onSuccess \"yarn link && yarn doc\"",
+    "build": "tsup --onSuccess \"yarn yalc publish && yarn link && yarn doc\"",
     "type-check": "tsc",
     "lint": "eslint --ignore-path .gitignore \"{src,tests}/**/*.+(ts|js|tsx)\"",
     "lint:fix": "yarn lint --fix && prettier --write .",
