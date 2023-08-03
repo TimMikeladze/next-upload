@@ -54,7 +54,8 @@ export class NextUpload {
 
     return [`localhost`, project, process.env.NODE_ENV]
       .filter(Boolean)
-      .join('-');
+      .join('-')
+      .toLowerCase();
   }
 
   private static bucketFromVercel() {
@@ -62,7 +63,9 @@ export class NextUpload {
       process.env.VERCEL_GIT_REPO_OWNER,
       process.env.VERCEL_GIT_REPO_SLUG,
       process.env.VERCEL_ENV,
-    ].join('-');
+    ]
+      .join('-')
+      .toLowerCase();
   }
 
   private static getDefaultPostPolicyExpirationSeconds() {

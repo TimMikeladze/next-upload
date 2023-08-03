@@ -59,9 +59,9 @@ const FileUpload = () => {
             marginTop: '2rem',
           }}
         >
-          {nup.files.map((x) => (
+          {nup.files.map((x, index) => (
             <img
-              key={x.webkitRelativePath}
+              key={x.webkitRelativePath + index}
               src={URL.createObjectURL(x)}
               style={{
                 objectFit: 'contain',
