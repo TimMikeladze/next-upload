@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { nup } from '../upload/route';
+import { nup } from '../upload/nup';
 
 export const GET = async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
