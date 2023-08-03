@@ -10,6 +10,7 @@ declare global {
       PG_DB: string;
       PG_CONNECTION_STRING: string;
       NEXT_PUBLIC_MAX_SIZE: string | undefined;
+      CRON_KEY: string;
     }
   }
 }

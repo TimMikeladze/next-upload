@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 import Keyv from 'keyv';
 import KeyvPostgres from '@keyv/postgres';
 
-const nup = new NextUpload(
+export const nup = new NextUpload(
   config,
   new AssetStore(
     new Keyv({
