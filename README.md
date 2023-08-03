@@ -178,33 +178,34 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 ### :gear: generatePresignedPostPolicy
 
-| Function                      | Type                                                                                                   |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Function | Type |
+| ---------- | ---------- |
 | `generatePresignedPostPolicy` | `(options: GeneratePresignedPostPolicyOptions, config: NextUploadConfig) => Promise<SignedPostPolicy>` |
 
 ### :gear: uploadToPresignedUrl
 
-| Function               | Type                                                          |
-| ---------------------- | ------------------------------------------------------------- |
+| Function | Type |
+| ---------- | ---------- |
 | `uploadToPresignedUrl` | `(options: UploadToPresignedUrlOptions) => Promise<Response>` |
 
 ### :gear: upload
 
-| Function | Type                                                                                                   |
-| -------- | ------------------------------------------------------------------------------------------------------ |
+| Function | Type |
+| ---------- | ---------- |
 | `upload` | `(options: UploadOptions or UploadOptions[], config: NextUploadConfig) => Promise<SignedPostPolicy[]>` |
 
 ### :gear: getPresignedUrl
 
-| Function          | Type                                                                                        |
-| ----------------- | ------------------------------------------------------------------------------------------- |
+| Function | Type |
+| ---------- | ---------- |
 | `getPresignedUrl` | `(options: GetPresignedUrlOptions, config: NextUploadConfig) => Promise<GetPresignedUrl[]>` |
 
 ### :gear: useNextUpload
 
-| Function        | Type                                                                                                                                                                      |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Function | Type |
+| ---------- | ---------- |
 | `useNextUpload` | `(config: NextUploadConfig) => { files: File[]; setFiles: Dispatch<SetStateAction<File[]>>; signedPostPolicies: SignedPostPolicy[]; ... 4 more ...; reset: () => void; }` |
+
 
 ## :factory: AssetStore
 
@@ -214,143 +215,127 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 #### :gear: iterator
 
-| Method     | Type        |
-| ---------- | ----------- |
+| Method | Type |
+| ---------- | ---------- |
 | `iterator` | `() => any` |
+
 
 ## :factory: NextUpload
 
 ### Methods
 
-- [🗃️ next-upload](#️-next-upload)
-  - [Install](#install)
-  - [Configuration](#configuration)
-  - [Asset Store](#asset-store)
-    - [Retrieving Assets](#retrieving-assets)
-  - [Metadata](#metadata)
-  - [Verifying uploads \& Pruning assets](#verifying-uploads--pruning-assets)
-  - [:toolbox: Functions](#toolbox-functions)
-    - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
-    - [:gear: uploadToPresignedUrl](#gear-uploadtopresignedurl)
-    - [:gear: upload](#gear-upload)
-    - [:gear: getPresignedUrl](#gear-getpresignedurl)
-    - [:gear: useNextUpload](#gear-usenextupload)
-  - [:factory: AssetStore](#factory-assetstore)
-    - [Methods](#methods)
-      - [:gear: iterator](#gear-iterator)
-  - [:factory: NextUpload](#factory-nextupload)
-    - [Methods](#methods-1)
-      - [:gear: namespaceFromEnv](#gear-namespacefromenv)
-      - [:gear: bucketFromEnv](#gear-bucketfromenv)
-      - [:gear: getIdFromPath](#gear-getidfrompath)
-      - [:gear: getUploadTypeFromPath](#gear-getuploadtypefrompath)
-      - [:gear: getBucket](#gear-getbucket)
-      - [:gear: getClient](#gear-getclient)
-      - [:gear: getConfig](#gear-getconfig)
-      - [:gear: getStore](#gear-getstore)
-      - [:gear: init](#gear-init)
-      - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy-1)
-      - [:gear: pruneAssets](#gear-pruneassets)
-      - [:gear: verifyAsset](#gear-verifyasset)
-      - [:gear: getPresignedUrl](#gear-getpresignedurl-1)
-      - [:gear: handler](#gear-handler)
-      - [:gear: pagesApiHandler](#gear-pagesapihandler)
-      - [:gear: rawHandler](#gear-rawhandler)
+- [namespaceFromEnv](#gear-namespacefromenv)
+- [bucketFromEnv](#gear-bucketfromenv)
+- [getIdFromPath](#gear-getidfrompath)
+- [getUploadTypeFromPath](#gear-getuploadtypefrompath)
+- [getBucket](#gear-getbucket)
+- [getClient](#gear-getclient)
+- [getConfig](#gear-getconfig)
+- [getStore](#gear-getstore)
+- [init](#gear-init)
+- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
+- [pruneAssets](#gear-pruneassets)
+- [verifyAsset](#gear-verifyasset)
+- [getPresignedUrl](#gear-getpresignedurl)
+- [handler](#gear-handler)
+- [pagesApiHandler](#gear-pagesapihandler)
+- [rawHandler](#gear-rawhandler)
 
 #### :gear: namespaceFromEnv
 
-| Method             | Type                           |
-| ------------------ | ------------------------------ |
+| Method | Type |
+| ---------- | ---------- |
 | `namespaceFromEnv` | `(project?: string) => string` |
 
 #### :gear: bucketFromEnv
 
-| Method          | Type                           |
-| --------------- | ------------------------------ |
+| Method | Type |
+| ---------- | ---------- |
 | `bucketFromEnv` | `(project?: string) => string` |
 
 #### :gear: getIdFromPath
 
-| Method          | Type                       |
-| --------------- | -------------------------- |
+| Method | Type |
+| ---------- | ---------- |
 | `getIdFromPath` | `(path: string) => string` |
 
 #### :gear: getUploadTypeFromPath
 
-| Method                  | Type                       |
-| ----------------------- | -------------------------- |
+| Method | Type |
+| ---------- | ---------- |
 | `getUploadTypeFromPath` | `(path: string) => string` |
 
 #### :gear: getBucket
 
-| Method      | Type           |
-| ----------- | -------------- |
+| Method | Type |
+| ---------- | ---------- |
 | `getBucket` | `() => string` |
 
 #### :gear: getClient
 
-| Method      | Type           |
-| ----------- | -------------- |
+| Method | Type |
+| ---------- | ---------- |
 | `getClient` | `() => Client` |
 
 #### :gear: getConfig
 
-| Method      | Type                     |
-| ----------- | ------------------------ |
+| Method | Type |
+| ---------- | ---------- |
 | `getConfig` | `() => NextUploadConfig` |
 
 #### :gear: getStore
 
-| Method     | Type                         |
-| ---------- | ---------------------------- |
+| Method | Type |
+| ---------- | ---------- |
 | `getStore` | `() => NextUploadAssetStore` |
 
 #### :gear: init
 
-| Method | Type                  |
-| ------ | --------------------- |
+| Method | Type |
+| ---------- | ---------- |
 | `init` | `() => Promise<void>` |
 
 #### :gear: generatePresignedPostPolicy
 
-| Method                        | Type                                                                                                |
-| ----------------------------- | --------------------------------------------------------------------------------------------------- |
+| Method | Type |
+| ---------- | ---------- |
 | `generatePresignedPostPolicy` | `(args: GeneratePresignedPostPolicyArgs, request?: NextUploadRequest) => Promise<SignedPostPolicy>` |
 
 #### :gear: pruneAssets
 
-| Method        | Type                  |
-| ------------- | --------------------- |
+| Method | Type |
+| ---------- | ---------- |
 | `pruneAssets` | `() => Promise<void>` |
 
 #### :gear: verifyAsset
 
-| Method        | Type                                                               |
-| ------------- | ------------------------------------------------------------------ |
+| Method | Type |
+| ---------- | ---------- |
 | `verifyAsset` | `(args: VerifyAssetArgs or VerifyAssetArgs[]) => Promise<Asset[]>` |
 
 #### :gear: getPresignedUrl
 
-| Method            | Type                                                                                                              |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Method | Type |
+| ---------- | ---------- |
 | `getPresignedUrl` | `(args: GetPresignedUrlArgs or GetPresignedUrlArgs[], request?: NextUploadRequest) => Promise<GetPresignedUrl[]>` |
 
 #### :gear: handler
 
-| Method    | Type                                                                      |
-| --------- | ------------------------------------------------------------------------- | ------------------------------- | ------------------- |
+| Method | Type |
+| ---------- | ---------- |
 | `handler` | `(request: NextRequest) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<GetPresignedUrl[]> | NextResponse<...>>` |
 
 #### :gear: pagesApiHandler
 
-| Method            | Type                                                                                                    |
-| ----------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------- |
+| Method | Type |
+| ---------- | ---------- |
 | `pagesApiHandler` | `(request: NextApiRequest, response: NextApiResponse) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<GetPresignedUrl[]> | NextResponse<...>>` |
 
 #### :gear: rawHandler
 
-| Method       | Type                                                                          |
-| ------------ | ----------------------------------------------------------------------------- | ------------------------------- | ------------------- |
+| Method | Type |
+| ---------- | ---------- |
 | `rawHandler` | `(handlerArgs: HandlerArgs) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<GetPresignedUrl[]> | NextResponse<...>>` |
+
 
 <!-- TSDOC_END -->

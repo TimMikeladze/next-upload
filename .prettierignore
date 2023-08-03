@@ -12,3 +12,4 @@ yarn.lock
 *.svg
 *.ico
 **/.next/**
+README.md
