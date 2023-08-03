@@ -55,20 +55,19 @@ How your application handles file-uploads in the browser is up to you. The examp
 ```tsx
 'use client';
 
-import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { upload } from 'next-upload/client';
+import { useNextUpload } from 'next-upload/client';
 import { config } from '@/app/upload/config';
 
 const FileUpload = () => {
-  const onDropAccepted = useCallback(async (acceptedFiles: File[]) => {
-    await upload(
+  const nup = useNextUpload(config);
+
+  const onDropAccepted = (acceptedFiles: File[]) =>
+    nup.upload(
       acceptedFiles.map((file) => ({
         file,
-      })),
-      config
+      }))
     );
-  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDropAccepted,
@@ -82,6 +81,7 @@ const FileUpload = () => {
       ) : (
         <p>Drag 'n' drop some files here, or click to select files</p>
       )}
+      {nup.isUploading && <p>Uploading...</p>}
     </div>
   );
 };
@@ -222,22 +222,40 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 ### Methods
 
-- [namespaceFromEnv](#gear-namespacefromenv)
-- [bucketFromEnv](#gear-bucketfromenv)
-- [getIdFromPath](#gear-getidfrompath)
-- [getUploadTypeFromPath](#gear-getuploadtypefrompath)
-- [getBucket](#gear-getbucket)
-- [getClient](#gear-getclient)
-- [getConfig](#gear-getconfig)
-- [getStore](#gear-getstore)
-- [init](#gear-init)
-- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
-- [pruneAssets](#gear-pruneassets)
-- [verifyAsset](#gear-verifyasset)
-- [getPresignedUrl](#gear-getpresignedurl)
-- [handler](#gear-handler)
-- [pagesApiHandler](#gear-pagesapihandler)
-- [rawHandler](#gear-rawhandler)
+- [🗃️ next-upload](#️-next-upload)
+  - [Install](#install)
+  - [Configuration](#configuration)
+  - [Asset Store](#asset-store)
+    - [Retrieving Assets](#retrieving-assets)
+  - [Metadata](#metadata)
+  - [Verifying uploads \& Pruning assets](#verifying-uploads--pruning-assets)
+  - [:toolbox: Functions](#toolbox-functions)
+    - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
+    - [:gear: uploadToPresignedUrl](#gear-uploadtopresignedurl)
+    - [:gear: upload](#gear-upload)
+    - [:gear: getPresignedUrl](#gear-getpresignedurl)
+    - [:gear: useNextUpload](#gear-usenextupload)
+  - [:factory: AssetStore](#factory-assetstore)
+    - [Methods](#methods)
+      - [:gear: iterator](#gear-iterator)
+  - [:factory: NextUpload](#factory-nextupload)
+    - [Methods](#methods-1)
+      - [:gear: namespaceFromEnv](#gear-namespacefromenv)
+      - [:gear: bucketFromEnv](#gear-bucketfromenv)
+      - [:gear: getIdFromPath](#gear-getidfrompath)
+      - [:gear: getUploadTypeFromPath](#gear-getuploadtypefrompath)
+      - [:gear: getBucket](#gear-getbucket)
+      - [:gear: getClient](#gear-getclient)
+      - [:gear: getConfig](#gear-getconfig)
+      - [:gear: getStore](#gear-getstore)
+      - [:gear: init](#gear-init)
+      - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy-1)
+      - [:gear: pruneAssets](#gear-pruneassets)
+      - [:gear: verifyAsset](#gear-verifyasset)
+      - [:gear: getPresignedUrl](#gear-getpresignedurl-1)
+      - [:gear: handler](#gear-handler)
+      - [:gear: pagesApiHandler](#gear-pagesapihandler)
+      - [:gear: rawHandler](#gear-rawhandler)
 
 #### :gear: namespaceFromEnv
 
