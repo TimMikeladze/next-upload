@@ -8,7 +8,7 @@ export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 // eslint-disable-next-line no-shadow
 export enum HandlerAction {
-  generateSignedUrl = 'generateSignedUrl',
+  generatePresignedPostPolicy = 'generatePresignedPostPolicy',
 }
 
 export type SendFn = <JsonBody>(
@@ -64,7 +64,7 @@ export type NextUploadConfig = RequiredField<CommonConfig, 'maxSize'> & {
   uploadTypes?: {
     [uploadType: string]:
       | ((
-          args: GetSignedUrlArgs,
+          args: GeneratePresignedPostPolicyArgs,
           request: NextUploadRequest
         ) => Promise<UploadTypeConfig>)
       | UploadTypeConfig;
@@ -76,7 +76,7 @@ export type NextUploadRequest = {
   headers?: Headers;
 };
 
-export type GetSignedUrlArgs = {
+export type GeneratePresignedPostPolicyArgs = {
   fileType?: string;
   id?: string;
   metadata?: any;
@@ -84,14 +84,14 @@ export type GetSignedUrlArgs = {
   uploadType?: string;
 };
 
-export type SaveUploadArgs = GetSignedUrlArgs;
+export type SaveUploadArgs = GeneratePresignedPostPolicyArgs;
 
 export interface Storage {
   saveUpload(args: SaveUploadArgs): Promise<string>;
 }
 
 export type GetSignedUrlOptions = {
-  args?: GetSignedUrlArgs;
+  args?: GeneratePresignedPostPolicyArgs;
   requestInit?: any;
 };
 
@@ -99,18 +99,18 @@ export type UploadToSignedUrlOptions = {
   file: File;
   formData?: FormData;
   metadata?: Metadata;
+  postPolicy: SignedPostPolicy;
   requestInit?: any;
-  signedUrl: SignedUrl;
 };
 
-export type SignedUrl = {
+export type SignedPostPolicy = {
   data: any;
   id: string;
   path: string | null;
   url: string;
 };
 
-export type UploadOptions = GetSignedUrlArgs & {
+export type UploadOptions = GeneratePresignedPostPolicyArgs & {
   file: File;
   requestInit?: any;
 };

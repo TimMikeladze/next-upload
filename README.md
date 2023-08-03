@@ -176,9 +176,9 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 ### :gear: getSignedUrl
 
-| Function       | Type                                                                             |
-| -------------- | -------------------------------------------------------------------------------- |
-| `getSignedUrl` | `(options: GetSignedUrlOptions, config: NextUploadConfig) => Promise<SignedUrl>` |
+| Function       | Type                                                                                    |
+| -------------- | --------------------------------------------------------------------------------------- |
+| `getSignedUrl` | `(options: GetSignedUrlOptions, config: NextUploadConfig) => Promise<SignedPostPolicy>` |
 
 ### :gear: uploadToSignedUrl
 
@@ -188,9 +188,9 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 ### :gear: upload
 
-| Function | Type                                                                                            |
-| -------- | ----------------------------------------------------------------------------------------------- |
-| `upload` | `(options: UploadOptions or UploadOptions[], config: NextUploadConfig) => Promise<SignedUrl[]>` |
+| Function | Type                                                                                                   |
+| -------- | ------------------------------------------------------------------------------------------------------ |
+| `upload` | `(options: UploadOptions or UploadOptions[], config: NextUploadConfig) => Promise<SignedPostPolicy[]>` |
 
 ## :factory: AssetStore
 
@@ -216,7 +216,7 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 - [getConfig](#gear-getconfig)
 - [getStore](#gear-getstore)
 - [init](#gear-init)
-- [generateSignedUrl](#gear-generatesignedurl)
+- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
 - [pruneAssets](#gear-pruneassets)
 - [verifyAsset](#gear-verifyasset)
 - [getPresignedUrl](#gear-getpresignedurl)
@@ -272,11 +272,11 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 | ------ | --------------------- |
 | `init` | `() => Promise<void>` |
 
-#### :gear: generateSignedUrl
+#### :gear: generatePresignedPostPolicy
 
-| Method              | Type                                                                          |
-| ------------------- | ----------------------------------------------------------------------------- |
-| `generateSignedUrl` | `(args: GetSignedUrlArgs, request?: NextUploadRequest) => Promise<SignedUrl>` |
+| Method                        | Type                                                                                                |
+| ----------------------------- | --------------------------------------------------------------------------------------------------- |
+| `generatePresignedPostPolicy` | `(args: GeneratePresignedPostPolicyArgs, request?: NextUploadRequest) => Promise<SignedPostPolicy>` |
 
 #### :gear: pruneAssets
 
@@ -298,20 +298,20 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 #### :gear: handler
 
-| Method    | Type                                                               |
-| --------- | ------------------------------------------------------------------ | ------------------------------- |
-| `handler` | `(request: NextRequest) => Promise<void or NextResponse<SignedUrl> | NextResponse<{ error: any; }>>` |
+| Method    | Type                                                                      |
+| --------- | ------------------------------------------------------------------------- | ------------------------------- |
+| `handler` | `(request: NextRequest) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<{ error: any; }>>` |
 
 #### :gear: pagesApiHandler
 
-| Method            | Type                                                                                             |
-| ----------------- | ------------------------------------------------------------------------------------------------ | ------------------------------- |
-| `pagesApiHandler` | `(request: NextApiRequest, response: NextApiResponse) => Promise<void or NextResponse<SignedUrl> | NextResponse<{ error: any; }>>` |
+| Method            | Type                                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------- | ------------------------ |
+| `pagesApiHandler` | `(request: NextApiRequest, response: NextApiResponse) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<{ ...; }>>` |
 
 #### :gear: rawHandler
 
-| Method       | Type                                                                   |
-| ------------ | ---------------------------------------------------------------------- | ------------------------------- |
-| `rawHandler` | `(handlerArgs: HandlerArgs) => Promise<void or NextResponse<SignedUrl> | NextResponse<{ error: any; }>>` |
+| Method       | Type                                                                          |
+| ------------ | ----------------------------------------------------------------------------- | ------------------------------- |
+| `rawHandler` | `(handlerArgs: HandlerArgs) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<{ error: any; }>>` |
 
 <!-- TSDOC_END -->

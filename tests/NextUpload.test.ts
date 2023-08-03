@@ -46,13 +46,13 @@ describe(`NextUpload`, () => {
     expect(await client.bucketExists(nup.getBucket())).toBe(true);
   });
 
-  describe(`generateSignedUrl`, () => {
-    it(`generateSignedUrl`, async () => {
+  describe(`generatePresignedPostPolicy`, () => {
+    it(`generatePresignedPostPolicy`, async () => {
       const nup = new NextUpload(nextUploadConfig, assetStore);
 
       await nup.init();
 
-      const signedUrl = await nup.generateSignedUrl({
+      const signedUrl = await nup.generatePresignedPostPolicy({
         fileType,
       });
 
@@ -82,7 +82,7 @@ describe(`NextUpload`, () => {
 
       const id = nanoid();
 
-      const signedUrl = await nup.generateSignedUrl({
+      const signedUrl = await nup.generatePresignedPostPolicy({
         id,
         fileType,
       });
@@ -105,7 +105,7 @@ describe(`NextUpload`, () => {
         foo: 'bar',
       };
 
-      const signedUrl = await nup.generateSignedUrl({
+      const signedUrl = await nup.generatePresignedPostPolicy({
         metadata,
         fileType,
       });
@@ -124,7 +124,7 @@ describe(`NextUpload`, () => {
 
       const id = nanoid();
 
-      const signedUrl = await nup.generateSignedUrl({
+      const signedUrl = await nup.generatePresignedPostPolicy({
         id,
         fileType,
       });
@@ -134,7 +134,7 @@ describe(`NextUpload`, () => {
       });
 
       expect(
-        nup.generateSignedUrl({
+        nup.generatePresignedPostPolicy({
           id,
           fileType,
         })
@@ -155,7 +155,7 @@ describe(`NextUpload`, () => {
 
       await nup.init();
 
-      const signedUrl = await nup.generateSignedUrl({
+      const signedUrl = await nup.generatePresignedPostPolicy({
         uploadType,
         fileType,
       });
@@ -167,7 +167,7 @@ describe(`NextUpload`, () => {
       });
     });
 
-    it(`generateSignedUrl & verify assets`, async () => {
+    it(`generatePresignedPostPolicy & verify assets`, async () => {
       const nup = new NextUpload(
         {
           ...nextUploadConfig,
@@ -178,7 +178,7 @@ describe(`NextUpload`, () => {
 
       await nup.init();
 
-      const signedUrl = await nup.generateSignedUrl({
+      const signedUrl = await nup.generatePresignedPostPolicy({
         fileType,
       });
 
@@ -219,7 +219,7 @@ describe(`NextUpload`, () => {
 
     await nup.init();
 
-    await nup.generateSignedUrl({
+    await nup.generatePresignedPostPolicy({
       fileType,
     });
 

@@ -8,14 +8,14 @@ import {
   Asset,
   GetPresignedUrl,
   GetPresignedUrlArgs,
-  GetSignedUrlArgs,
+  GeneratePresignedPostPolicyArgs,
   HandlerAction,
   HandlerArgs,
   NextUploadAssetStore,
   NextUploadConfig,
   NextUploadRequest,
   RequiredField,
-  SignedUrl,
+  SignedPostPolicy,
   UploadTypeConfig,
   VerifyAssetArgs,
 } from './types';
@@ -130,10 +130,10 @@ export class NextUpload {
     return postPolicy;
   }
 
-  public async generateSignedUrl(
-    args: GetSignedUrlArgs,
+  public async generatePresignedPostPolicy(
+    args: GeneratePresignedPostPolicyArgs,
     request?: NextUploadRequest
-  ): Promise<SignedUrl> {
+  ): Promise<SignedPostPolicy> {
     const {
       id = nanoid(),
       uploadType = NextUpload.DEFAULT_TYPE,
@@ -435,8 +435,8 @@ export class NextUpload {
 
     try {
       switch (action) {
-        case HandlerAction.generateSignedUrl: {
-          const res = await this.generateSignedUrl(args, request);
+        case HandlerAction.generatePresignedPostPolicy: {
+          const res = await this.generatePresignedPostPolicy(args, request);
 
           return send(res);
         }

@@ -2,13 +2,13 @@ import {
   GetSignedUrlOptions,
   HandlerAction,
   NextUploadConfig,
-  SignedUrl,
+  SignedPostPolicy,
 } from './types';
 
 export const getSignedUrl = async (
   options: GetSignedUrlOptions,
   config: NextUploadConfig
-): Promise<SignedUrl> => {
+): Promise<SignedPostPolicy> => {
   const api = config.api || `/upload`;
   const res = await fetch(api, {
     method: 'POST',
@@ -17,7 +17,7 @@ export const getSignedUrl = async (
       ...options.requestInit?.headers,
     },
     body: JSON.stringify({
-      action: HandlerAction.generateSignedUrl,
+      action: HandlerAction.generatePresignedPostPolicy,
       args: options.args,
       ...options.requestInit?.body,
     }),

@@ -35,7 +35,7 @@ export const upload = async (
       await uploadToSignedUrl({
         file,
         requestInit,
-        signedUrl,
+        postPolicy: signedUrl,
         metadata: x.metadata,
       });
 
