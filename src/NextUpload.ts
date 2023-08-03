@@ -179,10 +179,10 @@ export class NextUpload {
 
     let { path } = uploadTypeConfig;
 
-    const includeObjectPathInSignedUrlResponse =
-      uploadTypeConfig.includeObjectPathInSignedUrlResponse !== undefined
-        ? uploadTypeConfig.includeObjectPathInSignedUrlResponse
-        : this.config.includeObjectPathInSignedUrlResponse;
+    const includeObjectPathInPostPolicyResponse =
+      uploadTypeConfig.includeObjectPathInPostPolicyResponse !== undefined
+        ? uploadTypeConfig.includeObjectPathInPostPolicyResponse
+        : this.config.includeObjectPathInPostPolicyResponse;
 
     if (!path) {
       path = [uploadType, id, name].filter(Boolean).join('/');
@@ -280,7 +280,7 @@ export class NextUpload {
       id,
       data: presignedPostPolicy.formData,
       url: presignedPostPolicy.postURL,
-      path: includeObjectPathInSignedUrlResponse ? path : null,
+      path: includeObjectPathInPostPolicyResponse ? path : null,
     };
   }
 
@@ -404,8 +404,29 @@ export class NextUpload {
           config.presignedUrlExpirationSeconds ||
           this.config.presignedUrlExpirationSeconds;
 
+        const includeMetadataInSignedUrlResponse =
+          config.includeMetadataInSignedUrlResponse ||
+          this.config.includeMetadataInSignedUrlResponse;
+
+        let asset: Asset | undefined;
+        if (includeMetadataInSignedUrlResponse) {
+          if (!this.store) {
+            throw new Error(
+              `'includeMetadataInSignedUrlResponse' config requires NextUpload to be instantiated with a store`
+            );
+          }
+          asset = await this.store.find(NextUpload.getIdFromPath(x.path));
+
+          if (!asset) {
+            throw new Error(`Asset not found`);
+          }
+        }
+
         return {
           id: NextUpload.getIdFromPath(x.path),
+          metadata: includeMetadataInSignedUrlResponse
+            ? asset?.metadata
+            : undefined,
           url: await this.client.presignedUrl(
             `GET`,
             this.bucket,

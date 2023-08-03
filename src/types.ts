@@ -23,7 +23,8 @@ export type HandlerArgs = {
 };
 
 type CommonConfig = {
-  includeObjectPathInSignedUrlResponse?: boolean;
+  includeMetadataInSignedUrlResponse?: boolean;
+  includeObjectPathInPostPolicyResponse?: boolean;
   maxSize?: number | string;
   postPolicyExpirationSeconds?: number;
   presignedUrlExpirationSeconds?: number;
@@ -126,6 +127,7 @@ export type GetPresignedUrlArgs = {
 
 export type GetPresignedUrl = {
   id: string;
+  metadata?: Metadata;
   url: string;
 };
 

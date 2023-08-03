@@ -240,4 +240,13 @@ describe(`NextUpload`, () => {
       `localhost-next-upload-test`
     );
   });
+
+  // describe(`getPresignedUrl`, () => {
+  //   it(`getPresignedUrl`, async () => {
+  //     const nup = new NextUpload(nextUploadConfig, assetStore);
+
+  //     // @ts-ignore
+  //     nup.client.statObject = jest.fn().mockResolvedValueOnce();
+  //   });
+  // });
 });
