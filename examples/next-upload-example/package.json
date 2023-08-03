@@ -24,5 +24,8 @@
     "react-dropzone": "^14.2.3",
     "react-hot-toast": "^2.4.1",
     "typescript": "5.1.6"
+  },
+  "devDependencies": {
+    "yalc": "^1.0.0-pre.53"
   }
 }
