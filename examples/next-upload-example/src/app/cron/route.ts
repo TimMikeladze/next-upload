@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { nup } from '../upload/route';
 
-export const dynamic = 'force-dynamic';
-
 export const GET = async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
   if (
@@ -19,3 +17,5 @@ export const GET = async (request: NextRequest) => {
   await nup.pruneAssets();
   return NextResponse.json({ success: true });
 };
+
+export const dynamic = 'force-dynamic';

@@ -17,3 +17,5 @@ export const nup = new NextUpload(
 );
 
 export const POST = (request: NextRequest) => nup.handler(request);
+
+export const dynamic = 'force-dynamic';
