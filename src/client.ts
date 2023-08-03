@@ -1,4 +1,4 @@
 export * from './types';
-export * from './getSignedUrl';
-export * from './uploadToSignedUrl';
+export * from './generatePresignedPostPolicy';
+export * from './uploadToPresignedUrl';
 export * from './upload';

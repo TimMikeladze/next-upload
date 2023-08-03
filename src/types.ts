@@ -93,12 +93,12 @@ export interface Storage {
   saveUpload(args: SaveUploadArgs): Promise<string>;
 }
 
-export type GetSignedUrlOptions = {
+export type GeneratePresignedPostPolicyOptions = {
   args?: GeneratePresignedPostPolicyArgs;
   requestInit?: any;
 };
 
-export type UploadToSignedUrlOptions = {
+export type UploadToPresignedUrlOptions = {
   file: File;
   formData?: FormData;
   metadata?: Metadata;

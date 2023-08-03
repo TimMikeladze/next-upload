@@ -1,6 +1,8 @@
-import { UploadToSignedUrlOptions } from './types';
+import { UploadToPresignedUrlOptions } from './types';
 
-export const uploadToSignedUrl = async (options: UploadToSignedUrlOptions) => {
+export const uploadToPresignedUrl = async (
+  options: UploadToPresignedUrlOptions
+) => {
   const formData = options.formData || new FormData();
 
   const { file, postPolicy: signedUrl } = options;

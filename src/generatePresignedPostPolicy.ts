@@ -1,12 +1,12 @@
 import {
-  GetSignedUrlOptions,
+  GeneratePresignedPostPolicyOptions,
   HandlerAction,
   NextUploadConfig,
   SignedPostPolicy,
 } from './types';
 
-export const getSignedUrl = async (
-  options: GetSignedUrlOptions,
+export const generatePresignedPostPolicy = async (
+  options: GeneratePresignedPostPolicyOptions,
   config: NextUploadConfig
 ): Promise<SignedPostPolicy> => {
   const api = config.api || `/upload`;
