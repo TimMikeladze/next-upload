@@ -98,6 +98,11 @@ export type GeneratePresignedPostPolicyOptions = {
   requestInit?: any;
 };
 
+export type GetPresignedUrlOptions = {
+  args?: GetPresignedUrlArgs;
+  requestInit?: any;
+};
+
 export type UploadToPresignedUrlOptions = {
   file: File;
   formData?: FormData;
