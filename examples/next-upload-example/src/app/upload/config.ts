@@ -1,4 +1,4 @@
-import { type NextUploadConfig } from 'next-upload';
+import { type NextUploadConfig } from 'next-upload/client';
 
 export enum NextUploadType {
   image = `image`,
@@ -19,5 +19,3 @@ export const config: NextUploadConfig = {
     [NextUploadType.image]: {},
   },
 };
-
-export { NextUploadConfig };

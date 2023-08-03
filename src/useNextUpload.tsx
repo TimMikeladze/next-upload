@@ -1,8 +1,12 @@
 import { useState } from 'react';
-import { NextUploadConfig, SignedPostPolicy, UploadOptions } from './types';
+import {
+  NextUploadClientConfig,
+  SignedPostPolicy,
+  UploadOptions,
+} from './types';
 import { upload as _upload } from './upload';
 
-export const useNextUpload = (config: NextUploadConfig) => {
+export const useNextUpload = (config: NextUploadClientConfig = {}) => {
   const [files, setFiles] = useState<File[]>([]);
   const [signedPostPolicies, setSignedPostPolicies] = useState<
     SignedPostPolicy[]

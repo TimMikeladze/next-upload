@@ -1,13 +1,13 @@
 import {
   GeneratePresignedPostPolicyOptions,
   HandlerAction,
-  NextUploadConfig,
+  NextUploadClientConfig,
   SignedPostPolicy,
 } from './types';
 
 export const generatePresignedPostPolicy = async (
   options: GeneratePresignedPostPolicyOptions,
-  config: NextUploadConfig
+  config: NextUploadClientConfig
 ): Promise<SignedPostPolicy> => {
   const api = config.api || `/upload`;
   const res = await fetch(api, {

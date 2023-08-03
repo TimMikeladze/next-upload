@@ -74,6 +74,8 @@ export type NextUploadConfig = RequiredField<CommonConfig, 'maxSize'> & {
   };
 };
 
+export type NextUploadClientConfig = Pick<NextUploadConfig, 'api'>;
+
 export type NextUploadRequest = {
   body?: any;
   headers?: Headers;

@@ -1,10 +1,10 @@
 import { generatePresignedPostPolicy } from './generatePresignedPostPolicy';
-import { NextUploadConfig, UploadOptions } from './types';
+import { NextUploadClientConfig, UploadOptions } from './types';
 import { uploadToPresignedUrl } from './uploadToPresignedUrl';
 
 export const upload = async (
   options: UploadOptions | UploadOptions[],
-  config: NextUploadConfig
+  config: NextUploadClientConfig
 ) => {
   let optionsArray = Array.isArray(options) ? options : [options];
 

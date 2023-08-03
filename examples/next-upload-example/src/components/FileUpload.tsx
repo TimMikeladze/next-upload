@@ -1,21 +1,22 @@
 'use client';
 
 import { useDropzone } from 'react-dropzone';
-import { upload, useNextUpload } from 'next-upload/client';
-import { NextUploadType, config } from '@/app/upload/config';
+import { useNextUpload } from 'next-upload/client';
 import toast from 'react-hot-toast';
 import bytes from 'bytes';
+import { NextUploadType } from '@/app/upload/config';
+
+const maxSize = process.env.NEXT_PUBLIC_MAX_SIZE || '1mb';
 
 const FileUpload = () => {
-  const nup = useNextUpload(config);
+  const nup = useNextUpload();
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
       'image/*': ['.jpeg', '.png'],
     },
-    maxSize: bytes.parse(config.maxSize),
-    onDropRejected: () =>
-      toast.error(`Maximum file upload size is ${config.maxSize}`),
+    maxSize: bytes.parse(maxSize),
+    onDropRejected: () => toast.error(`Maximum file upload size is ${maxSize}`),
     onDropAccepted: (acceptedFiles) => {
       return toast.promise(
         nup.upload(

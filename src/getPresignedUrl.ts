@@ -2,12 +2,12 @@ import {
   GetPresignedUrl,
   GetPresignedUrlOptions,
   HandlerAction,
-  NextUploadConfig,
+  NextUploadClientConfig,
 } from './types';
 
 export const getPresignedUrl = async (
   options: GetPresignedUrlOptions,
-  config: NextUploadConfig
+  config: NextUploadClientConfig
 ): Promise<GetPresignedUrl[]> => {
   const api = config.api || `/upload`;
   const res = await fetch(api, {

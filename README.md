@@ -26,8 +26,8 @@ export const config: NextUploadConfig = {
   client: {
     endPoint: `s3.us-west-1.amazonaws.com`,
     region: `us-west-1`,
-    secretKey: `xxxxxx`,
-    accessKey: `xxxxxx`,
+    secretKey: process.env.AWS_SECRET,
+    accessKey: process.env.AWS_KEY,
   },
 };
 ```
@@ -59,10 +59,9 @@ How your application handles file-uploads in the browser is up to you. The examp
 
 import { useDropzone } from 'react-dropzone';
 import { useNextUpload } from 'next-upload/client';
-import { config } from '@/app/upload/config';
 
 const FileUpload = () => {
-  const nup = useNextUpload(config);
+  const nup = useNextUpload();
 
   const onDropAccepted = (acceptedFiles: File[]) =>
     nup.upload(
@@ -97,7 +96,7 @@ It's often useful to save an additional reference to the uploaded file in your d
 
 To use `AssetStore` you need to create a new instance specifying your database storage options and then pass it to the `NextUpload` constructor.
 
-**src/app/upload/route.ts**
+**src/app/upload/nup.ts**
 
 ```tsx
 import { AssetStore, NextUpload } from 'next-upload';
@@ -106,7 +105,7 @@ import { NextRequest } from 'next/server';
 import Keyv from 'keyv';
 import KeyvPostgres from '@keyv/postgres';
 
-const nup = new NextUpload(
+export const nup = new NextUpload(
   config,
   new AssetStore(
     new Keyv({
@@ -117,8 +116,6 @@ const nup = new NextUpload(
     })
   )
 );
-
-export const POST = (request: NextRequest) => nup.handler(request);
 ```
 
 ### Retrieving Assets
@@ -182,7 +179,7 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 | Function | Type |
 | ---------- | ---------- |
-| `generatePresignedPostPolicy` | `(options: GeneratePresignedPostPolicyOptions, config: NextUploadConfig) => Promise<SignedPostPolicy>` |
+| `generatePresignedPostPolicy` | `(options: GeneratePresignedPostPolicyOptions, config: NextUploadClientConfig) => Promise<SignedPostPolicy>` |
 
 ### :gear: uploadToPresignedUrl
 
@@ -194,19 +191,19 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 | Function | Type |
 | ---------- | ---------- |
-| `upload` | `(options: UploadOptions or UploadOptions[], config: NextUploadConfig) => Promise<SignedPostPolicy[]>` |
+| `upload` | `(options: UploadOptions or UploadOptions[], config: NextUploadClientConfig) => Promise<SignedPostPolicy[]>` |
 
 ### :gear: getPresignedUrl
 
 | Function | Type |
 | ---------- | ---------- |
-| `getPresignedUrl` | `(options: GetPresignedUrlOptions, config: NextUploadConfig) => Promise<GetPresignedUrl[]>` |
+| `getPresignedUrl` | `(options: GetPresignedUrlOptions, config: NextUploadClientConfig) => Promise<GetPresignedUrl[]>` |
 
 ### :gear: useNextUpload
 
 | Function | Type |
 | ---------- | ---------- |
-| `useNextUpload` | `(config: NextUploadConfig) => { files: File[]; setFiles: Dispatch<SetStateAction<File[]>>; signedPostPolicies: SignedPostPolicy[]; ... 4 more ...; reset: () => void; }` |
+| `useNextUpload` | `(config?: NextUploadClientConfig) => { files: File[]; setFiles: Dispatch<SetStateAction<File[]>>; signedPostPolicies: SignedPostPolicy[]; ... 4 more ...; reset: () => void; }` |
 
 
 ## :factory: AssetStore
@@ -226,40 +223,22 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 ### Methods
 
-- [🗃️ next-upload](#️-next-upload)
-  - [Install](#install)
-  - [Configuration](#configuration)
-  - [Asset Store](#asset-store)
-    - [Retrieving Assets](#retrieving-assets)
-  - [Metadata](#metadata)
-  - [Verifying uploads \& Pruning assets](#verifying-uploads--pruning-assets)
-  - [:toolbox: Functions](#toolbox-functions)
-    - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
-    - [:gear: uploadToPresignedUrl](#gear-uploadtopresignedurl)
-    - [:gear: upload](#gear-upload)
-    - [:gear: getPresignedUrl](#gear-getpresignedurl)
-    - [:gear: useNextUpload](#gear-usenextupload)
-  - [:factory: AssetStore](#factory-assetstore)
-    - [Methods](#methods)
-      - [:gear: iterator](#gear-iterator)
-  - [:factory: NextUpload](#factory-nextupload)
-    - [Methods](#methods-1)
-      - [:gear: namespaceFromEnv](#gear-namespacefromenv)
-      - [:gear: bucketFromEnv](#gear-bucketfromenv)
-      - [:gear: getIdFromPath](#gear-getidfrompath)
-      - [:gear: getUploadTypeFromPath](#gear-getuploadtypefrompath)
-      - [:gear: getBucket](#gear-getbucket)
-      - [:gear: getClient](#gear-getclient)
-      - [:gear: getConfig](#gear-getconfig)
-      - [:gear: getStore](#gear-getstore)
-      - [:gear: init](#gear-init)
-      - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy-1)
-      - [:gear: pruneAssets](#gear-pruneassets)
-      - [:gear: verifyAsset](#gear-verifyasset)
-      - [:gear: getPresignedUrl](#gear-getpresignedurl-1)
-      - [:gear: handler](#gear-handler)
-      - [:gear: pagesApiHandler](#gear-pagesapihandler)
-      - [:gear: rawHandler](#gear-rawhandler)
+- [namespaceFromEnv](#gear-namespacefromenv)
+- [bucketFromEnv](#gear-bucketfromenv)
+- [getIdFromPath](#gear-getidfrompath)
+- [getUploadTypeFromPath](#gear-getuploadtypefrompath)
+- [getBucket](#gear-getbucket)
+- [getClient](#gear-getclient)
+- [getConfig](#gear-getconfig)
+- [getStore](#gear-getstore)
+- [init](#gear-init)
+- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
+- [pruneAssets](#gear-pruneassets)
+- [verifyAsset](#gear-verifyasset)
+- [getPresignedUrl](#gear-getpresignedurl)
+- [handler](#gear-handler)
+- [pagesApiHandler](#gear-pagesapihandler)
+- [rawHandler](#gear-rawhandler)
 
 #### :gear: namespaceFromEnv
 
