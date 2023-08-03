@@ -6,6 +6,7 @@ export enum NextUploadType {
 
 export const config: NextUploadConfig = {
   maxSize: process.env.NEXT_PUBLIC_MAX_SIZE || '1mb',
+  verifyAssets: true,
   client: {
     secretKey: process.env.MINIO_SECRET_KEY,
     accessKey: process.env.MINIO_ACCESS_KEY,
