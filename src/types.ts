@@ -120,14 +120,15 @@ export type UploadOptions = GeneratePresignedPostPolicyArgs & {
 
 export type GetPresignedUrlArgs = {
   expiry?: number;
-  path: string;
+  id?: string;
+  path?: string;
   reqParams?: { [key: string]: any };
   requestDate?: Date;
 };
 
 export type GetPresignedUrl = {
   id: string;
-  metadata?: Metadata;
+  metadata?: Metadata | null;
   url: string;
 };
 

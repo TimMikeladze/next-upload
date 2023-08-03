@@ -379,8 +379,32 @@ export class NextUpload {
 
     return Promise.all(
       data.map(async (x) => {
+        let asset: Asset | undefined;
+
+        let { path } = x;
+
+        const id = x.id || NextUpload.getIdFromPath(path as string);
+
+        if (!id && !path) {
+          throw new Error(`id or path is required`);
+        }
+
+        if (!path) {
+          if (!this.store) {
+            throw new Error(
+              `'id' argument requires NextUpload to be instantiated with a store. Alternatively, you can pass a 'path' argument.`
+            );
+          }
+          asset = await this.store.find(id);
+          path = asset?.path;
+
+          if (!path) {
+            throw new Error(`Asset not found`);
+          }
+        }
+
         try {
-          const stat = await this.client.statObject(this.bucket, x.path);
+          const stat = await this.client.statObject(this.bucket, path);
           if (!stat) {
             throw new Error(`Not found`);
           }
@@ -388,12 +412,16 @@ export class NextUpload {
           throw new Error(`Not found`);
         }
 
-        const uploadType = NextUpload.getUploadTypeFromPath(x.path);
+        const uploadType = NextUpload.getUploadTypeFromPath(path);
 
-        const configFnOrValue = this.config.uploadTypes?.[uploadType];
+        let configFnOrValue = this.config.uploadTypes?.[uploadType];
 
         if (!configFnOrValue) {
-          throw new Error(`Upload type "${uploadType}" not configured`);
+          if (uploadType !== NextUpload.DEFAULT_TYPE) {
+            throw new Error(`Upload type "${uploadType}" not configured`);
+          } else {
+            configFnOrValue = {};
+          }
         }
 
         const config = await (typeof configFnOrValue === 'function'
@@ -408,32 +436,36 @@ export class NextUpload {
           config.includeMetadataInSignedUrlResponse ||
           this.config.includeMetadataInSignedUrlResponse;
 
-        let asset: Asset | undefined;
         if (includeMetadataInSignedUrlResponse) {
           if (!this.store) {
             throw new Error(
               `'includeMetadataInSignedUrlResponse' config requires NextUpload to be instantiated with a store`
             );
           }
-          asset = await this.store.find(NextUpload.getIdFromPath(x.path));
+          asset = asset || (await this.store.find(id));
 
           if (!asset) {
             throw new Error(`Asset not found`);
           }
         }
 
-        return {
-          id: NextUpload.getIdFromPath(x.path),
-          metadata: includeMetadataInSignedUrlResponse
-            ? asset?.metadata
-            : undefined,
-          url: await this.client.presignedUrl(
-            `GET`,
-            this.bucket,
-            x.path,
-            presignedUrlExpirationSeconds
-          ),
+        const res: GetPresignedUrl = {
+          id,
+          url: presignedUrlExpirationSeconds
+            ? await this.client.presignedUrl(
+                `GET`,
+                this.bucket,
+                path,
+                presignedUrlExpirationSeconds
+              )
+            : await this.client.presignedUrl(`GET`, this.bucket, path),
         };
+
+        if (includeMetadataInSignedUrlResponse) {
+          res.metadata = asset?.metadata || null;
+        }
+
+        return res;
       })
     );
   }
