@@ -9,6 +9,7 @@ export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 // eslint-disable-next-line no-shadow
 export enum HandlerAction {
   generatePresignedPostPolicy = 'generatePresignedPostPolicy',
+  getPresignedUrl = 'getPresignedUrl',
 }
 
 export type SendFn = <JsonBody>(
@@ -22,9 +23,10 @@ export type HandlerArgs = {
 };
 
 type CommonConfig = {
-  expirationSeconds?: number;
   includeObjectPathInSignedUrlResponse?: boolean;
   maxSize?: number | string;
+  postPolicyExpirationSeconds?: number;
+  presignedUrlExpirationSeconds?: number;
   verifyAssets?: boolean;
   verifyAssetsExpirationSeconds?: number;
 };
@@ -57,17 +59,17 @@ export interface NextUploadAssetStore {
 
 type ClientConfig = RequiredField<ClientOptions, 'region'>;
 
+export type UploadTypeConfigFn = (
+  args: Partial<GeneratePresignedPostPolicyArgs & GetPresignedUrlArgs>,
+  request?: NextUploadRequest
+) => Promise<UploadTypeConfig>;
+
 export type NextUploadConfig = RequiredField<CommonConfig, 'maxSize'> & {
   api?: string;
   bucket?: string;
   client: ClientConfig;
   uploadTypes?: {
-    [uploadType: string]:
-      | ((
-          args: GeneratePresignedPostPolicyArgs,
-          request: NextUploadRequest
-        ) => Promise<UploadTypeConfig>)
-      | UploadTypeConfig;
+    [uploadType: string]: UploadTypeConfigFn | UploadTypeConfig;
   };
 };
 

@@ -18,6 +18,7 @@ import {
   SignedPostPolicy,
   UploadTypeConfig,
   VerifyAssetArgs,
+  UploadTypeConfigFn,
 } from './types';
 
 export class NextUpload {
@@ -64,12 +65,16 @@ export class NextUpload {
     ].join('-');
   }
 
-  private static getDefaultExpirationSeconds() {
+  private static getDefaultPostPolicyExpirationSeconds() {
     return 60 * 5;
   }
 
   public static getIdFromPath(path: string) {
     return path.split('/').slice(-2)[0];
+  }
+
+  public static getUploadTypeFromPath(path: string) {
+    return path.split('/').slice(-3)[0];
   }
 
   public getBucket() {
@@ -111,8 +116,8 @@ export class NextUpload {
 
     const {
       maxSize = this.config.maxSize,
-      expirationSeconds = this.config.expirationSeconds ||
-        NextUpload.getDefaultExpirationSeconds(),
+      postPolicyExpirationSeconds = this.config.postPolicyExpirationSeconds ||
+        NextUpload.getDefaultPostPolicyExpirationSeconds(),
     } = config;
 
     const maxSizeBytes = bytes.parse(maxSize);
@@ -120,7 +125,9 @@ export class NextUpload {
     postPolicy.setBucket(this.bucket);
     postPolicy.setKey(config.path);
     postPolicy.setContentLengthRange(1, Math.max(maxSizeBytes, 1024));
-    postPolicy.setExpires(new Date(Date.now() + 1000 * expirationSeconds));
+    postPolicy.setExpires(
+      new Date(Date.now() + 1000 * postPolicyExpirationSeconds)
+    );
     postPolicy.setContentType(fileType);
     // if (metadata && Object.keys(metadata).length > 0) {
     //   postPolicy.setUserMetaData(metadata);
@@ -214,9 +221,9 @@ export class NextUpload {
     const verifyAssetsExpirationSeconds = Number(
       uploadTypeConfig.verifyAssetsExpirationSeconds ||
         this.config.verifyAssetsExpirationSeconds ||
-        uploadTypeConfig.expirationSeconds ||
-        this.config.expirationSeconds ||
-        NextUpload.getDefaultExpirationSeconds()
+        uploadTypeConfig.postPolicyExpirationSeconds ||
+        this.config.postPolicyExpirationSeconds ||
+        NextUpload.getDefaultPostPolicyExpirationSeconds()
     );
 
     if (verifyAssets) {
@@ -363,7 +370,8 @@ export class NextUpload {
   }
 
   public async getPresignedUrl(
-    args: GetPresignedUrlArgs | GetPresignedUrlArgs[]
+    args: GetPresignedUrlArgs | GetPresignedUrlArgs[],
+    request?: NextUploadRequest
   ): Promise<GetPresignedUrl[]> {
     await this.init();
 
@@ -380,9 +388,30 @@ export class NextUpload {
           throw new Error(`Not found`);
         }
 
+        const uploadType = NextUpload.getUploadTypeFromPath(x.path);
+
+        const configFnOrValue = this.config.uploadTypes?.[uploadType];
+
+        if (!configFnOrValue) {
+          throw new Error(`Upload type "${uploadType}" not configured`);
+        }
+
+        const config = await (typeof configFnOrValue === 'function'
+          ? (configFnOrValue as UploadTypeConfigFn)(x, request)
+          : (configFnOrValue as UploadTypeConfig));
+
+        const presignedUrlExpirationSeconds =
+          config.presignedUrlExpirationSeconds ||
+          this.config.presignedUrlExpirationSeconds;
+
         return {
           id: NextUpload.getIdFromPath(x.path),
-          url: await this.client.presignedUrl(`GET`, this.bucket, x.path),
+          url: await this.client.presignedUrl(
+            `GET`,
+            this.bucket,
+            x.path,
+            presignedUrlExpirationSeconds
+          ),
         };
       })
     );
@@ -437,6 +466,11 @@ export class NextUpload {
       switch (action) {
         case HandlerAction.generatePresignedPostPolicy: {
           const res = await this.generatePresignedPostPolicy(args, request);
+
+          return send(res);
+        }
+        case HandlerAction.getPresignedUrl: {
+          const res = await this.getPresignedUrl(args, request);
 
           return send(res);
         }

@@ -211,6 +211,7 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 - [namespaceFromEnv](#gear-namespacefromenv)
 - [bucketFromEnv](#gear-bucketfromenv)
 - [getIdFromPath](#gear-getidfrompath)
+- [getUploadTypeFromPath](#gear-getuploadtypefrompath)
 - [getBucket](#gear-getbucket)
 - [getClient](#gear-getclient)
 - [getConfig](#gear-getconfig)
@@ -241,6 +242,12 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 | Method          | Type                       |
 | --------------- | -------------------------- |
 | `getIdFromPath` | `(path: string) => string` |
+
+#### :gear: getUploadTypeFromPath
+
+| Method                  | Type                       |
+| ----------------------- | -------------------------- |
+| `getUploadTypeFromPath` | `(path: string) => string` |
 
 #### :gear: getBucket
 
@@ -292,26 +299,26 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 #### :gear: getPresignedUrl
 
-| Method            | Type                                                                                 |
-| ----------------- | ------------------------------------------------------------------------------------ |
-| `getPresignedUrl` | `(args: GetPresignedUrlArgs or GetPresignedUrlArgs[]) => Promise<GetPresignedUrl[]>` |
+| Method            | Type                                                                                                              |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `getPresignedUrl` | `(args: GetPresignedUrlArgs or GetPresignedUrlArgs[], request?: NextUploadRequest) => Promise<GetPresignedUrl[]>` |
 
 #### :gear: handler
 
 | Method    | Type                                                                      |
-| --------- | ------------------------------------------------------------------------- | ------------------------------- |
-| `handler` | `(request: NextRequest) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<{ error: any; }>>` |
+| --------- | ------------------------------------------------------------------------- | ------------------------------- | ------------------- |
+| `handler` | `(request: NextRequest) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<GetPresignedUrl[]> | NextResponse<...>>` |
 
 #### :gear: pagesApiHandler
 
 | Method            | Type                                                                                                    |
-| ----------------- | ------------------------------------------------------------------------------------------------------- | ------------------------ |
-| `pagesApiHandler` | `(request: NextApiRequest, response: NextApiResponse) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<{ ...; }>>` |
+| ----------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------- |
+| `pagesApiHandler` | `(request: NextApiRequest, response: NextApiResponse) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<GetPresignedUrl[]> | NextResponse<...>>` |
 
 #### :gear: rawHandler
 
 | Method       | Type                                                                          |
-| ------------ | ----------------------------------------------------------------------------- | ------------------------------- |
-| `rawHandler` | `(handlerArgs: HandlerArgs) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<{ error: any; }>>` |
+| ------------ | ----------------------------------------------------------------------------- | ------------------------------- | ------------------- |
+| `rawHandler` | `(handlerArgs: HandlerArgs) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<GetPresignedUrl[]> | NextResponse<...>>` |
 
 <!-- TSDOC_END -->
