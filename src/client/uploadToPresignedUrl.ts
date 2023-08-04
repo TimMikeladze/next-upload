@@ -1,4 +1,4 @@
-import { UploadToPresignedUrlOptions } from './types';
+import { UploadToPresignedUrlOptions } from '../types';
 
 export const uploadToPresignedUrl = async (
   options: UploadToPresignedUrlOptions

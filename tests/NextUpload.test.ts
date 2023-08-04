@@ -1,19 +1,30 @@
+import { resolve } from 'path';
 import { it, expect, describe, beforeEach, afterEach } from 'vitest';
 import Keyv from 'keyv';
 import KeyvPostgres from '@keyv/postgres';
 import { nanoid } from 'nanoid';
-import { KeyvAssetStore, NextUpload, NextUploadConfig } from '../src';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
-const keyv = new Keyv({
-  namespace: NextUpload.namespaceFromEnv(),
-  store: new KeyvPostgres({
-    uri: `${process.env.PG_CONNECTION_STRING}/${process.env.PG_DB}`,
-  }),
-});
+import {
+  KeyvAssetStore,
+  NextUpload,
+  AssetStore,
+  NextUploadConfig,
+  drizzlePgAssetsTable,
+} from '../src';
+import { DrizzlePgAssetStore } from '../src/store/drizzle/pg/DrizzlePgAssetStore';
+import { getDb } from './db/getDb';
 
-const keyvAssetStore = new KeyvAssetStore(keyv);
+const runTests = async (
+  name: string,
+  args: {
+    afterEach?: () => Promise<void>;
+    beforeEach?: () => Promise<void>;
+    getAssetStore?: () => Promise<AssetStore>;
+  }
+) => {
+  const assetStore = await args.getAssetStore?.();
 
-const runTests = (name: string, assetStore?: KeyvAssetStore) => {
   const nextUploadConfig: NextUploadConfig = {
     client: {
       secretKey: process.env.MINIO_SECRET_KEY,
@@ -29,10 +40,12 @@ const runTests = (name: string, assetStore?: KeyvAssetStore) => {
 
   const fileType = 'image/png';
 
-  beforeEach(() => {});
+  beforeEach(async () => {
+    await args.beforeEach?.();
+  });
 
   afterEach(async () => {
-    await keyv.clear();
+    await args.afterEach?.();
   });
 
   describe(`NextUpload - ${name}`, () => {
@@ -271,5 +284,34 @@ const runTests = (name: string, assetStore?: KeyvAssetStore) => {
   });
 };
 
-runTests('No Store', undefined);
-runTests('KeyvAssetStore', keyvAssetStore);
+const keyv = new Keyv({
+  namespace: NextUpload.namespaceFromEnv(),
+  store: new KeyvPostgres({
+    uri: `${process.env.PG_CONNECTION_STRING}/${process.env.PG_DB}`,
+  }),
+});
+
+const keyvAssetStore = new KeyvAssetStore(keyv);
+
+runTests('No Store', {});
+runTests('KeyvAssetStore', {
+  getAssetStore: () => Promise.resolve(keyvAssetStore),
+  beforeEach: async () => {
+    await keyv.clear();
+  },
+  afterEach: async () => {
+    await keyv.clear();
+  },
+});
+runTests(`DrizzlePgAssetStore`, {
+  getAssetStore: async () => new DrizzlePgAssetStore(await getDb()),
+  beforeEach: async () => {
+    await migrate(await getDb(), {
+      migrationsFolder: resolve(`tests/db/migrations`),
+    });
+    (await getDb()).delete(drizzlePgAssetsTable);
+  },
+  afterEach: async () => {
+    (await getDb()).delete(drizzlePgAssetsTable);
+  },
+});

@@ -3,7 +3,7 @@ import {
   GetPresignedUrlOptions,
   HandlerAction,
   NextUploadClientConfig,
-} from './types';
+} from '../types';
 
 export const getPresignedUrl = async (
   options: GetPresignedUrlOptions,

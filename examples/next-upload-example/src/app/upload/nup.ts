@@ -1,11 +1,11 @@
-import { AssetStore, NextUpload } from 'next-upload';
+import { KeyvAssetStore, NextUpload } from 'next-upload';
 import { config } from './config';
 import Keyv from 'keyv';
 import KeyvPostgres from '@keyv/postgres';
 
 export const nup = new NextUpload(
   config,
-  new AssetStore(
+  new KeyvAssetStore(
     new Keyv({
       namespace: NextUpload.namespaceFromEnv(),
       store: new KeyvPostgres({

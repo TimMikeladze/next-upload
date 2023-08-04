@@ -13,3 +13,4 @@ yarn.lock
 *.ico
 **/.next/**
 README.md
+*.sql

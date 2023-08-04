@@ -11,7 +11,7 @@ import {
   GeneratePresignedPostPolicyArgs,
   HandlerAction,
   HandlerArgs,
-  NextUploadAssetStore,
+  AssetStore,
   NextUploadConfig,
   NextUploadRequest,
   RequiredField,
@@ -30,9 +30,9 @@ export class NextUpload {
 
   private config: NextUploadConfig;
 
-  private store: NextUploadAssetStore | undefined;
+  private store: AssetStore | undefined;
 
-  constructor(config: NextUploadConfig, store?: NextUploadAssetStore) {
+  constructor(config: NextUploadConfig, store?: AssetStore) {
     this.config = {
       ...config,
       api: config.api || `/upload`,

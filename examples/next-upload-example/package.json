@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "yarn yalc link next-upload && yarn link next-upload && next dev",
     "build": "node vercel.js && next build",
     "start": "next start",
     "lint": "next lint"

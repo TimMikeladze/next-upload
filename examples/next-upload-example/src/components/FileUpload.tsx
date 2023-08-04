@@ -1,7 +1,7 @@
 'use client';
 
 import { useDropzone } from 'react-dropzone';
-import { useNextUpload } from 'next-upload/client';
+import { useNextUpload } from 'next-upload/react';
 import toast from 'react-hot-toast';
 import bytes from 'bytes';
 import { NextUploadType } from '@/app/upload/config';

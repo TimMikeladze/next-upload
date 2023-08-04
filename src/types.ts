@@ -52,7 +52,7 @@ export type Asset = {
   verified: boolean | null;
 };
 
-export interface NextUploadAssetStore {
+export interface AssetStore {
   all(): Promise<Asset[]>;
   delete(id: string): Promise<void>;
   find(id: string): Promise<Asset | undefined>;

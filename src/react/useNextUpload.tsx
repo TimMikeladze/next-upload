@@ -3,8 +3,8 @@ import {
   NextUploadClientConfig,
   SignedPostPolicy,
   UploadOptions,
-} from './types';
-import { upload as _upload } from './upload';
+} from '../types';
+import { upload as _upload } from '../client/upload';
 
 export const useNextUpload = (config: NextUploadClientConfig = {}) => {
   const [files, setFiles] = useState<File[]>([]);

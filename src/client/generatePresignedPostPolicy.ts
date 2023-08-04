@@ -3,7 +3,7 @@ import {
   HandlerAction,
   NextUploadClientConfig,
   SignedPostPolicy,
-} from './types';
+} from '../types';
 
 export const generatePresignedPostPolicy = async (
   options: GeneratePresignedPostPolicyOptions,

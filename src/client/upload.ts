@@ -1,5 +1,5 @@
 import { generatePresignedPostPolicy } from './generatePresignedPostPolicy';
-import { NextUploadClientConfig, UploadOptions } from './types';
+import { NextUploadClientConfig, UploadOptions } from '../types';
 import { uploadToPresignedUrl } from './uploadToPresignedUrl';
 
 export const upload = async (

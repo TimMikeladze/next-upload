@@ -58,7 +58,7 @@ How your application handles file-uploads in the browser is up to you. The examp
 'use client';
 
 import { useDropzone } from 'react-dropzone';
-import { useNextUpload } from 'next-upload/client';
+import { useNextUpload } from 'next-upload/react';
 
 const FileUpload = () => {
   const nup = useNextUpload();
@@ -92,14 +92,20 @@ export default FileUpload;
 
 ## Asset Store
 
-It's often useful to save an additional reference to the uploaded file in your database. This can be used for things like displaying a list of files that have been uploaded or associating a file with a specific user within your application without having to query the storage service directly. `next-upload` provides an interface that can be implemented with any database of your choice. Out of the box `AssetStore` works with any [keyv](https://github.com/jaredwray/) enabled store. This includes popular databases such as Postgres, MySQL and Mongo.
+It's often useful to save an additional reference to the uploaded file in your database. This can be used for things like displaying a list of files that have been uploaded or associating a file with a specific user within your application without having to query the storage service directly. `next-upload` provides an interface that can be implemented with any database of your choice.  
 
-To use `AssetStore` you need to create a new instance specifying your database storage options and then pass it to the `NextUpload` constructor.
+Out of the box `next-upload` provides two implementations of the `AssetStore` interface.
+
+- **KeyvAssetStore** - Works with any [keyv](https://github.com/jaredwray/) enabled store. This includes popular databases such as Postgres, MySQL and Mongo. This is a simple option for getting started with an asset store with minimal overhead. **Warning:** Using keyv is inherently slower than using a more specific database client. If you are expecting a high volume of reads/writes to your asset store you should consider using a different implementation.
+- **DrizzlePgAssetStore** - Works with a [Drizzle](https://github.com/drizzle-team/drizzle-orm) Postgres database. This is a great option if you are already using Drizzle in your application and want tighter integration with your database schema. It also provides a more performant option for high volume reads/writes to your asset store. **Note:** You must import and reexport `drizzlePgAssetsTable` from your Drizzle schema file as part of the database migration process to setup the asset store table.
+
+
+Below is an example of how to setup `next-upload` with a `KeyvAssetStore` using Postgres as the database.
 
 **src/app/upload/nup.ts**
 
 ```tsx
-import { AssetStore, NextUpload } from 'next-upload';
+import { KeyvAssetStore, NextUpload } from 'next-upload';
 import { config } from './config';
 import { NextRequest } from 'next/server';
 import Keyv from 'keyv';
@@ -107,7 +113,7 @@ import KeyvPostgres from '@keyv/postgres';
 
 export const nup = new NextUpload(
   config,
-  new AssetStore(
+  new KeyvAssetStore(
     new Keyv({
       namespace: NextUpload.namespaceFromEnv(),
       store: new KeyvPostgres({
@@ -123,7 +129,7 @@ export const nup = new NextUpload(
 Once you have uploaded a file you can retrieve it from the database using the `AssetStore` instance.
 
 ```tsx
-const assetStore = new AssetStore(
+const assetStore = new KeyvAssetStore(
   new Keyv({
     namespace: NextUpload.namespaceFromEnv(),
     store: new KeyvPostgres({
@@ -167,58 +173,6 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 <!-- TSDOC_START -->
 
-## :toolbox: Functions
-
-- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
-- [uploadToPresignedUrl](#gear-uploadtopresignedurl)
-- [upload](#gear-upload)
-- [getPresignedUrl](#gear-getpresignedurl)
-- [useNextUpload](#gear-usenextupload)
-
-### :gear: generatePresignedPostPolicy
-
-| Function | Type |
-| ---------- | ---------- |
-| `generatePresignedPostPolicy` | `(options: GeneratePresignedPostPolicyOptions, config: NextUploadClientConfig) => Promise<SignedPostPolicy>` |
-
-### :gear: uploadToPresignedUrl
-
-| Function | Type |
-| ---------- | ---------- |
-| `uploadToPresignedUrl` | `(options: UploadToPresignedUrlOptions) => Promise<Response>` |
-
-### :gear: upload
-
-| Function | Type |
-| ---------- | ---------- |
-| `upload` | `(options: UploadOptions or UploadOptions[], config: NextUploadClientConfig) => Promise<SignedPostPolicy[]>` |
-
-### :gear: getPresignedUrl
-
-| Function | Type |
-| ---------- | ---------- |
-| `getPresignedUrl` | `(options: GetPresignedUrlOptions, config: NextUploadClientConfig) => Promise<GetPresignedUrl[]>` |
-
-### :gear: useNextUpload
-
-| Function | Type |
-| ---------- | ---------- |
-| `useNextUpload` | `(config?: NextUploadClientConfig) => { files: File[]; setFiles: Dispatch<SetStateAction<File[]>>; signedPostPolicies: SignedPostPolicy[]; ... 4 more ...; reset: () => void; }` |
-
-
-## :factory: AssetStore
-
-### Methods
-
-- [iterator](#gear-iterator)
-
-#### :gear: iterator
-
-| Method | Type |
-| ---------- | ---------- |
-| `iterator` | `() => any` |
-
-
 ## :factory: NextUpload
 
 ### Methods
@@ -227,6 +181,8 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 - [bucketFromEnv](#gear-bucketfromenv)
 - [getIdFromPath](#gear-getidfrompath)
 - [getUploadTypeFromPath](#gear-getuploadtypefrompath)
+- [calculateExpires](#gear-calculateexpires)
+- [isExpired](#gear-isexpired)
 - [getBucket](#gear-getbucket)
 - [getClient](#gear-getclient)
 - [getConfig](#gear-getconfig)
@@ -264,6 +220,18 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 | ---------- | ---------- |
 | `getUploadTypeFromPath` | `(path: string) => string` |
 
+#### :gear: calculateExpires
+
+| Method | Type |
+| ---------- | ---------- |
+| `calculateExpires` | `(ttl: number) => number` |
+
+#### :gear: isExpired
+
+| Method | Type |
+| ---------- | ---------- |
+| `isExpired` | `(asset: Pick<Asset, "expires">) => boolean` |
+
 #### :gear: getBucket
 
 | Method | Type |
@@ -286,7 +254,7 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 | Method | Type |
 | ---------- | ---------- |
-| `getStore` | `() => NextUploadAssetStore` |
+| `getStore` | `() => AssetStore` |
 
 #### :gear: init
 

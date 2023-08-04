@@ -1,7 +1,7 @@
 import type Keyv from 'keyv';
-import { Asset, NextUploadAssetStore } from './types';
+import { Asset, AssetStore } from '../../types';
 
-export class KeyvAssetStore implements NextUploadAssetStore {
+export class KeyvAssetStore implements AssetStore {
   private keyv: Keyv;
 
   constructor(keyv: Keyv) {

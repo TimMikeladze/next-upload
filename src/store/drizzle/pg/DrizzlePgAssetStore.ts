@@ -1,41 +1,11 @@
-import {
-  pgTable,
-  jsonb,
-  integer,
-  timestamp,
-  varchar,
-} from 'drizzle-orm/pg-core';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
-import { Asset, NextUploadAssetStore } from './types';
-import { NextUpload } from './NextUpload';
+import { Asset, AssetStore } from '../../../types';
+import { NextUpload } from '../../../NextUpload';
+import { drizzlePgAssetsTable } from './DrizzlePgSchema';
 
-const createdAt = timestamp(`createdAt`, {
-  withTimezone: true,
-})
-  .notNull()
-  .defaultNow();
-
-const updatedAt = timestamp(`updatedAt`, {
-  withTimezone: true,
-})
-  .notNull()
-  .defaultNow();
-
-const assetsTable = pgTable(`next_upload_assets`, {
-  createdAt,
-  updatedAt,
-  id: varchar(`id`).primaryKey(),
-  data: jsonb(`data`).notNull(),
-  expires: integer(`expires`),
-});
-
-export class DrizzlePostgresAssetStore implements NextUploadAssetStore {
-  public static tables = {
-    assetsTable,
-  };
-
+export class DrizzlePgAssetStore implements AssetStore {
   private db: ReturnType<typeof drizzle>;
 
   constructor(db: ReturnType<typeof drizzle>) {
@@ -43,9 +13,7 @@ export class DrizzlePostgresAssetStore implements NextUploadAssetStore {
   }
 
   async all(): Promise<Asset[]> {
-    const rows = await this.db
-      .select()
-      .from(DrizzlePostgresAssetStore.tables.assetsTable);
+    const rows = await this.db.select().from(drizzlePgAssetsTable);
 
     return rows.map((row) => ({
       ...(row.data as Asset),
@@ -67,12 +35,12 @@ export class DrizzlePostgresAssetStore implements NextUploadAssetStore {
         throw new Error(`Asset expired and was deleted`);
       }
       const rows = await this.db
-        .update(DrizzlePostgresAssetStore.tables.assetsTable)
+        .update(drizzlePgAssetsTable)
         .set({
           data: args,
           expires,
         })
-        .where(eq(DrizzlePostgresAssetStore.tables.assetsTable.id, args.id))
+        .where(eq(drizzlePgAssetsTable.id, args.id))
         .returning();
 
       return {
@@ -85,7 +53,7 @@ export class DrizzlePostgresAssetStore implements NextUploadAssetStore {
     }
 
     const rows = await this.db
-      .insert(DrizzlePostgresAssetStore.tables.assetsTable)
+      .insert(drizzlePgAssetsTable)
       .values({
         id: args?.id || nanoid(),
         data: args,
@@ -103,15 +71,15 @@ export class DrizzlePostgresAssetStore implements NextUploadAssetStore {
 
   async delete(id: string): Promise<void> {
     await this.db
-      .delete(DrizzlePostgresAssetStore.tables.assetsTable)
-      .where(eq(DrizzlePostgresAssetStore.tables.assetsTable.id, id));
+      .delete(drizzlePgAssetsTable)
+      .where(eq(drizzlePgAssetsTable.id, id));
   }
 
   async find(id: string): Promise<Asset | undefined> {
     const rows = await this.db
       .select()
-      .from(DrizzlePostgresAssetStore.tables.assetsTable)
-      .where(eq(DrizzlePostgresAssetStore.tables.assetsTable.id, id));
+      .from(drizzlePgAssetsTable)
+      .where(eq(drizzlePgAssetsTable.id, id));
 
     if (rows?.[0]) {
       if (NextUpload.isExpired(rows?.[0])) {
