@@ -1,3 +1,3 @@
 export * from './types';
 export * from './NextUpload';
-export * from './AssetStore';
+export * from './KeyvAssetStore';

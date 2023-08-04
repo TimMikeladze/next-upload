@@ -41,6 +41,7 @@ export type UploadTypeConfig = CommonConfig & {
 export type Asset = {
   bucket: string;
   createdAt: Date;
+  expires?: number | null;
   fileType: string;
   id: string;
   metadata: Metadata;
@@ -52,9 +53,9 @@ export type Asset = {
 };
 
 export interface NextUploadAssetStore {
+  all(): Promise<Asset[]>;
   delete(id: string): Promise<void>;
   find(id: string): Promise<Asset | undefined>;
-  iterator(): AsyncGenerator<any, void, any>;
   upsert(args: Asset, ttl: number): Promise<Asset>;
 }
 

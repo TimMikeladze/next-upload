@@ -80,6 +80,20 @@ export class NextUpload {
     return path.split('/').slice(-3)[0];
   }
 
+  public static calculateExpires(ttl: number) {
+    if (!ttl) {
+      return null;
+    }
+    return new Date(Date.now() + ttl).getTime();
+  }
+
+  public static isExpired(asset: Pick<Asset, 'expires'>) {
+    if (!asset?.expires) {
+      return false;
+    }
+    return asset.expires && asset.expires < Date.now();
+  }
+
   public getBucket() {
     return this.bucket;
   }
@@ -310,11 +324,7 @@ export class NextUpload {
       });
     });
 
-    const assets: Asset[] = [];
-    // eslint-disable-next-line no-restricted-syntax
-    for await (const [, value] of this.store.iterator()) {
-      assets.push(value);
-    }
+    const assets: Asset[] = await this.store.all();
 
     const pathsToRemove: string[] = [];
 
