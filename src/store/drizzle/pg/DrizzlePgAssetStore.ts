@@ -44,14 +44,13 @@ export class DrizzlePgAssetStore implements AssetStore {
         .returning();
 
       return {
-        ...(rows?.[0].data as Asset),
-        expires: rows?.[0].expires,
-        id: rows?.[0].id,
-        createdAt: rows?.[0].createdAt,
-        updatedAt: rows?.[0].updatedAt,
+        ...(rows?.[0]?.data as Asset),
+        expires: rows?.[0]?.expires,
+        id: rows?.[0]?.id,
+        createdAt: rows?.[0]?.createdAt,
+        updatedAt: rows?.[0]?.updatedAt,
       };
     }
-
     const rows = await this.db
       .insert(drizzlePgAssetsTable)
       .values({
@@ -60,12 +59,16 @@ export class DrizzlePgAssetStore implements AssetStore {
       })
       .returning();
 
+    if (!rows?.[0]) {
+      throw new Error(`Could not insert asset`);
+    }
+
     return {
-      ...(rows?.[0].data as Asset),
-      expires: rows?.[0].expires,
-      id: rows?.[0].id,
-      createdAt: rows?.[0].createdAt,
-      updatedAt: rows?.[0].updatedAt,
+      ...(rows?.[0]?.data as Asset),
+      expires: rows?.[0]?.expires,
+      id: rows?.[0]?.id,
+      createdAt: rows?.[0]?.createdAt,
+      updatedAt: rows?.[0]?.updatedAt,
     };
   }
 
@@ -88,12 +91,16 @@ export class DrizzlePgAssetStore implements AssetStore {
       }
     }
 
+    if (!rows?.[0]) {
+      return undefined;
+    }
+
     return {
-      ...(rows?.[0].data as Asset),
-      expires: rows?.[0].expires,
-      id: rows?.[0].id,
-      createdAt: rows?.[0].createdAt,
-      updatedAt: rows?.[0].updatedAt,
+      ...(rows?.[0]?.data as Asset),
+      expires: rows?.[0]?.expires,
+      id: rows?.[0]?.id,
+      createdAt: rows?.[0]?.createdAt,
+      updatedAt: rows?.[0]?.updatedAt,
     };
   }
 }

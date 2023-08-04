@@ -20,11 +20,9 @@ const runTests = async (
   args: {
     afterEach?: () => Promise<void>;
     beforeEach?: () => Promise<void>;
-    getAssetStore?: () => Promise<AssetStore>;
+    store?: () => Promise<AssetStore>;
   }
 ) => {
-  const assetStore = await args.getAssetStore?.();
-
   const nextUploadConfig: NextUploadConfig = {
     client: {
       secretKey: process.env.MINIO_SECRET_KEY,
@@ -50,7 +48,7 @@ const runTests = async (
 
   describe(`NextUpload - ${name}`, () => {
     it(`initializes`, async () => {
-      const nup = new NextUpload(nextUploadConfig, assetStore);
+      const nup = new NextUpload(nextUploadConfig, args.store);
 
       await nup.init();
 
@@ -61,7 +59,7 @@ const runTests = async (
 
     describe(`generatePresignedPostPolicy`, () => {
       it(`generatePresignedPostPolicy`, async () => {
-        const nup = new NextUpload(nextUploadConfig, assetStore);
+        const nup = new NextUpload(nextUploadConfig, args.store);
 
         await nup.init();
 
@@ -75,13 +73,13 @@ const runTests = async (
           data: expect.any(Object),
         });
 
+        const assetStore = nup.getStore();
+
         if (assetStore) {
           expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
             id: signedUrl.id,
             name: '',
             path: `default/${signedUrl.id}`,
-            updatedAt: expect.any(String),
-            createdAt: expect.any(String),
             uploadType: 'default',
             bucket: 'localhost-test',
             verified: null,
@@ -91,7 +89,7 @@ const runTests = async (
       });
 
       it(`with id`, async () => {
-        const nup = new NextUpload(nextUploadConfig, assetStore);
+        const nup = new NextUpload(nextUploadConfig, args.store);
 
         await nup.init();
 
@@ -106,6 +104,8 @@ const runTests = async (
           id,
         });
 
+        const assetStore = nup.getStore();
+
         if (assetStore) {
           expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
             id,
@@ -114,13 +114,15 @@ const runTests = async (
       });
 
       it(`with metadata`, async () => {
-        const nup = new NextUpload(nextUploadConfig, assetStore);
+        const nup = new NextUpload(nextUploadConfig, args.store);
 
         await nup.init();
 
         const metadata = {
           foo: 'bar',
         };
+
+        const assetStore = nup.getStore();
 
         if (assetStore) {
           const signedUrl = await nup.generatePresignedPostPolicy({
@@ -144,7 +146,7 @@ const runTests = async (
       });
 
       it(`prevent duplicate ids`, async () => {
-        const nup = new NextUpload(nextUploadConfig, assetStore);
+        const nup = new NextUpload(nextUploadConfig, args.store);
 
         await nup.init();
 
@@ -182,7 +184,7 @@ const runTests = async (
               [uploadType]: {},
             },
           },
-          assetStore
+          args.store
         );
 
         await nup.init();
@@ -191,6 +193,8 @@ const runTests = async (
           uploadType,
           fileType,
         });
+
+        const assetStore = nup.getStore();
 
         if (assetStore) {
           const asset = await assetStore.find(signedUrl.id);
@@ -201,17 +205,23 @@ const runTests = async (
         }
       });
 
-      if (assetStore) {
+      if (args.store) {
         it(`generatePresignedPostPolicy & verify assets`, async () => {
           const nup = new NextUpload(
             {
               ...nextUploadConfig,
               verifyAssets: true,
             },
-            assetStore
+            args.store
           );
 
           await nup.init();
+
+          const assetStore = nup.getStore();
+
+          if (!assetStore) {
+            throw new Error(`assetStore is undefined`);
+          }
 
           const signedUrl = await nup.generatePresignedPostPolicy({
             fileType,
@@ -228,7 +238,6 @@ const runTests = async (
             name: '',
             path: `default/${signedUrl.id}`,
             uploadType: 'default',
-            updatedAt: expect.any(String),
             bucket: 'localhost-test',
             verified: false,
             fileType,
@@ -248,20 +257,34 @@ const runTests = async (
               ...nextUploadConfig,
               verifyAssets: true,
             },
-            assetStore
+            args.store
           );
 
           await nup.init();
 
-          await nup.generatePresignedPostPolicy({
+          const signedPostPolicy = await nup.generatePresignedPostPolicy({
             fileType,
           });
 
-          const assets = await assetStore.all();
+          await nup
+            .getClient()
+            .putObject(nup.getBucket(), signedPostPolicy.data.key, `test`);
 
-          expect(assets.length).toBe(1);
+          const assetStore = nup.getStore();
+
+          if (!assetStore) {
+            throw new Error(`assetStore is undefined`);
+          }
+
+          expect(
+            (await assetStore.all()).find((a) => a.id === signedPostPolicy.id)
+          ).toBeTruthy();
 
           await nup.pruneAssets();
+
+          expect(
+            (await assetStore.all()).find((a) => a.id === signedPostPolicy.id)
+          ).toBeFalsy();
         });
       }
 
@@ -274,7 +297,7 @@ const runTests = async (
 
       // describe(`getPresignedUrl`, () => {
       //   it(`getPresignedUrl`, async () => {
-      //     const nup = new NextUpload(nextUploadConfig, assetStore);
+      //     const nup = new NextUpload(nextUploadConfig, args.store);
 
       //     // @ts-ignore
       //     nup.client.statObject = jest.fn().mockResolvedValueOnce();
@@ -295,7 +318,7 @@ const keyvAssetStore = new KeyvAssetStore(keyv);
 
 runTests('No Store', {});
 runTests('KeyvAssetStore', {
-  getAssetStore: () => Promise.resolve(keyvAssetStore),
+  store: () => Promise.resolve(keyvAssetStore),
   beforeEach: async () => {
     await keyv.clear();
   },
@@ -304,7 +327,7 @@ runTests('KeyvAssetStore', {
   },
 });
 runTests(`DrizzlePgAssetStore`, {
-  getAssetStore: async () => new DrizzlePgAssetStore(await getDb()),
+  store: async () => new DrizzlePgAssetStore(await getDb()),
   beforeEach: async () => {
     await migrate(await getDb(), {
       migrationsFolder: resolve(`tests/db/migrations`),

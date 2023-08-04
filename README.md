@@ -94,18 +94,11 @@ export default FileUpload;
 
 It's often useful to save an additional reference to the uploaded file in your database. This can be used for things like displaying a list of files that have been uploaded or associating a file with a specific user within your application without having to query the storage service directly. `next-upload` provides an interface that can be implemented with any database of your choice.  
 
-Out of the box `next-upload` provides two implementations of the `AssetStore` interface.
+Out of the box the following implementations of `AssetStore`
 
 ### KeyvAssetStore
 
 Works with any [keyv](https://github.com/jaredwray/) enabled store. This includes popular databases such as Postgres, MySQL and Mongo. This is a simple option for getting started with an asset store with minimal overhead. **Warning:** Using keyv is inherently slower than using a more specific database client. If you are expecting a high volume of reads/writes to your asset store you should consider using a different implementation.
-
-### DrizzlePgAssetStore
-
-Works with a [Drizzle](https://github.com/drizzle-team/drizzle-orm) Postgres database. This is a great option if you are already using Drizzle in your application and want tighter integration with your database schema. It also provides a more performant option for high volume reads/writes to your asset store. **Note:** You must import and reexport `drizzlePgAssetsTable` from your Drizzle schema file as part of the database migration process to setup the asset store table.
-
-
-Below is an example of how to setup `next-upload` with a `KeyvAssetStore` using Postgres as the database.
 
 **src/app/upload/nup.ts**
 
@@ -129,19 +122,29 @@ export const nup = new NextUpload(
 );
 ```
 
+### DrizzlePgAssetStore
+
+Works with a [Drizzle](https://github.com/drizzle-team/drizzle-orm) Postgres database. This is a great option if you are already using Drizzle in your application and want tighter integration with your database schema. It also provides a more performant option for high volume reads/writes to your asset store. **Note:** You must import and reexport `drizzlePgAssetsTable` from your Drizzle schema file as part of the database migration process to setup the asset store table.
+
+```tsx
+import { DrizzlePgAssetStore, NextUpload } from 'next-upload';
+import { config } from './config';
+import { NextRequest } from 'next/server';
+
+export const nup = new NextUpload(
+  config,
+  async () => new DrizzlePgAssetStore(
+    await getDb(); // however you get your drizzle instance
+  )
+);
+```
+
 ### Retrieving Assets
 
 Once you have uploaded a file you can retrieve it from the database using the `AssetStore` instance.
 
 ```tsx
-const assetStore = new KeyvAssetStore(
-  new Keyv({
-    namespace: NextUpload.namespaceFromEnv(),
-    store: new KeyvPostgres({
-      uri: process.env.PG_CONNECTION_STRING + '/' + process.env.PG_DB,
-    }),
-  })
-);
+const assetStore = nup.getStore();
 
 await assetStore.find('id of the asset');
 ```

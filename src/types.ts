@@ -66,6 +66,8 @@ export type UploadTypeConfigFn = (
   request?: NextUploadRequest
 ) => Promise<UploadTypeConfig>;
 
+export type GetStoreFn = () => Promise<AssetStore | undefined>;
+
 export type NextUploadConfig = RequiredField<CommonConfig, 'maxSize'> & {
   api?: string;
   bucket?: string;

@@ -19,6 +19,7 @@ import {
   UploadTypeConfig,
   VerifyAssetArgs,
   UploadTypeConfigFn,
+  GetStoreFn,
 } from './types';
 
 export class NextUpload {
@@ -32,7 +33,12 @@ export class NextUpload {
 
   private store: AssetStore | undefined;
 
-  constructor(config: NextUploadConfig, store?: AssetStore) {
+  private getStoreFn: GetStoreFn | undefined;
+
+  constructor(
+    config: NextUploadConfig,
+    store?: GetStoreFn | AssetStore | undefined
+  ) {
     this.config = {
       ...config,
       api: config.api || `/upload`,
@@ -40,7 +46,12 @@ export class NextUpload {
     this.client = new Client(config.client);
     this.bucket = config.bucket || NextUpload.bucketFromEnv();
 
-    this.store = store;
+    this.getStoreFn =
+      store !== undefined
+        ? typeof store === 'function'
+          ? store
+          : () => Promise.resolve(store)
+        : undefined;
   }
 
   public static namespaceFromEnv(project?: string) {
@@ -111,6 +122,9 @@ export class NextUpload {
   }
 
   public async init() {
+    if (!this.store && this.getStoreFn) {
+      this.store = await this.getStoreFn?.();
+    }
     if (!(await this.client.bucketExists(this.bucket))) {
       await this.client.makeBucket(this.bucket, this.config.client.region);
     }
@@ -327,18 +341,24 @@ export class NextUpload {
     const assets: Asset[] = await this.store.all();
 
     const pathsToRemove: string[] = [];
+    const assetIdsToRemove: string[] = [];
 
     objects.forEach((object) => {
       const asset = assets.find((a) => a.path === object.name);
 
       if (!asset || asset.verified === false) {
         pathsToRemove.push(object.name);
+        if (asset) {
+          assetIdsToRemove.push(asset.id);
+        }
       }
     });
 
     await Promise.all(
       pathsToRemove.map((path) => this.client.removeObject(this.bucket, path))
     );
+
+    await Promise.all(assetIdsToRemove.map((id) => this.store?.delete(id)));
   }
 
   public async verifyAsset(

@@ -1,4 +1,4 @@
-import { KeyvAssetStore, NextUpload } from 'next-upload';
+import { DrizzlePgAssetStore, KeyvAssetStore, NextUpload } from 'next-upload';
 import { config } from './config';
 import Keyv from 'keyv';
 import KeyvPostgres from '@keyv/postgres';
