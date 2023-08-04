@@ -96,8 +96,13 @@ It's often useful to save an additional reference to the uploaded file in your d
 
 Out of the box `next-upload` provides two implementations of the `AssetStore` interface.
 
-- **KeyvAssetStore** - Works with any [keyv](https://github.com/jaredwray/) enabled store. This includes popular databases such as Postgres, MySQL and Mongo. This is a simple option for getting started with an asset store with minimal overhead. **Warning:** Using keyv is inherently slower than using a more specific database client. If you are expecting a high volume of reads/writes to your asset store you should consider using a different implementation.
-- **DrizzlePgAssetStore** - Works with a [Drizzle](https://github.com/drizzle-team/drizzle-orm) Postgres database. This is a great option if you are already using Drizzle in your application and want tighter integration with your database schema. It also provides a more performant option for high volume reads/writes to your asset store. **Note:** You must import and reexport `drizzlePgAssetsTable` from your Drizzle schema file as part of the database migration process to setup the asset store table.
+### KeyvAssetStore
+
+Works with any [keyv](https://github.com/jaredwray/) enabled store. This includes popular databases such as Postgres, MySQL and Mongo. This is a simple option for getting started with an asset store with minimal overhead. **Warning:** Using keyv is inherently slower than using a more specific database client. If you are expecting a high volume of reads/writes to your asset store you should consider using a different implementation.
+
+### DrizzlePgAssetStore
+
+Works with a [Drizzle](https://github.com/drizzle-team/drizzle-orm) Postgres database. This is a great option if you are already using Drizzle in your application and want tighter integration with your database schema. It also provides a more performant option for high volume reads/writes to your asset store. **Note:** You must import and reexport `drizzlePgAssetsTable` from your Drizzle schema file as part of the database migration process to setup the asset store table.
 
 
 Below is an example of how to setup `next-upload` with a `KeyvAssetStore` using Postgres as the database.
@@ -177,24 +182,35 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 ### Methods
 
-- [namespaceFromEnv](#gear-namespacefromenv)
-- [bucketFromEnv](#gear-bucketfromenv)
-- [getIdFromPath](#gear-getidfrompath)
-- [getUploadTypeFromPath](#gear-getuploadtypefrompath)
-- [calculateExpires](#gear-calculateexpires)
-- [isExpired](#gear-isexpired)
-- [getBucket](#gear-getbucket)
-- [getClient](#gear-getclient)
-- [getConfig](#gear-getconfig)
-- [getStore](#gear-getstore)
-- [init](#gear-init)
-- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
-- [pruneAssets](#gear-pruneassets)
-- [verifyAsset](#gear-verifyasset)
-- [getPresignedUrl](#gear-getpresignedurl)
-- [handler](#gear-handler)
-- [pagesApiHandler](#gear-pagesapihandler)
-- [rawHandler](#gear-rawhandler)
+- [🗃️ next-upload](#️-next-upload)
+  - [Install](#install)
+  - [Configuration](#configuration)
+  - [Asset Store](#asset-store)
+    - [KeyvAssetStore](#keyvassetstore)
+    - [DrizzlePgAssetStore](#drizzlepgassetstore)
+    - [Retrieving Assets](#retrieving-assets)
+  - [Metadata](#metadata)
+  - [Verifying uploads \& Pruning assets](#verifying-uploads--pruning-assets)
+  - [:factory: NextUpload](#factory-nextupload)
+    - [Methods](#methods)
+      - [:gear: namespaceFromEnv](#gear-namespacefromenv)
+      - [:gear: bucketFromEnv](#gear-bucketfromenv)
+      - [:gear: getIdFromPath](#gear-getidfrompath)
+      - [:gear: getUploadTypeFromPath](#gear-getuploadtypefrompath)
+      - [:gear: calculateExpires](#gear-calculateexpires)
+      - [:gear: isExpired](#gear-isexpired)
+      - [:gear: getBucket](#gear-getbucket)
+      - [:gear: getClient](#gear-getclient)
+      - [:gear: getConfig](#gear-getconfig)
+      - [:gear: getStore](#gear-getstore)
+      - [:gear: init](#gear-init)
+      - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
+      - [:gear: pruneAssets](#gear-pruneassets)
+      - [:gear: verifyAsset](#gear-verifyasset)
+      - [:gear: getPresignedUrl](#gear-getpresignedurl)
+      - [:gear: handler](#gear-handler)
+      - [:gear: pagesApiHandler](#gear-pagesapihandler)
+      - [:gear: rawHandler](#gear-rawhandler)
 
 #### :gear: namespaceFromEnv
 
