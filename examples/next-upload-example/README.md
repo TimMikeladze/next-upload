@@ -2,20 +2,28 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, start docker by running in the root of the repository.
+First, setup your `.env` file. The example works out of the box.
+
+```bash
+cp .env.example .env
+```
+
+Second, start Docker by running
 
 ```bash
 docker-compose up -d
 ```
 
-Second, run the development server:
+Finally, install dependencies and run the development server:
 
 ```bash
-npm run dev
+npm install && npm run dev
 # or
-yarn dev
+yarn install && yarn dev
 # or
-pnpm dev
+pnpm install && pnpm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to access the example.
+
+To view the uploaded files navigate to the Minio instance created by Docker at [http://localhost:9001](http://localhost:9001) with your browser. The default credentials are `root` and `password`.

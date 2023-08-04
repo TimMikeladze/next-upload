@@ -2,7 +2,7 @@
 
 A turn-key solution for integrating Next.js with signed & secure file-uploads to an S3 compliant storage service such as R2, AWS, or Minio.
 
-Check out this [example](https://github.com/TimMikeladze/next-upload/tree/master/examples/next-upload-example) of Next.js codebase showcasing an advanced implementation of `next-upload`.
+Check out this [example](https://github.com/TimMikeladze/next-upload/tree/master/examples/next-upload-example) of a Next.js codebase showcasing an advanced implementation of `next-upload`.
 
 ## Install
 
@@ -101,7 +101,6 @@ Out of the box the following implementations of `AssetStore`
 Works with any [keyv](https://github.com/jaredwray/) enabled store. This includes popular databases such as Postgres, MySQL and Mongo. This is a simple option for getting started with an asset store with minimal overhead. **Warning:** Using keyv is inherently slower than using a more specific database client. If you are expecting a high volume of reads/writes to your asset store you should consider using a different implementation.
 
 **src/app/upload/nup.ts**
-
 ```tsx
 import { KeyvAssetStore, NextUpload } from 'next-upload';
 import { config } from './config';
@@ -124,8 +123,16 @@ export const nup = new NextUpload(
 
 ### DrizzlePgAssetStore
 
-Works with a [Drizzle](https://github.com/drizzle-team/drizzle-orm) Postgres database. This is a great option if you are already using Drizzle in your application and want tighter integration with your database schema. It also provides a more performant option for high volume reads/writes to your asset store. **Note:** You must import and reexport `drizzlePgAssetsTable` from your Drizzle schema file as part of the database migration process to setup the asset store table.
+Works with a [Drizzle](https://github.com/drizzle-team/drizzle-orm) Postgres database. This is a great option if you are already using Drizzle in your application and want tighter integration with your database schema. It also provides a more performant option for high volume reads/writes to your asset store. 
 
+**Note:** You must import and reexport `drizzlePgAssetsTable` from your Drizzle schema file as part of the database migration process to setup the asset store table.
+
+**src/db/schema.ts**
+```tsx
+export { drizzlePgAssetsTable } from 'next-upload';
+```
+
+**src/app/upload/nup.ts**
 ```tsx
 import { DrizzlePgAssetStore, NextUpload } from 'next-upload';
 import { config } from './config';
