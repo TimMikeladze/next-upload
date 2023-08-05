@@ -131,7 +131,7 @@ export type UploadOptions = GeneratePresignedPostPolicyArgs & {
 export type GetPresignedUrlArgs = {
   expiry?: number;
   id?: string;
-  path?: string;
+  path?: string | null;
   reqParams?: { [key: string]: any };
   requestDate?: Date;
 };
@@ -145,4 +145,9 @@ export type GetPresignedUrl = {
 export type VerifyAssetArgs = {
   id?: string;
   path?: string;
+};
+
+export type DeleteArgs = {
+  id?: string;
+  path?: string | null;
 };

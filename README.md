@@ -166,6 +166,18 @@ const assetStore = nup.getStore();
 await assetStore.find('id of the asset');
 ```
 
+### 🗑️ Deleting Assets
+
+You can delete an asset with `NextUpload.delete`. This will delete the asset from your storage service and the asset store if you have one configured.
+
+```tsx
+const assetStore = await nup.delete({
+  id: 'id of the asset',
+  // or provide a path
+  path: 'path of the asset',
+})
+```
+
 ## 📝 Metadata
 
 Using an `AssetStore` enables you to save additional metadata about the file as part of the upload process. This can be useful for storing things like the original file name, user id of the uploader, or any other information you want to associate with the file.
@@ -212,6 +224,7 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
     - [☔️ Drizzle](#️-drizzle)
       - [🐘 DrizzlePgAssetStore - Postgres](#-drizzlepgassetstore---postgres)
     - [🔎 Retrieving Assets](#-retrieving-assets)
+    - [🗑️ Deleting Assets](#️-deleting-assets)
   - [📝 Metadata](#-metadata)
   - [✅ Verifying uploads](#-verifying-uploads)
   - [✂️ Pruning assets](#️-pruning-assets)
@@ -231,6 +244,7 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
       - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
       - [:gear: pruneAssets](#gear-pruneassets)
       - [:gear: verifyAsset](#gear-verifyasset)
+      - [:gear: delete](#gear-delete)
       - [:gear: getPresignedUrl](#gear-getpresignedurl)
       - [:gear: handler](#gear-handler)
       - [:gear: pagesApiHandler](#gear-pagesapihandler)
@@ -319,6 +333,12 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 | Method | Type |
 | ---------- | ---------- |
 | `verifyAsset` | `(args: VerifyAssetArgs or VerifyAssetArgs[]) => Promise<Asset[]>` |
+
+#### :gear: delete
+
+| Method | Type |
+| ---------- | ---------- |
+| `delete` | `(args: DeleteArgs or DeleteArgs[]) => Promise<void>` |
 
 #### :gear: getPresignedUrl
 

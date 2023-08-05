@@ -58,6 +58,54 @@ const runTests = async (
     });
 
     describe(`generatePresignedPostPolicy`, () => {
+      it(`delete`, async () => {
+        const nup = new NextUpload(
+          {
+            ...nextUploadConfig,
+            includeObjectPathInPostPolicyResponse: true,
+          },
+          args.store
+        );
+
+        await nup.init();
+
+        const signedPostPolicy = await nup.generatePresignedPostPolicy({
+          fileType,
+        });
+
+        await nup
+          .getClient()
+          .putObject(nup.getBucket(), signedPostPolicy.data.key, `test`);
+
+        const [presignedUrl] = await nup.getPresignedUrl({
+          id: signedPostPolicy.id,
+          path: signedPostPolicy.path,
+        });
+
+        expect(presignedUrl.id).toEqual(signedPostPolicy.id);
+
+        if (args.store) {
+          expect(
+            nup.getStore()?.find(signedPostPolicy.id)
+          ).resolves.toMatchObject({
+            id: signedPostPolicy.id,
+          });
+        }
+
+        await nup.delete({
+          id: signedPostPolicy.id,
+          path: signedPostPolicy.path,
+        });
+
+        if (args.store) {
+          expect(
+            nup.getStore()?.find(signedPostPolicy.id)
+          ).resolves.toBeFalsy();
+        }
+      });
+    });
+
+    describe(`generatePresignedPostPolicy`, () => {
       it(`generatePresignedPostPolicy`, async () => {
         const nup = new NextUpload(nextUploadConfig, args.store);
 
@@ -287,22 +335,13 @@ const runTests = async (
           ).toBeFalsy();
         });
       }
+    });
 
-      it(`bucket from env`, async () => {
-        expect(NextUpload.bucketFromEnv()).toEqual(`localhost-test`);
-        expect(NextUpload.bucketFromEnv(`next-upload`)).toEqual(
-          `localhost-next-upload-test`
-        );
-      });
-
-      // describe(`getPresignedUrl`, () => {
-      //   it(`getPresignedUrl`, async () => {
-      //     const nup = new NextUpload(nextUploadConfig, args.store);
-
-      //     // @ts-ignore
-      //     nup.client.statObject = jest.fn().mockResolvedValueOnce();
-      //   });
-      // });
+    it(`bucket from env`, async () => {
+      expect(NextUpload.bucketFromEnv()).toEqual(`localhost-test`);
+      expect(NextUpload.bucketFromEnv(`next-upload`)).toEqual(
+        `localhost-next-upload-test`
+      );
     });
   });
 };

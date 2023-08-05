@@ -20,6 +20,7 @@ import {
   VerifyAssetArgs,
   UploadTypeConfigFn,
   GetStoreFn,
+  DeleteArgs,
 } from './types';
 
 export class NextUpload {
@@ -402,12 +403,48 @@ export class NextUpload {
     );
   }
 
+  public async delete(args: DeleteArgs | DeleteArgs[]): Promise<void> {
+    const data = Array.isArray(args) ? args : [args];
+
+    await Promise.all(
+      data.map(async (x) => {
+        let asset: Asset | undefined;
+
+        let { path } = x;
+
+        const id = x.id || NextUpload.getIdFromPath(path as string);
+
+        if (!id && !path) {
+          throw new Error(`id or path is required`);
+        }
+
+        if (!path) {
+          if (!this.store) {
+            throw new Error(
+              `'id' argument requires NextUpload to be instantiated with a store. Alternatively, you can pass a 'path' argument.`
+            );
+          }
+          asset = await this.store.find(id);
+          path = asset?.path;
+
+          if (!path) {
+            throw new Error(`Asset not found`);
+          }
+        }
+
+        if (this.store) {
+          await this.store.delete(id);
+        }
+
+        await this.client.removeObject(this.bucket, path);
+      })
+    );
+  }
+
   public async getPresignedUrl(
     args: GetPresignedUrlArgs | GetPresignedUrlArgs[],
     request?: NextUploadRequest
   ): Promise<GetPresignedUrl[]> {
-    await this.init();
-
     const data = Array.isArray(args) ? args : [args];
 
     return Promise.all(
