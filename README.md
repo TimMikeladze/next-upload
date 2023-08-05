@@ -294,7 +294,7 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 | Method | Type |
 | ---------- | ---------- |
-| `isExpired` | `(asset: Pick<Asset, "expires">) => boolean` |
+| `isExpired` | `(timestamp: number) => boolean` |
 
 #### :gear: getBucket
 

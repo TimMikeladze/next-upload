@@ -1,7 +1,7 @@
 {
   "name": "next-upload",
   "description": "A turn-key solution for integrating Next.js with signed & secure file-uploads to an S3 compliant storage service such as R2, AWS, or Minio.",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "author": "Tim Mikeladze <tim.mikeladze@gmail.com>",
   "license": "MIT",
   "keywords": [
@@ -33,7 +33,7 @@
     "deploy-storybook": "storybook-to-ghpages",
     "release": "yarn build && yarn release-it",
     "doc": "tsdoc --src=src/*",
-    "test:migrate:generate": "drizzle-kit generate:pg --out tests/db/migrations --schema src/DrizzlePgSchema.ts"
+    "test:migrate:generate": "drizzle-kit generate:pg --out tests/db/migrations --schema src/store/drizzle/pg/DrizzlePgSchema.ts"
   },
   "tsup": {
     "entry": [

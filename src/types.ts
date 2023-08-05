@@ -58,7 +58,17 @@ export type Asset = {
 export interface AssetStore {
   all(): Promise<Asset[]>;
   delete(id: string): Promise<void>;
+  deletePresignedUrl(id: string): Promise<void>;
   find(id: string): Promise<Asset | undefined>;
+  getPresignedUrl(id: string): Promise<{
+    presignedUrl?: string | null;
+    presignedUrlExpires?: number | null;
+  } | null>;
+  savePresignedUrl(
+    id: string,
+    url: string,
+    presignedUrlExpirationSeconds?: number
+  ): Promise<void>;
   upsert(args: Asset, ttl: number): Promise<Asset>;
 }
 

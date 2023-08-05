@@ -12,6 +12,55 @@ export class DrizzlePgAssetStore implements AssetStore {
     this.db = db;
   }
 
+  async getPresignedUrl(id: string): Promise<{
+    presignedUrl?: string | null;
+    presignedUrlExpires?: number | null;
+  } | null> {
+    const rows = await this.db
+      .select({
+        presignedUrl: drizzlePgAssetsTable.presignedUrl,
+        presignedUrlExpires: drizzlePgAssetsTable.presignedUrlExpires,
+      })
+      .from(drizzlePgAssetsTable)
+      .where(eq(drizzlePgAssetsTable.id, id));
+
+    if (!rows?.[0]) {
+      return null;
+    }
+
+    if (!rows?.[0]?.presignedUrl) {
+      return null;
+    }
+
+    return rows?.[0];
+  }
+
+  async deletePresignedUrl(id: string): Promise<void> {
+    await this.db
+      .update(drizzlePgAssetsTable)
+      .set({
+        presignedUrl: null,
+        presignedUrlExpires: null,
+      })
+      .where(eq(drizzlePgAssetsTable.id, id));
+  }
+
+  savePresignedUrl(
+    id: string,
+    url: string,
+    presignedUrlExpirationSeconds?: number
+  ): Promise<void> {
+    return this.db
+      .update(drizzlePgAssetsTable)
+      .set({
+        presignedUrl: url,
+        presignedUrlExpires: presignedUrlExpirationSeconds
+          ? NextUpload.calculateExpires(presignedUrlExpirationSeconds * 1000)
+          : undefined,
+      })
+      .where(eq(drizzlePgAssetsTable.id, id));
+  }
+
   async all(): Promise<Asset[]> {
     const rows = await this.db.select().from(drizzlePgAssetsTable);
 
@@ -30,7 +79,7 @@ export class DrizzlePgAssetStore implements AssetStore {
     delete args.expires;
 
     if (found) {
-      if (NextUpload.isExpired(found)) {
+      if (NextUpload.isExpired(found.expires)) {
         await this.delete(args.id);
         throw new Error(`Asset expired and was deleted`);
       }
@@ -85,7 +134,7 @@ export class DrizzlePgAssetStore implements AssetStore {
       .where(eq(drizzlePgAssetsTable.id, id));
 
     if (rows?.[0]) {
-      if (NextUpload.isExpired(rows?.[0])) {
+      if (NextUpload.isExpired(rows?.[0]?.expires)) {
         await this.delete(id);
         throw new Error(`Asset expired and was deleted`);
       }

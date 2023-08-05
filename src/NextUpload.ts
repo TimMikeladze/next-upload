@@ -104,11 +104,11 @@ export class NextUpload {
     return new Date(Date.now() + ttl).getTime();
   }
 
-  public static isExpired(asset: Pick<Asset, 'expires'>) {
-    if (!asset?.expires) {
+  public static isExpired(timestamp: number | null | undefined) {
+    if (!timestamp) {
       return false;
     }
-    return asset.expires && asset.expires < Date.now();
+    return timestamp && timestamp < Date.now();
   }
 
   public getBucket() {
@@ -526,16 +526,44 @@ export class NextUpload {
           }
         }
 
-        const res: GetAsset = {
-          id,
-          url: presignedUrlExpirationSeconds
-            ? await this.client.presignedUrl(
+        const makePresignedUrl = async () =>
+          presignedUrlExpirationSeconds
+            ? this.client.presignedUrl(
                 `GET`,
                 this.bucket,
-                path,
+                path as string,
                 presignedUrlExpirationSeconds
               )
-            : await this.client.presignedUrl(`GET`, this.bucket, path),
+            : this.client.presignedUrl(`GET`, this.bucket, path as string);
+
+        let url: string = '';
+
+        if (this.store) {
+          const found = await this.store.getPresignedUrl(id);
+
+          if (found && NextUpload.isExpired(found.presignedUrlExpires)) {
+            await this.store.deletePresignedUrl(id);
+          }
+
+          if (
+            !found ||
+            !found?.presignedUrl ||
+            NextUpload.isExpired(found.presignedUrlExpires)
+          ) {
+            url = await makePresignedUrl();
+            await this.store.savePresignedUrl(
+              id,
+              url,
+              presignedUrlExpirationSeconds
+            );
+          }
+        } else {
+          url = await makePresignedUrl();
+        }
+
+        const res: GetAsset = {
+          id,
+          url,
         };
 
         if (includeMetadataInSignedUrlResponse) {

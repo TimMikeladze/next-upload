@@ -24,4 +24,6 @@ export const drizzlePgAssetsTable = pgTable(`next_upload_assets`, {
   id: varchar(`id`).primaryKey(),
   data: jsonb(`data`).notNull(),
   expires: integer(`expires`),
+  presignedUrl: varchar(`presignedUrl`),
+  presignedUrlExpires: integer(`presignedUrlExpires`),
 });

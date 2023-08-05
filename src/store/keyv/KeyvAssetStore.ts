@@ -1,11 +1,40 @@
 import type Keyv from 'keyv';
 import { Asset, AssetStore } from '../../types';
+import { NextUpload } from '../../NextUpload';
 
 export class KeyvAssetStore implements AssetStore {
   private keyv: Keyv;
 
   constructor(keyv: Keyv) {
     this.keyv = keyv;
+  }
+
+  async deletePresignedUrl(id: string): Promise<void> {
+    await this.keyv.delete([id, 'presignedUrl'].join(':'));
+  }
+
+  async getPresignedUrl(id: string): Promise<{
+    presignedUrl?: string | null | undefined;
+    presignedUrlExpires?: number | null | undefined;
+  } | null> {
+    return this.keyv.get([id, 'presignedUrl'].join(':'));
+  }
+
+  async savePresignedUrl(
+    id: string,
+    url: string,
+    presignedUrlExpirationSeconds?: number | undefined
+  ): Promise<void> {
+    await this.keyv.set(
+      [id, 'presignedUrl'].join(':'),
+      {
+        presignedUrl: url,
+        presignedUrlExpires: presignedUrlExpirationSeconds
+          ? NextUpload.calculateExpires(presignedUrlExpirationSeconds * 1000)
+          : undefined,
+      },
+      presignedUrlExpirationSeconds ? presignedUrlExpirationSeconds * 1000 : 0
+    );
   }
 
   async all(): Promise<Asset[]> {
