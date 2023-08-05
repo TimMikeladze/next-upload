@@ -217,11 +217,13 @@ In certain scenarios you may need to mark an upload as verified once it has been
 
 To enable verification, set the `verifyAssets` config to `true` and instantiate `NextUpload` with an `AssetStore` instance.
 
-## ✂️ Pruning assets
-
 Now any file that is uploaded will have a `verified` property set to `false` by default. Once you have processed the file you can mark it as verified by calling `NextUpload.verifyAsset(id)`.
 
-Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to delete any assets that have not been verified within a specified time period.
+## ✂️ Pruning assets
+
+At any time you can call a `NextUpload.pruneAssets` to delete any assets that have expired due to lack of verification or to remove dangling files or records from the system.
+
+Consider setting up a cron job to run this function on a regular basis.
 
 <!-- TSDOC_START -->
 
@@ -240,25 +242,42 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 ### Methods
 
-- [namespaceFromEnv](#gear-namespacefromenv)
-- [bucketFromEnv](#gear-bucketfromenv)
-- [getIdFromPath](#gear-getidfrompath)
-- [getUploadTypeFromPath](#gear-getuploadtypefrompath)
-- [calculateExpires](#gear-calculateexpires)
-- [isExpired](#gear-isexpired)
-- [getBucket](#gear-getbucket)
-- [getClient](#gear-getclient)
-- [getConfig](#gear-getconfig)
-- [getStore](#gear-getstore)
-- [init](#gear-init)
-- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
-- [pruneAssets](#gear-pruneassets)
-- [verifyAsset](#gear-verifyasset)
-- [deleteAsset](#gear-deleteasset)
-- [getAsset](#gear-getasset)
-- [handler](#gear-handler)
-- [pagesApiHandler](#gear-pagesapihandler)
-- [rawHandler](#gear-rawhandler)
+- [🗃️ next-upload](#️-next-upload)
+  - [📡 Install](#-install)
+  - [🚀 Getting Started](#-getting-started)
+  - [🧳 Asset Store](#-asset-store)
+    - [🗝️ KeyvAssetStore - all popular databases supported](#️-keyvassetstore---all-popular-databases-supported)
+    - [☔️ Drizzle](#️-drizzle)
+      - [🐘 DrizzlePgAssetStore - Postgres](#-drizzlepgassetstore---postgres)
+    - [🔗 Getting an Asset Url](#-getting-an-asset-url)
+    - [🗑️ Deleting Assets](#️-deleting-assets)
+    - [🔎 Retrieving Assets](#-retrieving-assets)
+  - [📝 Metadata](#-metadata)
+  - [✅ Verifying uploads](#-verifying-uploads)
+  - [✂️ Pruning assets](#️-pruning-assets)
+  - [:wrench: Constants](#wrench-constants)
+    - [:gear: defaultEnabledHandlerActions](#gear-defaultenabledhandleractions)
+  - [:factory: NextUpload](#factory-nextupload)
+    - [Methods](#methods)
+      - [:gear: namespaceFromEnv](#gear-namespacefromenv)
+      - [:gear: bucketFromEnv](#gear-bucketfromenv)
+      - [:gear: getIdFromPath](#gear-getidfrompath)
+      - [:gear: getUploadTypeFromPath](#gear-getuploadtypefrompath)
+      - [:gear: calculateExpires](#gear-calculateexpires)
+      - [:gear: isExpired](#gear-isexpired)
+      - [:gear: getBucket](#gear-getbucket)
+      - [:gear: getClient](#gear-getclient)
+      - [:gear: getConfig](#gear-getconfig)
+      - [:gear: getStore](#gear-getstore)
+      - [:gear: init](#gear-init)
+      - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
+      - [:gear: pruneAssets](#gear-pruneassets)
+      - [:gear: verifyAsset](#gear-verifyasset)
+      - [:gear: deleteAsset](#gear-deleteasset)
+      - [:gear: getAsset](#gear-getasset)
+      - [:gear: handler](#gear-handler)
+      - [:gear: pagesApiHandler](#gear-pagesapihandler)
+      - [:gear: rawHandler](#gear-rawhandler)
 
 #### :gear: namespaceFromEnv
 
