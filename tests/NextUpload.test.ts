@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import { it, expect, describe, beforeEach, afterEach } from 'vitest';
+import { it, expect, describe, beforeEach, afterEach, vi } from 'vitest';
 import Keyv from 'keyv';
 import KeyvPostgres from '@keyv/postgres';
 import { nanoid } from 'nanoid';
@@ -11,6 +11,7 @@ import {
   AssetStore,
   NextUploadConfig,
   drizzlePgAssetsTable,
+  HandlerAction,
 } from '../src';
 import { DrizzlePgAssetStore } from '../src/store/drizzle/pg/DrizzlePgAssetStore';
 import { getDb } from './db/getDb';
@@ -57,8 +58,8 @@ const runTests = async (
       expect(await client.bucketExists(nup.getBucket())).toBe(true);
     });
 
-    describe(`generatePresignedPostPolicy`, () => {
-      it(`delete`, async () => {
+    describe(`deleteAsset`, () => {
+      it(`works`, async () => {
         const nup = new NextUpload(
           {
             ...nextUploadConfig,
@@ -77,7 +78,7 @@ const runTests = async (
           .getClient()
           .putObject(nup.getBucket(), signedPostPolicy.data.key, `test`);
 
-        const [presignedUrl] = await nup.getPresignedUrl({
+        const [presignedUrl] = await nup.getAssetUrl({
           id: signedPostPolicy.id,
           path: signedPostPolicy.path,
         });
@@ -92,7 +93,7 @@ const runTests = async (
           });
         }
 
-        await nup.delete({
+        await nup.deleteAsset({
           id: signedPostPolicy.id,
           path: signedPostPolicy.path,
         });
@@ -342,6 +343,72 @@ const runTests = async (
       expect(NextUpload.bucketFromEnv(`next-upload`)).toEqual(
         `localhost-next-upload-test`
       );
+    });
+
+    describe(`rawHandler`, () => {
+      it(`throws error if missing body`, async () => {
+        const nup = new NextUpload(nextUploadConfig, args.store);
+
+        const send = vi.fn();
+
+        await nup.rawHandler({
+          send,
+          request: {},
+        });
+
+        expect(send.mock.calls[0]).toMatchObject([
+          {
+            error: 'No body',
+          },
+          {
+            status: 400,
+          },
+        ]);
+      });
+      it(`throws error if missing action`, async () => {
+        const nup = new NextUpload(nextUploadConfig, args.store);
+
+        const send = vi.fn();
+
+        await nup.rawHandler({
+          send,
+          request: {
+            body: {},
+          },
+        });
+
+        expect(send.mock.calls[0]).toMatchObject([
+          {
+            error: 'No action',
+          },
+          {
+            status: 400,
+          },
+        ]);
+      });
+      it(`throws error if action not enabled`, async () => {
+        const nup = new NextUpload(nextUploadConfig, args.store);
+
+        const send = vi.fn();
+
+        await nup.rawHandler({
+          send,
+          request: {
+            body: {
+              action: HandlerAction.deleteAsset,
+            },
+          },
+        });
+
+        expect(send.mock.calls[0]).toMatchObject([
+          {
+            error: 'Action "deleteAsset" not enabled',
+          },
+          {
+            status: 400,
+          },
+        ]);
+      });
     });
   });
 };

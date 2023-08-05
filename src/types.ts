@@ -8,8 +8,11 @@ export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 // eslint-disable-next-line no-shadow
 export enum HandlerAction {
+  deleteAsset = 'deleteAsset',
   generatePresignedPostPolicy = 'generatePresignedPostPolicy',
-  getPresignedUrl = 'getPresignedUrl',
+  getAssetUrl = 'getAssetUrl',
+  pruneAssets = 'pruneAssets',
+  verifyAsset = 'verifyAsset',
 }
 
 export type SendFn = <JsonBody>(
@@ -62,7 +65,7 @@ export interface AssetStore {
 type ClientConfig = RequiredField<ClientOptions, 'region'>;
 
 export type UploadTypeConfigFn = (
-  args: Partial<GeneratePresignedPostPolicyArgs & GetPresignedUrlArgs>,
+  args: Partial<GeneratePresignedPostPolicyArgs & GetAssetUrlArgs>,
   request?: NextUploadRequest
 ) => Promise<UploadTypeConfig>;
 
@@ -72,6 +75,7 @@ export type NextUploadConfig = RequiredField<CommonConfig, 'maxSize'> & {
   api?: string;
   bucket?: string;
   client: ClientConfig;
+  enabledHandlerActions?: HandlerAction[];
   uploadTypes?: {
     [uploadType: string]: UploadTypeConfigFn | UploadTypeConfig;
   };
@@ -103,8 +107,8 @@ export type GeneratePresignedPostPolicyOptions = {
   requestInit?: any;
 };
 
-export type GetPresignedUrlOptions = {
-  args?: GetPresignedUrlArgs;
+export type GetAssetUrlOptions = {
+  args?: GetAssetUrlArgs;
   requestInit?: any;
 };
 
@@ -128,7 +132,7 @@ export type UploadOptions = GeneratePresignedPostPolicyArgs & {
   requestInit?: any;
 };
 
-export type GetPresignedUrlArgs = {
+export type GetAssetUrlArgs = {
   expiry?: number;
   id?: string;
   path?: string | null;
@@ -136,7 +140,7 @@ export type GetPresignedUrlArgs = {
   requestDate?: Date;
 };
 
-export type GetPresignedUrl = {
+export type GetAssetUrl = {
   id: string;
   metadata?: Metadata | null;
   url: string;

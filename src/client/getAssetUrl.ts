@@ -1,14 +1,14 @@
 import {
-  GetPresignedUrl,
-  GetPresignedUrlOptions,
+  GetAssetUrl,
+  GetAssetUrlOptions,
   HandlerAction,
   NextUploadClientConfig,
 } from '../types';
 
-export const getPresignedUrl = async (
-  options: GetPresignedUrlOptions,
+export const getAssetUrl = async (
+  options: GetAssetUrlOptions,
   config: NextUploadClientConfig
-): Promise<GetPresignedUrl[]> => {
+): Promise<GetAssetUrl[]> => {
   const api = config.api || `/upload`;
   const res = await fetch(api, {
     method: 'POST',
@@ -17,7 +17,7 @@ export const getPresignedUrl = async (
       ...options.requestInit?.headers,
     },
     body: JSON.stringify({
-      action: HandlerAction.getPresignedUrl,
+      action: HandlerAction.getAssetUrl,
       args: options.args,
       ...options.requestInit?.body,
     }),

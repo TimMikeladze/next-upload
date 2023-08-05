@@ -6,8 +6,8 @@ import { nanoid } from 'nanoid';
 import { NextApiRequest, NextApiResponse } from 'next';
 import {
   Asset,
-  GetPresignedUrl,
-  GetPresignedUrlArgs,
+  GetAssetUrl,
+  GetAssetUrlArgs,
   GeneratePresignedPostPolicyArgs,
   HandlerAction,
   HandlerArgs,
@@ -20,8 +20,13 @@ import {
   VerifyAssetArgs,
   UploadTypeConfigFn,
   GetStoreFn,
-  DeleteArgs,
+  DeleteArgs as DeleteAssetArgs,
 } from './types';
+
+export const defaultEnabledHandlerActions = [
+  HandlerAction.generatePresignedPostPolicy,
+  HandlerAction.getAssetUrl,
+];
 
 export class NextUpload {
   private static DEFAULT_TYPE = `default`;
@@ -403,7 +408,9 @@ export class NextUpload {
     );
   }
 
-  public async delete(args: DeleteArgs | DeleteArgs[]): Promise<void> {
+  public async deleteAsset(
+    args: DeleteAssetArgs | DeleteAssetArgs[]
+  ): Promise<void> {
     const data = Array.isArray(args) ? args : [args];
 
     await Promise.all(
@@ -441,10 +448,10 @@ export class NextUpload {
     );
   }
 
-  public async getPresignedUrl(
-    args: GetPresignedUrlArgs | GetPresignedUrlArgs[],
+  public async getAssetUrl(
+    args: GetAssetUrlArgs | GetAssetUrlArgs[],
     request?: NextUploadRequest
-  ): Promise<GetPresignedUrl[]> {
+  ): Promise<GetAssetUrl[]> {
     const data = Array.isArray(args) ? args : [args];
 
     return Promise.all(
@@ -519,7 +526,7 @@ export class NextUpload {
           }
         }
 
-        const res: GetPresignedUrl = {
+        const res: GetAssetUrl = {
           id,
           url: presignedUrlExpirationSeconds
             ? await this.client.presignedUrl(
@@ -583,6 +590,13 @@ export class NextUpload {
       return send({ error: `No action` }, { status: 400 });
     }
 
+    const enabledActions =
+      this.config.enabledHandlerActions || defaultEnabledHandlerActions;
+
+    if (!enabledActions.includes(action)) {
+      return send({ error: `Action "${action}" not enabled` }, { status: 400 });
+    }
+
     await this.init();
 
     try {
@@ -592,10 +606,27 @@ export class NextUpload {
 
           return send(res);
         }
-        case HandlerAction.getPresignedUrl: {
-          const res = await this.getPresignedUrl(args, request);
+        case HandlerAction.getAssetUrl: {
+          const res = await this.getAssetUrl(args, request);
 
           return send(res);
+        }
+        case HandlerAction.deleteAsset: {
+          await this.deleteAsset(args);
+
+          return send({});
+        }
+        case HandlerAction.verifyAsset: {
+          const assets = await this.verifyAsset(args);
+
+          return send({
+            assets,
+          });
+        }
+        case HandlerAction.pruneAssets: {
+          await this.pruneAssets();
+
+          return send({});
         }
         default: {
           return send({ error: `Unknown action "${action}"` }, { status: 400 });

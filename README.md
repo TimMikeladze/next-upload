@@ -156,6 +156,31 @@ export const nup = new NextUpload(
 );
 ```
 
+### 🔗 Getting an Asset Url
+
+Once you have uploaded a file you can retrieve the url, id and metadata of the asset using the `NextUpload.getAssetUrl` function.
+
+```tsx
+const [asset] = await nup.getAssetUrl({
+  id: 'id of the asset',
+  // or provide a path
+  path: 'path of the asset',
+})
+
+```
+
+### 🗑️ Deleting Assets
+
+You can delete an asset with `NextUpload.delete`. This will delete the asset from your storage service and the asset store if you have one configured.
+
+```tsx
+await nup.delete({
+  id: 'id of the asset',
+  // or provide a path
+  path: 'path of the asset',
+})
+```
+
 ### 🔎 Retrieving Assets
 
 Once you have uploaded a file you can retrieve it from the database using the `AssetStore` instance.
@@ -164,18 +189,6 @@ Once you have uploaded a file you can retrieve it from the database using the `A
 const assetStore = nup.getStore();
 
 await assetStore.find('id of the asset');
-```
-
-### 🗑️ Deleting Assets
-
-You can delete an asset with `NextUpload.delete`. This will delete the asset from your storage service and the asset store if you have one configured.
-
-```tsx
-const assetStore = await nup.delete({
-  id: 'id of the asset',
-  // or provide a path
-  path: 'path of the asset',
-})
 ```
 
 ## 📝 Metadata
@@ -212,43 +225,40 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 <!-- TSDOC_START -->
 
+## :wrench: Constants
+
+- [defaultEnabledHandlerActions](#gear-defaultenabledhandleractions)
+
+### :gear: defaultEnabledHandlerActions
+
+| Constant | Type |
+| ---------- | ---------- |
+| `defaultEnabledHandlerActions` | `HandlerAction[]` |
+
+
 ## :factory: NextUpload
 
 ### Methods
 
-- [🗃️ next-upload](#️-next-upload)
-  - [📡 Install](#-install)
-  - [🚀 Getting Started](#-getting-started)
-  - [🧳 Asset Store](#-asset-store)
-    - [🗝️ KeyvAssetStore - all popular databases supported](#️-keyvassetstore---all-popular-databases-supported)
-    - [☔️ Drizzle](#️-drizzle)
-      - [🐘 DrizzlePgAssetStore - Postgres](#-drizzlepgassetstore---postgres)
-    - [🔎 Retrieving Assets](#-retrieving-assets)
-    - [🗑️ Deleting Assets](#️-deleting-assets)
-  - [📝 Metadata](#-metadata)
-  - [✅ Verifying uploads](#-verifying-uploads)
-  - [✂️ Pruning assets](#️-pruning-assets)
-  - [:factory: NextUpload](#factory-nextupload)
-    - [Methods](#methods)
-      - [:gear: namespaceFromEnv](#gear-namespacefromenv)
-      - [:gear: bucketFromEnv](#gear-bucketfromenv)
-      - [:gear: getIdFromPath](#gear-getidfrompath)
-      - [:gear: getUploadTypeFromPath](#gear-getuploadtypefrompath)
-      - [:gear: calculateExpires](#gear-calculateexpires)
-      - [:gear: isExpired](#gear-isexpired)
-      - [:gear: getBucket](#gear-getbucket)
-      - [:gear: getClient](#gear-getclient)
-      - [:gear: getConfig](#gear-getconfig)
-      - [:gear: getStore](#gear-getstore)
-      - [:gear: init](#gear-init)
-      - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
-      - [:gear: pruneAssets](#gear-pruneassets)
-      - [:gear: verifyAsset](#gear-verifyasset)
-      - [:gear: delete](#gear-delete)
-      - [:gear: getPresignedUrl](#gear-getpresignedurl)
-      - [:gear: handler](#gear-handler)
-      - [:gear: pagesApiHandler](#gear-pagesapihandler)
-      - [:gear: rawHandler](#gear-rawhandler)
+- [namespaceFromEnv](#gear-namespacefromenv)
+- [bucketFromEnv](#gear-bucketfromenv)
+- [getIdFromPath](#gear-getidfrompath)
+- [getUploadTypeFromPath](#gear-getuploadtypefrompath)
+- [calculateExpires](#gear-calculateexpires)
+- [isExpired](#gear-isexpired)
+- [getBucket](#gear-getbucket)
+- [getClient](#gear-getclient)
+- [getConfig](#gear-getconfig)
+- [getStore](#gear-getstore)
+- [init](#gear-init)
+- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
+- [pruneAssets](#gear-pruneassets)
+- [verifyAsset](#gear-verifyasset)
+- [deleteAsset](#gear-deleteasset)
+- [getAssetUrl](#gear-getasseturl)
+- [handler](#gear-handler)
+- [pagesApiHandler](#gear-pagesapihandler)
+- [rawHandler](#gear-rawhandler)
 
 #### :gear: namespaceFromEnv
 
@@ -334,35 +344,35 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 | ---------- | ---------- |
 | `verifyAsset` | `(args: VerifyAssetArgs or VerifyAssetArgs[]) => Promise<Asset[]>` |
 
-#### :gear: delete
+#### :gear: deleteAsset
 
 | Method | Type |
 | ---------- | ---------- |
-| `delete` | `(args: DeleteArgs or DeleteArgs[]) => Promise<void>` |
+| `deleteAsset` | `(args: DeleteArgs or DeleteArgs[]) => Promise<void>` |
 
-#### :gear: getPresignedUrl
+#### :gear: getAssetUrl
 
 | Method | Type |
 | ---------- | ---------- |
-| `getPresignedUrl` | `(args: GetPresignedUrlArgs or GetPresignedUrlArgs[], request?: NextUploadRequest) => Promise<GetPresignedUrl[]>` |
+| `getAssetUrl` | `(args: GetAssetUrlArgs or GetAssetUrlArgs[], request?: NextUploadRequest) => Promise<GetAssetUrl[]>` |
 
 #### :gear: handler
 
 | Method | Type |
 | ---------- | ---------- |
-| `handler` | `(request: NextRequest) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<GetPresignedUrl[]> | NextResponse<...>>` |
+| `handler` | `(request: NextRequest) => Promise<void or NextResponse<{}>>` |
 
 #### :gear: pagesApiHandler
 
 | Method | Type |
 | ---------- | ---------- |
-| `pagesApiHandler` | `(request: NextApiRequest, response: NextApiResponse) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<GetPresignedUrl[]> | NextResponse<...>>` |
+| `pagesApiHandler` | `(request: NextApiRequest, response: NextApiResponse) => Promise<void or NextResponse<{}>>` |
 
 #### :gear: rawHandler
 
 | Method | Type |
 | ---------- | ---------- |
-| `rawHandler` | `(handlerArgs: HandlerArgs) => Promise<void or NextResponse<SignedPostPolicy> | NextResponse<GetPresignedUrl[]> | NextResponse<...>>` |
+| `rawHandler` | `(handlerArgs: HandlerArgs) => Promise<void or NextResponse<{}>>` |
 
 
 <!-- TSDOC_END -->

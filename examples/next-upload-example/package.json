@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "link": "yarn yalc link next-upload && yarn link next-upload",
     "build": "node vercel.js && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "link:self": "yarn yalc link next-upload && yarn link next-upload"
   },
   "dependencies": {
     "@keyv/postgres": "^1.4.8",
