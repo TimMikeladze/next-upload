@@ -507,7 +507,8 @@ export class NextUpload {
 
         const presignedUrlExpirationSeconds =
           config.presignedUrlExpirationSeconds ||
-          this.config.presignedUrlExpirationSeconds;
+          this.config.presignedUrlExpirationSeconds ||
+          604800; /* 7 days */
 
         const includeMetadataInSignedUrlResponse =
           config.includeMetadataInSignedUrlResponse ||
