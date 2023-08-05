@@ -4,7 +4,8 @@ A turn-key solution for integrating Next.js with signed & secure file-uploads to
 
 Check out this [example](https://github.com/TimMikeladze/next-upload/tree/master/examples/next-upload-example) of a Next.js codebase showcasing an advanced implementation of `next-upload`.
 
-## Install
+
+## ⤵️ Install
 
 ```console
 npm install next-upload
@@ -14,7 +15,9 @@ yarn add next-upload
 pnpm add next-upload
 ```
 
-## Configuration
+> 👋 Hello there! Follow me [@linesofcode](https://twitter.com/linesofcode) or visit [linesofcode.dev](https://linesofcode.dev) for more cool projects like this one.
+
+## 🏃 Getting Started
 
 First let's create a `NextUploadConfig` that defines how to connect to a storage service, different types of file uploads, size limits and more. The example below uses AWS S3 as the storage service but you can use any S3 compatible service.
 
@@ -90,13 +93,15 @@ const FileUpload = () => {
 export default FileUpload;
 ```
 
-## Asset Store
+## 🧳 Asset Store
 
 It's often useful to save an additional reference to the uploaded file in your database. This can be used for things like displaying a list of files that have been uploaded or associating a file with a specific user within your application without having to query the storage service directly. `next-upload` provides an interface that can be implemented with any database of your choice.  
 
-Out of the box the following implementations of `AssetStore`
+> 🙋 Is your database missing? Implementing the [`AssetStore`](https://github.com/TimMikeladze/next-upload/blob/master/src/types.ts#L55) is very straight-forward. Feel free to open a PR with your implementation or [open an issue](https://github.com/TimMikeladze/next-upload/issues/new) to request a new asset store implementation.
 
-### KeyvAssetStore
+Out of the box `next-upload` provides the following asset store implementations:
+
+### 🗝️ KeyvAssetStore
 
 Works with any [keyv](https://github.com/jaredwray/) enabled store. This includes popular databases such as Postgres, MySQL and Mongo. This is a simple option for getting started with an asset store with minimal overhead. **Warning:** Using keyv is inherently slower than using a more specific database client. If you are expecting a high volume of reads/writes to your asset store you should consider using a different implementation.
 
@@ -121,9 +126,11 @@ export const nup = new NextUpload(
 );
 ```
 
-### DrizzlePgAssetStore
+### ☔️ Drizzle
 
-Works with a [Drizzle](https://github.com/drizzle-team/drizzle-orm) Postgres database. This is a great option if you are already using Drizzle in your application and want tighter integration with your database schema. It also provides a more performant option for high volume reads/writes to your asset store. 
+Works with a [Drizzle](https://github.com/drizzle-team/drizzle-orm) enabled database. This is a great option if you are already using Drizzle in your application and want tighter integration with your database schema. It also provides a more performant option for high volume reads/writes to your asset store. 
+
+#### 🐘 DrizzlePgAssetStore - Postgres
 
 **Note:** You must import and reexport `drizzlePgAssetsTable` from your Drizzle schema file as part of the database migration process to setup the asset store table.
 
@@ -146,7 +153,7 @@ export const nup = new NextUpload(
 );
 ```
 
-### Retrieving Assets
+### 🔎 Retrieving Assets
 
 Once you have uploaded a file you can retrieve it from the database using the `AssetStore` instance.
 
@@ -156,7 +163,7 @@ const assetStore = nup.getStore();
 await assetStore.find('id of the asset');
 ```
 
-## Metadata
+## 📝 Metadata
 
 Using an `AssetStore` enables you to save additional metadata about the file as part of the upload process. This can be useful for storing things like the original file name, user id of the uploader, or any other information you want to associate with the file.
 
@@ -176,11 +183,13 @@ await upload(
 );
 ```
 
-## Verifying uploads & Pruning assets
+## ✅ Verifying uploads 
 
-Often times you will want to mark an upload as verified once it has been processed by your application.
+In certain scenarios you may need to mark an upload as verified once it has been processed by your application.
 
 To enable verification, set the `verifyAssets` config to `true` and instantiate `NextUpload` with an `AssetStore` instance.
+
+## ✂️ Pruning assets
 
 Now any file that is uploaded will have a `verified` property set to `false` by default. Once you have processed the file you can mark it as verified by calling `NextUpload.verifyAsset(id)`.
 
