@@ -4,8 +4,9 @@ A turn-key solution for integrating Next.js with signed & secure file-uploads to
 
 Check out this [example](https://github.com/TimMikeladze/next-upload/tree/master/examples/next-upload-example) of a Next.js codebase showcasing an advanced implementation of `next-upload`.
 
+> 🚧 Under active development. Expect breaking changes until v1.0.0.
 
-## ⤵️ Install
+## 📡 Install
 
 ```console
 npm install next-upload
@@ -17,7 +18,7 @@ pnpm add next-upload
 
 > 👋 Hello there! Follow me [@linesofcode](https://twitter.com/linesofcode) or visit [linesofcode.dev](https://linesofcode.dev) for more cool projects like this one.
 
-## 🏃 Getting Started
+## 🚀 Getting Started
 
 First let's create a `NextUploadConfig` that defines how to connect to a storage service, different types of file uploads, size limits and more. The example below uses AWS S3 as the storage service but you can use any S3 compatible service.
 
@@ -36,6 +37,8 @@ export const config: NextUploadConfig = {
 ```
 
 Now to integrate with Next.js we need to create an HTTP route that will handle `next-upload` related requests such as generating signed URLs. In the example below we are using a `POST` route at `/upload` with the Next.js App router. If you are using the Pages router or a different framework you can leverage the `NextUpload.pagesApiHandler` or `NextUpload.rawHandler` functions directly to achieve the same result.
+
+> 🔒 Note: this a good place to add authentication to your upload route to restrict who has access to upload files.
 
 **src/app/upload/route.ts**
 
@@ -101,7 +104,7 @@ It's often useful to save an additional reference to the uploaded file in your d
 
 Out of the box `next-upload` provides the following asset store implementations:
 
-### 🗝️ KeyvAssetStore
+### 🗝️ KeyvAssetStore - all popular databases supported
 
 Works with any [keyv](https://github.com/jaredwray/) enabled store. This includes popular databases such as Postgres, MySQL and Mongo. This is a simple option for getting started with an asset store with minimal overhead. **Warning:** Using keyv is inherently slower than using a more specific database client. If you are expecting a high volume of reads/writes to your asset store you should consider using a different implementation.
 
@@ -201,24 +204,37 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 ### Methods
 
-- [namespaceFromEnv](#gear-namespacefromenv)
-- [bucketFromEnv](#gear-bucketfromenv)
-- [getIdFromPath](#gear-getidfrompath)
-- [getUploadTypeFromPath](#gear-getuploadtypefrompath)
-- [calculateExpires](#gear-calculateexpires)
-- [isExpired](#gear-isexpired)
-- [getBucket](#gear-getbucket)
-- [getClient](#gear-getclient)
-- [getConfig](#gear-getconfig)
-- [getStore](#gear-getstore)
-- [init](#gear-init)
-- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
-- [pruneAssets](#gear-pruneassets)
-- [verifyAsset](#gear-verifyasset)
-- [getPresignedUrl](#gear-getpresignedurl)
-- [handler](#gear-handler)
-- [pagesApiHandler](#gear-pagesapihandler)
-- [rawHandler](#gear-rawhandler)
+- [🗃️ next-upload](#️-next-upload)
+  - [📡 Install](#-install)
+  - [🚀 Getting Started](#-getting-started)
+  - [🧳 Asset Store](#-asset-store)
+    - [🗝️ KeyvAssetStore - all popular databases supported](#️-keyvassetstore---all-popular-databases-supported)
+    - [☔️ Drizzle](#️-drizzle)
+      - [🐘 DrizzlePgAssetStore - Postgres](#-drizzlepgassetstore---postgres)
+    - [🔎 Retrieving Assets](#-retrieving-assets)
+  - [📝 Metadata](#-metadata)
+  - [✅ Verifying uploads](#-verifying-uploads)
+  - [✂️ Pruning assets](#️-pruning-assets)
+  - [:factory: NextUpload](#factory-nextupload)
+    - [Methods](#methods)
+      - [:gear: namespaceFromEnv](#gear-namespacefromenv)
+      - [:gear: bucketFromEnv](#gear-bucketfromenv)
+      - [:gear: getIdFromPath](#gear-getidfrompath)
+      - [:gear: getUploadTypeFromPath](#gear-getuploadtypefrompath)
+      - [:gear: calculateExpires](#gear-calculateexpires)
+      - [:gear: isExpired](#gear-isexpired)
+      - [:gear: getBucket](#gear-getbucket)
+      - [:gear: getClient](#gear-getclient)
+      - [:gear: getConfig](#gear-getconfig)
+      - [:gear: getStore](#gear-getstore)
+      - [:gear: init](#gear-init)
+      - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
+      - [:gear: pruneAssets](#gear-pruneassets)
+      - [:gear: verifyAsset](#gear-verifyasset)
+      - [:gear: getPresignedUrl](#gear-getpresignedurl)
+      - [:gear: handler](#gear-handler)
+      - [:gear: pagesApiHandler](#gear-pagesapihandler)
+      - [:gear: rawHandler](#gear-rawhandler)
 
 #### :gear: namespaceFromEnv
 
