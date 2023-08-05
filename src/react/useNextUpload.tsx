@@ -19,13 +19,15 @@ export const useNextUpload = (config: NextUploadClientConfig = {}) => {
       (x) => x.file
     );
     setFiles((prev) => [...prev, ...acceptedFiles]);
-    _upload(options, config)
-      .then((res) => {
-        setSignedPostPolicies((prev) => [...prev, ...res]);
-      })
-      .finally(() => {
-        setIsUploading(false);
-      });
+
+    try {
+      const res = await _upload(options, config);
+      await setSignedPostPolicies((prev) => [...prev, ...res]);
+    } catch (error) {
+      //
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const reset = () => {
