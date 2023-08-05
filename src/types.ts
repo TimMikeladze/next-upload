@@ -10,7 +10,7 @@ export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 export enum HandlerAction {
   deleteAsset = 'deleteAsset',
   generatePresignedPostPolicy = 'generatePresignedPostPolicy',
-  getAssetUrl = 'getAssetUrl',
+  getAsset = 'getAsset',
   pruneAssets = 'pruneAssets',
   verifyAsset = 'verifyAsset',
 }
@@ -65,7 +65,7 @@ export interface AssetStore {
 type ClientConfig = RequiredField<ClientOptions, 'region'>;
 
 export type UploadTypeConfigFn = (
-  args: Partial<GeneratePresignedPostPolicyArgs & GetAssetUrlArgs>,
+  args: Partial<GeneratePresignedPostPolicyArgs & GetAssetArgs>,
   request?: NextUploadRequest
 ) => Promise<UploadTypeConfig>;
 
@@ -107,8 +107,8 @@ export type GeneratePresignedPostPolicyOptions = {
   requestInit?: any;
 };
 
-export type GetAssetUrlOptions = {
-  args?: GetAssetUrlArgs;
+export type GetAssetOptions = {
+  args?: GetAssetArgs;
   requestInit?: any;
 };
 
@@ -132,7 +132,7 @@ export type UploadOptions = GeneratePresignedPostPolicyArgs & {
   requestInit?: any;
 };
 
-export type GetAssetUrlArgs = {
+export type GetAssetArgs = {
   expiry?: number;
   id?: string;
   path?: string | null;
@@ -140,7 +140,7 @@ export type GetAssetUrlArgs = {
   requestDate?: Date;
 };
 
-export type GetAssetUrl = {
+export type GetAsset = {
   id: string;
   metadata?: Metadata | null;
   url: string;

@@ -158,10 +158,10 @@ export const nup = new NextUpload(
 
 ### 🔗 Getting an Asset Url
 
-Once you have uploaded a file you can retrieve the url, id and metadata of the asset using the `NextUpload.getAssetUrl` function.
+Once you have uploaded a file you can retrieve the url, id and metadata of the asset using the `NextUpload.getAsset` function.
 
 ```tsx
-const [asset] = await nup.getAssetUrl({
+const [asset] = await nup.getAsset({
   id: 'id of the asset',
   // or provide a path
   path: 'path of the asset',
@@ -240,42 +240,25 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 ### Methods
 
-- [🗃️ next-upload](#️-next-upload)
-  - [📡 Install](#-install)
-  - [🚀 Getting Started](#-getting-started)
-  - [🧳 Asset Store](#-asset-store)
-    - [🗝️ KeyvAssetStore - all popular databases supported](#️-keyvassetstore---all-popular-databases-supported)
-    - [☔️ Drizzle](#️-drizzle)
-      - [🐘 DrizzlePgAssetStore - Postgres](#-drizzlepgassetstore---postgres)
-    - [🔗 Getting an Asset Url](#-getting-an-asset-url)
-    - [🗑️ Deleting Assets](#️-deleting-assets)
-    - [🔎 Retrieving Assets](#-retrieving-assets)
-  - [📝 Metadata](#-metadata)
-  - [✅ Verifying uploads](#-verifying-uploads)
-  - [✂️ Pruning assets](#️-pruning-assets)
-  - [:wrench: Constants](#wrench-constants)
-    - [:gear: defaultEnabledHandlerActions](#gear-defaultenabledhandleractions)
-  - [:factory: NextUpload](#factory-nextupload)
-    - [Methods](#methods)
-      - [:gear: namespaceFromEnv](#gear-namespacefromenv)
-      - [:gear: bucketFromEnv](#gear-bucketfromenv)
-      - [:gear: getIdFromPath](#gear-getidfrompath)
-      - [:gear: getUploadTypeFromPath](#gear-getuploadtypefrompath)
-      - [:gear: calculateExpires](#gear-calculateexpires)
-      - [:gear: isExpired](#gear-isexpired)
-      - [:gear: getBucket](#gear-getbucket)
-      - [:gear: getClient](#gear-getclient)
-      - [:gear: getConfig](#gear-getconfig)
-      - [:gear: getStore](#gear-getstore)
-      - [:gear: init](#gear-init)
-      - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
-      - [:gear: pruneAssets](#gear-pruneassets)
-      - [:gear: verifyAsset](#gear-verifyasset)
-      - [:gear: deleteAsset](#gear-deleteasset)
-      - [:gear: getAssetUrl](#gear-getasseturl)
-      - [:gear: handler](#gear-handler)
-      - [:gear: pagesApiHandler](#gear-pagesapihandler)
-      - [:gear: rawHandler](#gear-rawhandler)
+- [namespaceFromEnv](#gear-namespacefromenv)
+- [bucketFromEnv](#gear-bucketfromenv)
+- [getIdFromPath](#gear-getidfrompath)
+- [getUploadTypeFromPath](#gear-getuploadtypefrompath)
+- [calculateExpires](#gear-calculateexpires)
+- [isExpired](#gear-isexpired)
+- [getBucket](#gear-getbucket)
+- [getClient](#gear-getclient)
+- [getConfig](#gear-getconfig)
+- [getStore](#gear-getstore)
+- [init](#gear-init)
+- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
+- [pruneAssets](#gear-pruneassets)
+- [verifyAsset](#gear-verifyasset)
+- [deleteAsset](#gear-deleteasset)
+- [getAsset](#gear-getasset)
+- [handler](#gear-handler)
+- [pagesApiHandler](#gear-pagesapihandler)
+- [rawHandler](#gear-rawhandler)
 
 #### :gear: namespaceFromEnv
 
@@ -367,11 +350,11 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 | ---------- | ---------- |
 | `deleteAsset` | `(args: DeleteArgs or DeleteArgs[]) => Promise<void>` |
 
-#### :gear: getAssetUrl
+#### :gear: getAsset
 
 | Method | Type |
 | ---------- | ---------- |
-| `getAssetUrl` | `(args: GetAssetUrlArgs or GetAssetUrlArgs[], request?: NextUploadRequest) => Promise<GetAssetUrl[]>` |
+| `getAsset` | `(args: GetAssetArgs or GetAssetArgs[], request?: NextUploadRequest) => Promise<GetAsset[]>` |
 
 #### :gear: handler
 

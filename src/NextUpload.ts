@@ -6,8 +6,8 @@ import { nanoid } from 'nanoid';
 import { NextApiRequest, NextApiResponse } from 'next';
 import {
   Asset,
-  GetAssetUrl,
-  GetAssetUrlArgs,
+  GetAsset,
+  GetAssetArgs,
   GeneratePresignedPostPolicyArgs,
   HandlerAction,
   HandlerArgs,
@@ -25,7 +25,7 @@ import {
 
 export const defaultEnabledHandlerActions = [
   HandlerAction.generatePresignedPostPolicy,
-  HandlerAction.getAssetUrl,
+  HandlerAction.getAsset,
 ];
 
 export class NextUpload {
@@ -448,10 +448,10 @@ export class NextUpload {
     );
   }
 
-  public async getAssetUrl(
-    args: GetAssetUrlArgs | GetAssetUrlArgs[],
+  public async getAsset(
+    args: GetAssetArgs | GetAssetArgs[],
     request?: NextUploadRequest
-  ): Promise<GetAssetUrl[]> {
+  ): Promise<GetAsset[]> {
     const data = Array.isArray(args) ? args : [args];
 
     return Promise.all(
@@ -526,7 +526,7 @@ export class NextUpload {
           }
         }
 
-        const res: GetAssetUrl = {
+        const res: GetAsset = {
           id,
           url: presignedUrlExpirationSeconds
             ? await this.client.presignedUrl(
@@ -606,8 +606,8 @@ export class NextUpload {
 
           return send(res);
         }
-        case HandlerAction.getAssetUrl: {
-          const res = await this.getAssetUrl(args, request);
+        case HandlerAction.getAsset: {
+          const res = await this.getAsset(args, request);
 
           return send(res);
         }

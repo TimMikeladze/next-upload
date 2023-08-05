@@ -78,7 +78,7 @@ const runTests = async (
           .getClient()
           .putObject(nup.getBucket(), signedPostPolicy.data.key, `test`);
 
-        const [presignedUrl] = await nup.getAssetUrl({
+        const [presignedUrl] = await nup.getAsset({
           id: signedPostPolicy.id,
           path: signedPostPolicy.path,
         });

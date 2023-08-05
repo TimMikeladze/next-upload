@@ -1,14 +1,14 @@
 import {
-  GetAssetUrl,
-  GetAssetUrlOptions,
+  GetAsset,
+  GetAssetOptions,
   HandlerAction,
   NextUploadClientConfig,
 } from '../types';
 
-export const getAssetUrl = async (
-  options: GetAssetUrlOptions,
+export const getAsset = async (
+  options: GetAssetOptions,
   config: NextUploadClientConfig
-): Promise<GetAssetUrl[]> => {
+): Promise<GetAsset[]> => {
   const api = config.api || `/upload`;
   const res = await fetch(api, {
     method: 'POST',
@@ -17,7 +17,7 @@ export const getAssetUrl = async (
       ...options.requestInit?.headers,
     },
     body: JSON.stringify({
-      action: HandlerAction.getAssetUrl,
+      action: HandlerAction.getAsset,
       args: options.args,
       ...options.requestInit?.body,
     }),
