@@ -1760,10 +1760,10 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
-next-upload@^0.0.17:
-  version "0.0.17"
-  resolved "https://registry.yarnpkg.com/next-upload/-/next-upload-0.0.17.tgz#5420fc97374f474c6a6813412bced4383cf53819"
-  integrity sha512-2DgCypmKEKj7wI2zoGB/fKREx+t0s4Gk++8plPL/2gDB+HtSlrmKOd8wtDovHNRZYmkYVp1RpyGVWGV39waPDQ==
+next-upload@^0.0.19:
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/next-upload/-/next-upload-0.0.19.tgz#5021476c9466d9454493ee0a10038bfa6ad31536"
+  integrity sha512-S4A/+OHjM3T/xBnAsuKO9rQlgQzqf8N3HAlJEt4lcAWakbOB7KI2fpWBijSCf3BDHWZHck/W8g4pt2/Zyo8UNQ==
   dependencies:
     bytes "^3.1.2"
     minio "^7.1.1"
