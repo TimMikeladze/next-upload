@@ -171,10 +171,10 @@ const [asset] = await nup.getAssetUrl({
 
 ### 🗑️ Deleting Assets
 
-You can delete an asset with `NextUpload.delete`. This will delete the asset from your storage service and the asset store if you have one configured.
+You can delete an asset with `NextUpload.deleteAsset`. This will delete the asset from your storage service and the asset store if you have one configured.
 
 ```tsx
-await nup.delete({
+await nup.deleteAsset({
   id: 'id of the asset',
   // or provide a path
   path: 'path of the asset',
@@ -240,25 +240,42 @@ Additionally, you can call a `NextUpload.pruneAssets` as part of a cron job to d
 
 ### Methods
 
-- [namespaceFromEnv](#gear-namespacefromenv)
-- [bucketFromEnv](#gear-bucketfromenv)
-- [getIdFromPath](#gear-getidfrompath)
-- [getUploadTypeFromPath](#gear-getuploadtypefrompath)
-- [calculateExpires](#gear-calculateexpires)
-- [isExpired](#gear-isexpired)
-- [getBucket](#gear-getbucket)
-- [getClient](#gear-getclient)
-- [getConfig](#gear-getconfig)
-- [getStore](#gear-getstore)
-- [init](#gear-init)
-- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
-- [pruneAssets](#gear-pruneassets)
-- [verifyAsset](#gear-verifyasset)
-- [deleteAsset](#gear-deleteasset)
-- [getAssetUrl](#gear-getasseturl)
-- [handler](#gear-handler)
-- [pagesApiHandler](#gear-pagesapihandler)
-- [rawHandler](#gear-rawhandler)
+- [🗃️ next-upload](#️-next-upload)
+  - [📡 Install](#-install)
+  - [🚀 Getting Started](#-getting-started)
+  - [🧳 Asset Store](#-asset-store)
+    - [🗝️ KeyvAssetStore - all popular databases supported](#️-keyvassetstore---all-popular-databases-supported)
+    - [☔️ Drizzle](#️-drizzle)
+      - [🐘 DrizzlePgAssetStore - Postgres](#-drizzlepgassetstore---postgres)
+    - [🔗 Getting an Asset Url](#-getting-an-asset-url)
+    - [🗑️ Deleting Assets](#️-deleting-assets)
+    - [🔎 Retrieving Assets](#-retrieving-assets)
+  - [📝 Metadata](#-metadata)
+  - [✅ Verifying uploads](#-verifying-uploads)
+  - [✂️ Pruning assets](#️-pruning-assets)
+  - [:wrench: Constants](#wrench-constants)
+    - [:gear: defaultEnabledHandlerActions](#gear-defaultenabledhandleractions)
+  - [:factory: NextUpload](#factory-nextupload)
+    - [Methods](#methods)
+      - [:gear: namespaceFromEnv](#gear-namespacefromenv)
+      - [:gear: bucketFromEnv](#gear-bucketfromenv)
+      - [:gear: getIdFromPath](#gear-getidfrompath)
+      - [:gear: getUploadTypeFromPath](#gear-getuploadtypefrompath)
+      - [:gear: calculateExpires](#gear-calculateexpires)
+      - [:gear: isExpired](#gear-isexpired)
+      - [:gear: getBucket](#gear-getbucket)
+      - [:gear: getClient](#gear-getclient)
+      - [:gear: getConfig](#gear-getconfig)
+      - [:gear: getStore](#gear-getstore)
+      - [:gear: init](#gear-init)
+      - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
+      - [:gear: pruneAssets](#gear-pruneassets)
+      - [:gear: verifyAsset](#gear-verifyasset)
+      - [:gear: deleteAsset](#gear-deleteasset)
+      - [:gear: getAssetUrl](#gear-getasseturl)
+      - [:gear: handler](#gear-handler)
+      - [:gear: pagesApiHandler](#gear-pagesapihandler)
+      - [:gear: rawHandler](#gear-rawhandler)
 
 #### :gear: namespaceFromEnv
 
