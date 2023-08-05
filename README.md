@@ -38,7 +38,7 @@ export const config: NextUploadConfig = {
 
 Now to integrate with Next.js we need to create an HTTP route that will handle `next-upload` related requests such as generating signed URLs. In the example below we are using a `POST` route at `/upload` with the Next.js App router. If you are using the Pages router or a different framework you can leverage the `NextUpload.pagesApiHandler` or `NextUpload.rawHandler` functions directly to achieve the same result.
 
-> 🔒 Note: this a good place to add authentication to your upload route to restrict who has access to upload files.
+> 🔒 This a good place to add authentication to your upload route to restrict who has access to upload files.
 
 **src/app/upload/route.ts**
 
