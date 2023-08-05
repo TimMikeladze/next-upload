@@ -1,9 +1,9 @@
 import {
   pgTable,
   jsonb,
-  integer,
   timestamp,
   varchar,
+  bigint,
 } from 'drizzle-orm/pg-core';
 
 const createdAt = timestamp(`createdAt`, {
@@ -23,7 +23,11 @@ export const drizzlePgAssetsTable = pgTable(`next_upload_assets`, {
   updatedAt,
   id: varchar(`id`).primaryKey(),
   data: jsonb(`data`).notNull(),
-  expires: integer(`expires`),
+  expires: bigint(`expires`, {
+    mode: 'number',
+  }),
   presignedUrl: varchar(`presignedUrl`),
-  presignedUrlExpires: integer(`presignedUrlExpires`),
+  presignedUrlExpires: bigint(`presignedUrlExpires`, {
+    mode: 'number',
+  }),
 });

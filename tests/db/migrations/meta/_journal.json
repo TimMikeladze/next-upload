@@ -15,6 +15,13 @@
       "when": 1691225883458,
       "tag": "0001_sticky_thunderbolt_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1691227170364,
+      "tag": "0002_brave_argent",
+      "breakpoints": true
     }
   ]
 }
