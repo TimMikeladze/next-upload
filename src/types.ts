@@ -41,7 +41,7 @@ export type UploadTypeConfig = CommonConfig & {
 export type Asset = {
   bucket: string;
   createdAt: Date;
-  expires?: number | null;
+  expires?: number | null | undefined;
   fileType: string;
   id: string;
   metadata: Metadata;
