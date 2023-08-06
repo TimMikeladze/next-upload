@@ -21,6 +21,7 @@ import {
   UploadTypeConfigFn,
   GetStoreFn,
   DeleteArgs as DeleteAssetArgs,
+  PruneAssetsArgs,
 } from './types';
 
 export const defaultEnabledHandlerActions = [
@@ -321,12 +322,14 @@ export class NextUpload {
     };
   }
 
-  public async pruneAssets() {
+  public async pruneAssets(args: PruneAssetsArgs) {
     if (!this.store) {
       throw new Error(
         `'pruneAssets' config requires NextUpload to be instantiated with a store`
       );
     }
+
+    const limit = args?.limit;
 
     const objects = await new Promise<BucketItem[]>((resolve, reject) => {
       const objectsStream = this.client.listObjectsV2(this.bucket, '', true);
@@ -344,7 +347,7 @@ export class NextUpload {
       });
     });
 
-    const assets: Asset[] = await this.store.all();
+    const assets: Asset[] = await this.store.filter();
 
     const pathsToRemove: string[] = [];
     const assetIdsToRemove: string[] = [];
@@ -653,7 +656,7 @@ export class NextUpload {
           });
         }
         case HandlerAction.pruneAssets: {
-          await this.pruneAssets();
+          await this.pruneAssets(args);
 
           return send({});
         }

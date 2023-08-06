@@ -55,10 +55,18 @@ export type Asset = {
   verified: boolean | null;
 };
 
+export type AssetStoreFilterArgs = {
+  limit?: number;
+};
+
+export type PruneAssetsArgs = {
+  limit?: number;
+};
+
 export interface AssetStore {
-  all(): Promise<Asset[]>;
   delete(id: string): Promise<void>;
   deletePresignedUrl(id: string): Promise<void>;
+  filter(args?: AssetStoreFilterArgs): Promise<Asset[]>;
   find(id: string): Promise<Asset | undefined>;
   getPresignedUrl(id: string): Promise<{
     presignedUrl?: string | null;

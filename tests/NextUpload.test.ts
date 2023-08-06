@@ -326,13 +326,17 @@ const runTests = async (
           }
 
           expect(
-            (await assetStore.all()).find((a) => a.id === signedPostPolicy.id)
+            (await assetStore.filter()).find(
+              (a) => a.id === signedPostPolicy.id
+            )
           ).toBeTruthy();
 
           await nup.pruneAssets();
 
           expect(
-            (await assetStore.all()).find((a) => a.id === signedPostPolicy.id)
+            (await assetStore.filter()).find(
+              (a) => a.id === signedPostPolicy.id
+            )
           ).toBeFalsy();
         });
       }

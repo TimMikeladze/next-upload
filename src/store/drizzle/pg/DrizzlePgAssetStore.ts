@@ -61,7 +61,7 @@ export class DrizzlePgAssetStore implements AssetStore {
       .where(eq(drizzlePgAssetsTable.id, id));
   }
 
-  async all(): Promise<Asset[]> {
+  async filter(): Promise<Asset[]> {
     const rows = await this.db.select().from(drizzlePgAssetsTable);
 
     return rows.map((row) => ({

@@ -37,7 +37,7 @@ export class KeyvAssetStore implements AssetStore {
     );
   }
 
-  async all(): Promise<Asset[]> {
+  async filter(): Promise<Asset[]> {
     const assets: Asset[] = [];
 
     // eslint-disable-next-line no-restricted-syntax
