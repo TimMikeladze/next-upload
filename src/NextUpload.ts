@@ -557,6 +557,8 @@ export class NextUpload {
               url,
               presignedUrlExpirationSeconds
             );
+          } else if (found) {
+            url = found.presignedUrl;
           }
         } else {
           url = await makePresignedUrl();
