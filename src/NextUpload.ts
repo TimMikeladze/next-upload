@@ -1,9 +1,13 @@
+import { Readable } from 'stream';
+import { FormData, File } from 'formdata-node';
+
 import bytes from 'bytes';
 import { type NextRequest, NextResponse } from 'next/server.js';
 import { Client, PostPolicy, BucketItem } from 'minio';
 
 import { nanoid } from 'nanoid';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { FormDataEncoder } from 'form-data-encoder';
 import {
   Asset,
   GetAsset,
@@ -21,6 +25,7 @@ import {
   UploadTypeConfigFn,
   GetStoreFn,
   DeleteArgs as DeleteAssetArgs,
+  UploadArgs,
 } from './types';
 
 export const defaultEnabledHandlerActions = [
@@ -606,6 +611,55 @@ export class NextUpload {
         headers: headers as any,
       },
     });
+  }
+
+  public async upload(args: UploadArgs) {
+    const formData = args.formData || new FormData();
+
+    const postPolicy = await this.generatePresignedPostPolicy(args.policy);
+
+    const contentType =
+      postPolicy.data['Content-Type'] || postPolicy.data['content-type'];
+
+    formData.set(
+      `file_1`,
+      new File(args.file, postPolicy.id, { type: contentType })
+    );
+
+    const encoder = new FormDataEncoder(formData);
+
+    const res = await fetch(postPolicy.url, {
+      headers: { ...encoder.headers },
+      body: Readable.from(encoder) as any,
+      method: `POST`,
+      mode: `no-cors`,
+      duplex: 'half',
+    });
+
+    const json = await res.json();
+    if (json.error) {
+      throw new Error(json.error);
+    }
+
+    // headers.set(`Content-Length`, Buffer.byteLength(args.file).toString());
+
+    // get host from url
+
+    // const res = await fetch(postPolicy.url, {
+    //   body: formData,
+    //   method: `POST`,
+    //   mode: `no-cors`,
+    //   headers,
+    //   ...args.requestInit,
+    // });
+
+    // if (!res.ok) {
+    //   throw new Error(await res.text());
+    // }
+
+    // console.log(await res.json());
+
+    return postPolicy;
   }
 
   public async rawHandler(handlerArgs: HandlerArgs) {

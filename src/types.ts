@@ -1,4 +1,5 @@
 /* eslint-disable max-classes-per-file */
+import { FormData, File } from 'formdata-node';
 import type { ClientOptions, PostPolicy } from 'minio';
 import { NextResponse } from 'next/server.js';
 
@@ -96,6 +97,17 @@ export type NextUploadClientConfig = Pick<NextUploadConfig, 'api'>;
 export type NextUploadRequest = {
   body?: any;
   headers?: Headers;
+};
+
+type FirstArgument<T> = T extends (arg1: infer U, ...args: any[]) => any
+  ? U
+  : any;
+
+export type UploadArgs = {
+  file: FirstArgument<File>;
+  formData?: FormData;
+  policy: RequiredField<GeneratePresignedPostPolicyArgs, 'fileType'>;
+  requestInit?: any;
 };
 
 export type GeneratePresignedPostPolicyArgs = {

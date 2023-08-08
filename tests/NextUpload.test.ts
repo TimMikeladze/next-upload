@@ -410,6 +410,24 @@ const runTests = async (
         ]);
       });
     });
+
+    describe('upload', () => {
+      it(`works`, async () => {
+        const nup = new NextUpload(nextUploadConfig, args.store);
+
+        await nup.init();
+
+        const res = await nup.upload({
+          file: Buffer.from('test'),
+          policy: {
+            fileType: 'text/plain',
+          },
+          // formData
+        });
+
+        console.log(res);
+      });
+    });
   });
 };
 

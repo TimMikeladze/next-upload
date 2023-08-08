@@ -184,6 +184,8 @@
   },
   "dependencies": {
     "bytes": "^3.1.2",
+    "form-data-encoder": "^3.0.0",
+    "formdata-node": "^5.0.1",
     "minio": "^7.1.1",
     "nanoid": "^4.0.2"
   }
