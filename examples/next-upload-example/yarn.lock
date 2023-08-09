@@ -1760,14 +1760,20 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
-next-upload@^0.0.25:
-  version "0.0.25"
-  resolved "https://registry.yarnpkg.com/next-upload/-/next-upload-0.0.25.tgz#a75d60e626692eefc46cbba8c67cb12c59a2ad90"
-  integrity sha512-ID6VyJbYXpkUZkhIEBzcKO3NjTuhn+E5YVRAZGep1pICcfv5gD5Exy8N5gKq3HwilNOkXVS2fU89IT8nq/mVZQ==
+next-tool@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/next-tool/-/next-tool-0.0.4.tgz#8fa8b143b81f359be377ed54c7ff2771aac95218"
+  integrity sha512-ifhXfOhGbZQRI9hZEIge5u07IAV9N14M1sMYkd91HiGH7YyyZjHRSpoFHLW9o3wqgc2/n2P9XNcVQDQ88zCpnQ==
+
+next-upload@^0.0.26:
+  version "0.0.26"
+  resolved "https://registry.yarnpkg.com/next-upload/-/next-upload-0.0.26.tgz#3ca3ef3592207f9d6feb435da86d94a855cd81e4"
+  integrity sha512-R/HtEZ1TiuYKjYplKskGDhrvX9QWEuImv0iWucwvLDn+C0fo6dPEAF6Yo0clL6xcyOZaKppt38Vh+nEpx9TVxw==
   dependencies:
     bytes "^3.1.2"
     minio "^7.1.1"
     nanoid "^4.0.2"
+    next-tool "^0.0.4"
 
 next@13.4.12:
   version "13.4.12"
