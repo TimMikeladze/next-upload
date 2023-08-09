@@ -10521,6 +10521,11 @@ next-tick@1, next-tick@^1.1.0:
   resolved "https://registry.yarnpkg.com/next-tick/-/next-tick-1.1.0.tgz#1836ee30ad56d67ef281b22bd199f709449b35eb"
   integrity sha512-CXdUiJembsNjuToQvxayPZF9Vqht7hewsvy2sOWafLvi2awflj9mOC6bHIg50orX8IJvWKY9wYQ/zB2kogPslQ==
 
+next-tool@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/next-tool/-/next-tool-0.0.4.tgz#8fa8b143b81f359be377ed54c7ff2771aac95218"
+  integrity sha512-ifhXfOhGbZQRI9hZEIge5u07IAV9N14M1sMYkd91HiGH7YyyZjHRSpoFHLW9o3wqgc2/n2P9XNcVQDQ88zCpnQ==
+
 next@^13.4.12:
   version "13.4.12"
   resolved "https://registry.yarnpkg.com/next/-/next-13.4.12.tgz#809b21ea0aabbe88ced53252c88c4a5bd5af95df"

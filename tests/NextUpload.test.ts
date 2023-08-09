@@ -6,14 +6,14 @@ import { nanoid } from 'nanoid';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
 import {
-  KeyvAssetStore,
+  KeyvStore,
   NextUpload,
-  AssetStore,
+  NextUploadStore,
   NextUploadConfig,
   drizzlePgAssetsTable,
-  HandlerAction,
+  NextUploadAction,
 } from '../src';
-import { DrizzlePgAssetStore } from '../src/store/drizzle/pg/DrizzlePgAssetStore';
+import { DrizzlePgStore } from '../src/store/drizzle/pg/DrizzlePgStore';
 import { getDb } from './db/getDb';
 
 const runTests = async (
@@ -21,7 +21,7 @@ const runTests = async (
   args: {
     afterEach?: () => Promise<void>;
     beforeEach?: () => Promise<void>;
-    store?: () => Promise<AssetStore>;
+    store?: () => Promise<NextUploadStore>;
   }
 ) => {
   const nextUploadConfig: NextUploadConfig = {
@@ -70,15 +70,18 @@ const runTests = async (
 
         await nup.init();
 
-        const signedPostPolicy = await nup.generatePresignedPostPolicy({
-          fileType,
-        });
+        const { postPolicy: signedPostPolicy } =
+          await nup.generatePresignedPostPolicy({
+            fileType,
+          });
 
         await nup
           .getClient()
           .putObject(nup.getBucket(), signedPostPolicy.data.key, `test`);
 
-        const [presignedUrl] = await nup.getAsset({
+        const {
+          asset: [presignedUrl],
+        } = await nup.getAsset({
           id: signedPostPolicy.id,
           path: signedPostPolicy.path,
         });
@@ -112,23 +115,21 @@ const runTests = async (
 
         await nup.init();
 
-        const signedUrl = await nup.generatePresignedPostPolicy({
+        const { postPolicy } = await nup.generatePresignedPostPolicy({
           fileType,
         });
 
-        expect(signedUrl).toMatchObject({
-          id: expect.any(String),
-          url: expect.any(String),
-          data: expect.any(Object),
-        });
+        expect(postPolicy.id).toEqual(expect.any(String));
+        expect(postPolicy.url).toEqual(expect.any(String));
+        expect(postPolicy.data).toEqual(expect.any(Object));
 
         const assetStore = nup.getStore();
 
         if (assetStore) {
-          expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
-            id: signedUrl.id,
+          expect(assetStore.find(postPolicy.id)).resolves.toMatchObject({
+            id: postPolicy.id,
             name: '',
-            path: `default/${signedUrl.id}`,
+            path: `default/${postPolicy.id}`,
             uploadType: 'default',
             bucket: 'localhost-test',
             verified: null,
@@ -144,19 +145,17 @@ const runTests = async (
 
         const id = nanoid();
 
-        const signedUrl = await nup.generatePresignedPostPolicy({
+        const { postPolicy } = await nup.generatePresignedPostPolicy({
           id,
           fileType,
         });
 
-        expect(signedUrl).toMatchObject({
-          id,
-        });
+        expect(postPolicy.id).toEqual(id);
 
         const assetStore = nup.getStore();
 
         if (assetStore) {
-          expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
+          expect(assetStore.find(postPolicy.id)).resolves.toMatchObject({
             id,
           });
         }
@@ -174,12 +173,12 @@ const runTests = async (
         const assetStore = nup.getStore();
 
         if (assetStore) {
-          const signedUrl = await nup.generatePresignedPostPolicy({
+          const { postPolicy } = await nup.generatePresignedPostPolicy({
             metadata,
             fileType,
           });
 
-          expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
+          expect(assetStore.find(postPolicy.id)).resolves.toMatchObject({
             metadata,
           });
         } else {
@@ -201,20 +200,18 @@ const runTests = async (
 
         const id = nanoid();
 
-        const signedUrl = await nup.generatePresignedPostPolicy({
+        const { postPolicy } = await nup.generatePresignedPostPolicy({
           id,
           fileType,
         });
 
-        expect(signedUrl).toMatchObject({
-          id,
-        });
+        expect(postPolicy.id).toEqual(id);
 
         const buffer = `test`;
 
         await nup
           .getClient()
-          .putObject(nup.getBucket(), signedUrl.data.key, buffer);
+          .putObject(nup.getBucket(), postPolicy.data.key, buffer);
 
         expect(
           nup.generatePresignedPostPolicy({
@@ -238,7 +235,7 @@ const runTests = async (
 
         await nup.init();
 
-        const signedUrl = await nup.generatePresignedPostPolicy({
+        const { postPolicy } = await nup.generatePresignedPostPolicy({
           uploadType,
           fileType,
         });
@@ -246,10 +243,10 @@ const runTests = async (
         const assetStore = nup.getStore();
 
         if (assetStore) {
-          const asset = await assetStore.find(signedUrl.id);
+          const asset = await assetStore.find(postPolicy.id);
 
           expect(asset).toMatchObject({
-            path: `${uploadType}/${signedUrl.id}`,
+            path: `${uploadType}/${postPolicy.id}`,
           });
         }
       });
@@ -272,30 +269,30 @@ const runTests = async (
             throw new Error(`assetStore is undefined`);
           }
 
-          const signedUrl = await nup.generatePresignedPostPolicy({
+          const { postPolicy } = await nup.generatePresignedPostPolicy({
             fileType,
           });
 
-          expect(signedUrl).toMatchObject({
+          expect(postPolicy).toMatchObject({
             id: expect.any(String),
             url: expect.any(String),
             data: expect.any(Object),
           });
 
-          expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
-            id: signedUrl.id,
+          expect(assetStore.find(postPolicy.id)).resolves.toMatchObject({
+            id: postPolicy.id,
             name: '',
-            path: `default/${signedUrl.id}`,
+            path: `default/${postPolicy.id}`,
             uploadType: 'default',
             bucket: 'localhost-test',
             verified: false,
             fileType,
           });
 
-          await nup.verifyAsset({ id: signedUrl.id });
+          await nup.verifyAsset({ id: postPolicy.id });
 
-          expect(assetStore.find(signedUrl.id)).resolves.toMatchObject({
-            id: signedUrl.id,
+          expect(assetStore.find(postPolicy.id)).resolves.toMatchObject({
+            id: postPolicy.id,
             verified: true,
           });
         });
@@ -311,13 +308,13 @@ const runTests = async (
 
           await nup.init();
 
-          const signedPostPolicy = await nup.generatePresignedPostPolicy({
+          const { postPolicy } = await nup.generatePresignedPostPolicy({
             fileType,
           });
 
           await nup
             .getClient()
-            .putObject(nup.getBucket(), signedPostPolicy.data.key, `test`);
+            .putObject(nup.getBucket(), postPolicy.data.key, `test`);
 
           const assetStore = nup.getStore();
 
@@ -326,13 +323,13 @@ const runTests = async (
           }
 
           expect(
-            (await assetStore.all()).find((a) => a.id === signedPostPolicy.id)
+            (await assetStore.all()).find((a) => a.id === postPolicy.id)
           ).toBeTruthy();
 
           await nup.pruneAssets();
 
           expect(
-            (await assetStore.all()).find((a) => a.id === signedPostPolicy.id)
+            (await assetStore.all()).find((a) => a.id === postPolicy.id)
           ).toBeFalsy();
         });
       }
@@ -373,7 +370,10 @@ const runTests = async (
         await nup.rawHandler({
           send,
           request: {
-            body: {},
+            body: {
+              action: '',
+              input: {},
+            },
           },
         });
 
@@ -395,7 +395,8 @@ const runTests = async (
           send,
           request: {
             body: {
-              action: HandlerAction.deleteAsset,
+              input: {},
+              action: NextUploadAction.deleteAsset,
             },
           },
         });
@@ -420,7 +421,7 @@ const keyv = new Keyv({
   }),
 });
 
-const keyvAssetStore = new KeyvAssetStore(keyv);
+const keyvAssetStore = new KeyvStore(keyv);
 
 runTests('No Store', {});
 runTests('KeyvAssetStore', {
@@ -433,7 +434,7 @@ runTests('KeyvAssetStore', {
   },
 });
 runTests(`DrizzlePgAssetStore`, {
-  store: async () => new DrizzlePgAssetStore(await getDb()),
+  store: async () => new DrizzlePgStore(await getDb()),
   beforeEach: async () => {
     await migrate(await getDb(), {
       migrationsFolder: resolve(`tests/db/migrations`),

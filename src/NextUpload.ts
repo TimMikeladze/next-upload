@@ -1,63 +1,62 @@
 import bytes from 'bytes';
-import { type NextRequest, NextResponse } from 'next/server.js';
 import { Client, PostPolicy, BucketItem } from 'minio';
 
 import { nanoid } from 'nanoid';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextTool, NextToolStorePromise } from 'next-tool';
 import {
+  NextUploadAction,
   Asset,
   GetAsset,
   GetAssetArgs,
   GeneratePresignedPostPolicyArgs,
-  HandlerAction,
-  HandlerArgs,
-  AssetStore,
+  NextUploadStore,
   NextUploadConfig,
   NextUploadRequest,
   RequiredField,
-  SignedPostPolicy,
   UploadTypeConfig,
   VerifyAssetArgs,
   UploadTypeConfigFn,
-  GetStoreFn,
   DeleteArgs as DeleteAssetArgs,
+  SignedPostPolicy,
 } from './types';
 
 export const defaultEnabledHandlerActions = [
-  HandlerAction.generatePresignedPostPolicy,
-  HandlerAction.getAsset,
+  NextUploadAction.generatePresignedPostPolicy,
+  NextUploadAction.getAsset,
 ];
 
-export class NextUpload {
+export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
   private static DEFAULT_TYPE = `default`;
 
   private client: Client;
 
   private bucket: string;
 
-  private config: NextUploadConfig;
-
-  private store: AssetStore | undefined;
-
-  private getStoreFn: GetStoreFn | undefined;
-
   constructor(
     config: NextUploadConfig,
-    store?: GetStoreFn | AssetStore | undefined
+    store?: NextToolStorePromise<NextUploadStore> | NextUploadStore
   ) {
-    this.config = {
-      ...config,
-      api: config.api || `/upload`,
-    };
+    super(
+      {
+        actions: {
+          [NextUploadAction.generatePresignedPostPolicy]: {},
+          [NextUploadAction.getAsset]: {},
+        },
+        ...config,
+      },
+      store,
+      {
+        [NextUploadAction.generatePresignedPostPolicy]: (args, request) =>
+          this.generatePresignedPostPolicy(args, request),
+        [NextUploadAction.getAsset]: (args, request) =>
+          this.getAsset(args, request),
+        [NextUploadAction.deleteAsset]: (args) => this.deleteAsset(args),
+        [NextUploadAction.verifyAsset]: (args) => this.verifyAsset(args),
+        [NextUploadAction.pruneAssets]: () => this.pruneAssets(),
+      }
+    );
     this.client = new Client(config.client);
     this.bucket = config.bucket || NextUpload.bucketFromEnv();
-
-    this.getStoreFn =
-      store !== undefined
-        ? typeof store === 'function'
-          ? store
-          : () => Promise.resolve(store)
-        : undefined;
   }
 
   public static namespaceFromEnv(project?: string) {
@@ -119,18 +118,8 @@ export class NextUpload {
     return this.client;
   }
 
-  public getConfig() {
-    return this.config;
-  }
-
-  public getStore() {
-    return this.store;
-  }
-
   public async init() {
-    if (!this.store && this.getStoreFn) {
-      this.store = await this.getStoreFn?.();
-    }
+    await super.init();
     if (!(await this.client.bucketExists(this.bucket))) {
       await this.client.makeBucket(this.bucket, this.config.client.region);
     }
@@ -177,7 +166,9 @@ export class NextUpload {
   public async generatePresignedPostPolicy(
     args: GeneratePresignedPostPolicyArgs,
     request?: NextUploadRequest
-  ): Promise<SignedPostPolicy> {
+  ): Promise<{
+    postPolicy: SignedPostPolicy;
+  }> {
     const {
       id = nanoid(),
       uploadType = NextUpload.DEFAULT_TYPE,
@@ -314,14 +305,16 @@ export class NextUpload {
     );
 
     return {
-      id,
-      data: presignedPostPolicy.formData,
-      url: presignedPostPolicy.postURL,
-      path: includeObjectPathInPostPolicyResponse ? path : null,
+      postPolicy: {
+        id,
+        data: presignedPostPolicy.formData,
+        url: presignedPostPolicy.postURL,
+        path: includeObjectPathInPostPolicyResponse ? path : null,
+      },
     };
   }
 
-  public async pruneAssets() {
+  public async pruneAssets(): Promise<boolean> {
     if (!this.store) {
       throw new Error(
         `'pruneAssets' config requires NextUpload to be instantiated with a store`
@@ -365,11 +358,13 @@ export class NextUpload {
     );
 
     await Promise.all(assetIdsToRemove.map((id) => this.store?.delete(id)));
+
+    return true;
   }
 
-  public async verifyAsset(
-    args: VerifyAssetArgs | VerifyAssetArgs[]
-  ): Promise<Asset[]> {
+  public async verifyAsset(args: VerifyAssetArgs | VerifyAssetArgs[]): Promise<{
+    asset: Asset[];
+  }> {
     if (!this.store) {
       throw new Error(
         `'verifyAsset' config requires NextUpload to be instantiated with a store`
@@ -385,7 +380,7 @@ export class NextUpload {
       }
     });
 
-    return Promise.all(
+    const assets = await Promise.all(
       data.map(async (x) => {
         const id = x.id || NextUpload.getIdFromPath(x.path as string);
         const foundAsset = await this.store?.find(id);
@@ -406,11 +401,15 @@ export class NextUpload {
         return asset;
       })
     );
+
+    return {
+      asset: assets,
+    };
   }
 
   public async deleteAsset(
     args: DeleteAssetArgs | DeleteAssetArgs[]
-  ): Promise<void> {
+  ): Promise<boolean> {
     const data = Array.isArray(args) ? args : [args];
 
     await Promise.all(
@@ -446,15 +445,17 @@ export class NextUpload {
         await this.client.removeObject(this.bucket, path);
       })
     );
+
+    return true;
   }
 
   public async getAsset(
     args: GetAssetArgs | GetAssetArgs[],
     request?: NextUploadRequest
-  ): Promise<GetAsset[]> {
+  ): Promise<{ asset: GetAsset[] }> {
     const data = Array.isArray(args) ? args : [args];
 
-    return Promise.all(
+    const assets = await Promise.all(
       data.map(async (x) => {
         let asset: Asset | undefined;
 
@@ -576,96 +577,9 @@ export class NextUpload {
         return res;
       })
     );
-  }
 
-  public async handler(request: NextRequest) {
-    const body = await request.json();
-
-    return this.rawHandler({
-      send: NextResponse.json,
-      request: {
-        body,
-        headers: request.headers,
-      },
-    });
-  }
-
-  public async pagesApiHandler(
-    request: NextApiRequest,
-    response: NextApiResponse
-  ) {
-    const { body, headers } = request;
-
-    const json = async (data: any, options?: { status?: number }) =>
-      response.status(options?.status || 200).json(data);
-
-    return this.rawHandler({
-      send: json,
-      request: {
-        body,
-        headers: headers as any,
-      },
-    });
-  }
-
-  public async rawHandler(handlerArgs: HandlerArgs) {
-    const { send, request } = handlerArgs;
-
-    if (!request.body) {
-      return send({ error: `No body` }, { status: 400 });
-    }
-
-    const { action, args } = request.body;
-
-    if (!action) {
-      return send({ error: `No action` }, { status: 400 });
-    }
-
-    const enabledActions =
-      this.config.enabledHandlerActions || defaultEnabledHandlerActions;
-
-    if (!enabledActions.includes(action)) {
-      return send({ error: `Action "${action}" not enabled` }, { status: 400 });
-    }
-
-    await this.init();
-
-    try {
-      switch (action) {
-        case HandlerAction.generatePresignedPostPolicy: {
-          const res = await this.generatePresignedPostPolicy(args, request);
-
-          return send(res);
-        }
-        case HandlerAction.getAsset: {
-          const res = await this.getAsset(args, request);
-
-          return send(res);
-        }
-        case HandlerAction.deleteAsset: {
-          await this.deleteAsset(args);
-
-          return send({});
-        }
-        case HandlerAction.verifyAsset: {
-          const assets = await this.verifyAsset(args);
-
-          return send({
-            assets,
-          });
-        }
-        case HandlerAction.pruneAssets: {
-          await this.pruneAssets();
-
-          return send({});
-        }
-        default: {
-          return send({ error: `Unknown action "${action}"` }, { status: 400 });
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      return send({ error: (error as any).message }, { status: 500 });
-    }
+    return {
+      asset: assets,
+    };
   }
 }

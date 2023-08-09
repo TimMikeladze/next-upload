@@ -1,6 +1,6 @@
 import {
   GeneratePresignedPostPolicyOptions,
-  HandlerAction,
+  NextUploadAction,
   NextUploadClientConfig,
   SignedPostPolicy,
 } from '../types';
@@ -17,8 +17,8 @@ export const generatePresignedPostPolicy = async (
       ...options.requestInit?.headers,
     },
     body: JSON.stringify({
-      action: HandlerAction.generatePresignedPostPolicy,
-      args: options.args,
+      action: NextUploadAction.generatePresignedPostPolicy,
+      input: options.args,
       ...options.requestInit?.body,
     }),
     ...options.requestInit,
@@ -30,5 +30,5 @@ export const generatePresignedPostPolicy = async (
     throw new Error(json.error);
   }
 
-  return json;
+  return json?.data?.postPolicy;
 };

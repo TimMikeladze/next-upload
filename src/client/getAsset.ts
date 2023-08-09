@@ -1,7 +1,7 @@
 import {
   GetAsset,
   GetAssetOptions,
-  HandlerAction,
+  NextUploadAction,
   NextUploadClientConfig,
 } from '../types';
 
@@ -17,8 +17,8 @@ export const getAsset = async (
       ...options.requestInit?.headers,
     },
     body: JSON.stringify({
-      action: HandlerAction.getAsset,
-      args: options.args,
+      action: NextUploadAction.getAsset,
+      input: options.args,
       ...options.requestInit?.body,
     }),
     ...options.requestInit,
@@ -30,5 +30,5 @@ export const getAsset = async (
     throw new Error(json.error);
   }
 
-  return json;
+  return json?.data?.asset;
 };

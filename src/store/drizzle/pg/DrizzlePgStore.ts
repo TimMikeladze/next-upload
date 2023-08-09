@@ -1,11 +1,11 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
-import { Asset, AssetStore } from '../../../types';
+import { Asset, NextUploadStore } from '../../../types';
 import { NextUpload } from '../../../NextUpload';
 import { drizzlePgAssetsTable } from './DrizzlePgSchema';
 
-export class DrizzlePgAssetStore implements AssetStore {
+export class DrizzlePgStore implements NextUploadStore {
   private db: ReturnType<typeof drizzle>;
 
   constructor(db: ReturnType<typeof drizzle>) {

@@ -1,11 +1,11 @@
-import { DrizzlePgAssetStore, KeyvAssetStore, NextUpload } from 'next-upload';
+import { KeyvStore, NextUpload } from 'next-upload';
 import { config } from './config';
 import Keyv from 'keyv';
 import KeyvPostgres from '@keyv/postgres';
 
 export const nup = new NextUpload(
   config,
-  new KeyvAssetStore(
+  new KeyvStore(
     new Keyv({
       namespace: NextUpload.namespaceFromEnv(),
       store: new KeyvPostgres({

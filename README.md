@@ -96,21 +96,21 @@ const FileUpload = () => {
 export default FileUpload;
 ```
 
-## 🧳 Asset Store
+## 🧳 Storage
 
 It's often useful to save an additional reference to the uploaded file in your database. This can be used for things like displaying a list of files that have been uploaded or associating a file with a specific user within your application without having to query the storage service directly. `next-upload` provides an interface that can be implemented with any database of your choice.  
 
-> 🙋 Is your database missing? Implementing the [`AssetStore`](https://github.com/TimMikeladze/next-upload/blob/master/src/types.ts#L55) is very straight-forward. Feel free to open a PR with your implementation or [open an issue](https://github.com/TimMikeladze/next-upload/issues/new) to request a new asset store implementation.
+> 🙋 Is your database missing? Implementing the [`Store`](https://github.com/TimMikeladze/next-upload/blob/master/src/types.ts#L55) is very straight-forward. Feel free to open a PR with your implementation or [open an issue](https://github.com/TimMikeladze/next-upload/issues/new) to request a new asset store implementation.
 
 Out of the box `next-upload` provides the following asset store implementations:
 
-### 🗝️ KeyvAssetStore - all popular databases supported
+### 🗝️ KeyvStore - all popular databases supported
 
 Works with any [keyv](https://github.com/jaredwray/) enabled store. This includes popular databases such as Postgres, MySQL and Mongo. This is a simple option for getting started with an asset store with minimal overhead. **Warning:** Using keyv is inherently slower than using a more specific database client. If you are expecting a high volume of reads/writes to your asset store you should consider using a different implementation.
 
 **src/app/upload/nup.ts**
 ```tsx
-import { KeyvAssetStore, NextUpload } from 'next-upload';
+import { KeyvStore, NextUpload } from 'next-upload';
 import { config } from './config';
 import { NextRequest } from 'next/server';
 import Keyv from 'keyv';
@@ -118,7 +118,7 @@ import KeyvPostgres from '@keyv/postgres';
 
 export const nup = new NextUpload(
   config,
-  new KeyvAssetStore(
+  new KeyvStore(
     new Keyv({
       namespace: NextUpload.namespaceFromEnv(),
       store: new KeyvPostgres({
@@ -133,7 +133,7 @@ export const nup = new NextUpload(
 
 Works with a [Drizzle](https://github.com/drizzle-team/drizzle-orm) enabled database. This is a great option if you are already using Drizzle in your application and want tighter integration with your database schema. It also provides a more performant option for high volume reads/writes to your asset store. 
 
-#### 🐘 DrizzlePgAssetStore - Postgres
+#### 🐘 DrizzlePgStore - Postgres
 
 **Note:** You must import and reexport `drizzlePgAssetsTable` from your Drizzle schema file as part of the database migration process to setup the asset store table.
 
@@ -144,13 +144,13 @@ export { drizzlePgAssetsTable } from 'next-upload';
 
 **src/app/upload/nup.ts**
 ```tsx
-import { DrizzlePgAssetStore, NextUpload } from 'next-upload';
+import { DrizzlePgStore, NextUpload } from 'next-upload';
 import { config } from './config';
 import { NextRequest } from 'next/server';
 
 export const nup = new NextUpload(
   config,
-  async () => new DrizzlePgAssetStore(
+  async () => new DrizzlePgStore(
     await getDb(); // however you get your drizzle instance
   )
 );
@@ -183,17 +183,17 @@ await nup.deleteAsset({
 
 ### 🔎 Retrieving Assets
 
-Once you have uploaded a file you can retrieve it from the database using the `AssetStore` instance.
+Once you have uploaded a file you can retrieve it from the database using the `Store` instance.
 
 ```tsx
-const assetStore = nup.getStore();
+const store = nup.getStore();
 
-await assetStore.find('id of the asset');
+await store.find('id of the asset');
 ```
 
 ## 📝 Metadata
 
-Using an `AssetStore` enables you to save additional metadata about the file as part of the upload process. This can be useful for storing things like the original file name, user id of the uploader, or any other information you want to associate with the file.
+Using an `Store` enables you to save additional metadata about the file as part of the upload process. This can be useful for storing things like the original file name, user id of the uploader, or any other information you want to associate with the file.
 
 To get started simply pass a `metadata` object to the `upload` function.
 
@@ -215,7 +215,7 @@ await upload(
 
 In certain scenarios you may need to mark an upload as verified once it has been processed by your application.
 
-To enable verification, set the `verifyAssets` config to `true` and instantiate `NextUpload` with an `AssetStore` instance.
+To enable verification, set the `verifyAssets` config to `true` and instantiate `NextUpload` with an `Store` instance.
 
 Now any file that is uploaded will have a `verified` property set to `false` by default. Once you have processed the file you can mark it as verified by calling `NextUpload.verifyAsset(id)`.
 
@@ -235,13 +235,14 @@ Consider setting up a cron job to run this function on a regular basis.
 
 | Constant | Type |
 | ---------- | ---------- |
-| `defaultEnabledHandlerActions` | `HandlerAction[]` |
+| `defaultEnabledHandlerActions` | `NextUploadAction[]` |
 
 
 ## :factory: NextUpload
 
 ### Methods
 
+- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
 - [namespaceFromEnv](#gear-namespacefromenv)
 - [bucketFromEnv](#gear-bucketfromenv)
 - [getIdFromPath](#gear-getidfrompath)
@@ -250,17 +251,18 @@ Consider setting up a cron job to run this function on a regular basis.
 - [isExpired](#gear-isexpired)
 - [getBucket](#gear-getbucket)
 - [getClient](#gear-getclient)
-- [getConfig](#gear-getconfig)
-- [getStore](#gear-getstore)
 - [init](#gear-init)
 - [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
 - [pruneAssets](#gear-pruneassets)
 - [verifyAsset](#gear-verifyasset)
 - [deleteAsset](#gear-deleteasset)
 - [getAsset](#gear-getasset)
-- [handler](#gear-handler)
-- [pagesApiHandler](#gear-pagesapihandler)
-- [rawHandler](#gear-rawhandler)
+
+#### :gear: generatePresignedPostPolicy
+
+| Method | Type |
+| ---------- | ---------- |
+| `generatePresignedPostPolicy` | `(args: any, request: NextToolRequest) => Promise<{ postPolicy: SignedPostPolicy; }>` |
 
 #### :gear: namespaceFromEnv
 
@@ -310,18 +312,6 @@ Consider setting up a cron job to run this function on a regular basis.
 | ---------- | ---------- |
 | `getClient` | `() => Client` |
 
-#### :gear: getConfig
-
-| Method | Type |
-| ---------- | ---------- |
-| `getConfig` | `() => NextUploadConfig` |
-
-#### :gear: getStore
-
-| Method | Type |
-| ---------- | ---------- |
-| `getStore` | `() => AssetStore` |
-
 #### :gear: init
 
 | Method | Type |
@@ -332,49 +322,31 @@ Consider setting up a cron job to run this function on a regular basis.
 
 | Method | Type |
 | ---------- | ---------- |
-| `generatePresignedPostPolicy` | `(args: GeneratePresignedPostPolicyArgs, request?: NextUploadRequest) => Promise<SignedPostPolicy>` |
+| `generatePresignedPostPolicy` | `(args: GeneratePresignedPostPolicyArgs, request?: NextUploadRequest) => Promise<{ postPolicy: SignedPostPolicy; }>` |
 
 #### :gear: pruneAssets
 
 | Method | Type |
 | ---------- | ---------- |
-| `pruneAssets` | `() => Promise<void>` |
+| `pruneAssets` | `() => Promise<boolean>` |
 
 #### :gear: verifyAsset
 
 | Method | Type |
 | ---------- | ---------- |
-| `verifyAsset` | `(args: VerifyAssetArgs or VerifyAssetArgs[]) => Promise<Asset[]>` |
+| `verifyAsset` | `(args: VerifyAssetArgs or VerifyAssetArgs[]) => Promise<{ asset: Asset[]; }>` |
 
 #### :gear: deleteAsset
 
 | Method | Type |
 | ---------- | ---------- |
-| `deleteAsset` | `(args: DeleteArgs or DeleteArgs[]) => Promise<void>` |
+| `deleteAsset` | `(args: DeleteArgs or DeleteArgs[]) => Promise<boolean>` |
 
 #### :gear: getAsset
 
 | Method | Type |
 | ---------- | ---------- |
-| `getAsset` | `(args: GetAssetArgs or GetAssetArgs[], request?: NextUploadRequest) => Promise<GetAsset[]>` |
-
-#### :gear: handler
-
-| Method | Type |
-| ---------- | ---------- |
-| `handler` | `(request: NextRequest) => Promise<void or NextResponse<{}>>` |
-
-#### :gear: pagesApiHandler
-
-| Method | Type |
-| ---------- | ---------- |
-| `pagesApiHandler` | `(request: NextApiRequest, response: NextApiResponse) => Promise<void or NextResponse<{}>>` |
-
-#### :gear: rawHandler
-
-| Method | Type |
-| ---------- | ---------- |
-| `rawHandler` | `(handlerArgs: HandlerArgs) => Promise<void or NextResponse<{}>>` |
+| `getAsset` | `(args: GetAssetArgs or GetAssetArgs[], request?: NextUploadRequest) => Promise<{ asset: GetAsset[]; }>` |
 
 
 <!-- TSDOC_END -->

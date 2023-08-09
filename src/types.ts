@@ -1,29 +1,19 @@
 /* eslint-disable max-classes-per-file */
 import type { ClientOptions, PostPolicy } from 'minio';
-import { NextResponse } from 'next/server.js';
+import { NextToolConfig } from 'next-tool';
 
 export type Metadata = Record<string, string | number>;
 
 export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 // eslint-disable-next-line no-shadow
-export enum HandlerAction {
+export enum NextUploadAction {
   deleteAsset = 'deleteAsset',
   generatePresignedPostPolicy = 'generatePresignedPostPolicy',
   getAsset = 'getAsset',
   pruneAssets = 'pruneAssets',
   verifyAsset = 'verifyAsset',
 }
-
-export type SendFn = <JsonBody>(
-  body: JsonBody,
-  init?: { status?: number }
-) => NextResponse<JsonBody> | Promise<void>;
-
-export type HandlerArgs = {
-  request: NextUploadRequest;
-  send: SendFn;
-};
 
 type CommonConfig = {
   includeMetadataInSignedUrlResponse?: boolean;
@@ -55,7 +45,7 @@ export type Asset = {
   verified: boolean | null;
 };
 
-export interface AssetStore {
+export interface NextUploadStore {
   all(): Promise<Asset[]>;
   delete(id: string): Promise<void>;
   deletePresignedUrl(id: string): Promise<void>;
@@ -79,17 +69,15 @@ export type UploadTypeConfigFn = (
   request?: NextUploadRequest
 ) => Promise<UploadTypeConfig>;
 
-export type GetStoreFn = () => Promise<AssetStore | undefined>;
-
-export type NextUploadConfig = RequiredField<CommonConfig, 'maxSize'> & {
-  api?: string;
-  bucket?: string;
-  client: ClientConfig;
-  enabledHandlerActions?: HandlerAction[];
-  uploadTypes?: {
-    [uploadType: string]: UploadTypeConfigFn | UploadTypeConfig;
+export type NextUploadConfig = NextToolConfig &
+  RequiredField<CommonConfig, 'maxSize'> & {
+    api?: string;
+    bucket?: string;
+    client: ClientConfig;
+    uploadTypes?: {
+      [uploadType: string]: UploadTypeConfigFn | UploadTypeConfig;
+    };
   };
-};
 
 export type NextUploadClientConfig = Pick<NextUploadConfig, 'api'>;
 
