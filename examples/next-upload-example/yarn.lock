@@ -1765,10 +1765,10 @@ next-tool@^0.0.4:
   resolved "https://registry.yarnpkg.com/next-tool/-/next-tool-0.0.4.tgz#8fa8b143b81f359be377ed54c7ff2771aac95218"
   integrity sha512-ifhXfOhGbZQRI9hZEIge5u07IAV9N14M1sMYkd91HiGH7YyyZjHRSpoFHLW9o3wqgc2/n2P9XNcVQDQ88zCpnQ==
 
-next-upload@^0.0.26:
-  version "0.0.26"
-  resolved "https://registry.yarnpkg.com/next-upload/-/next-upload-0.0.26.tgz#3ca3ef3592207f9d6feb435da86d94a855cd81e4"
-  integrity sha512-R/HtEZ1TiuYKjYplKskGDhrvX9QWEuImv0iWucwvLDn+C0fo6dPEAF6Yo0clL6xcyOZaKppt38Vh+nEpx9TVxw==
+next-upload@^0.0.27:
+  version "0.0.27"
+  resolved "https://registry.yarnpkg.com/next-upload/-/next-upload-0.0.27.tgz#b9b151407fcf27b1f8a8ef763b35c9972f5e3fd7"
+  integrity sha512-0fXRoVExYG2e+UNBp4eOKaDgdkUTNFD7vqWP/OgbES3CeUcghYJd4ftPfgOJsV8Fy4iG0yNWU+ZwgbA81Ubt/Q==
   dependencies:
     bytes "^3.1.2"
     minio "^7.1.1"
