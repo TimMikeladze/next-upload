@@ -161,7 +161,7 @@ export const nup = new NextUpload(
 Once you have uploaded a file you can retrieve the url, id and metadata of the asset using the `NextUpload.getAsset` function.
 
 ```tsx
-const [asset] = await nup.getAsset({
+const { asset } = await nup.getAsset({
   id: 'id of the asset',
   // or provide a path
   path: 'path of the asset',
@@ -334,7 +334,7 @@ Consider setting up a cron job to run this function on a regular basis.
 
 | Method | Type |
 | ---------- | ---------- |
-| `verifyAsset` | `(args: VerifyAssetArgs or VerifyAssetArgs[]) => Promise<{ asset: Asset[]; }>` |
+| `verifyAsset` | `(args: VerifyAssetArgs or VerifyAssetArgs[]) => Promise<{ asset: Asset; assets: Asset[]; }>` |
 
 #### :gear: deleteAsset
 
@@ -346,7 +346,7 @@ Consider setting up a cron job to run this function on a regular basis.
 
 | Method | Type |
 | ---------- | ---------- |
-| `getAsset` | `(args: GetAssetArgs or GetAssetArgs[], request?: NextUploadRequest) => Promise<{ asset: GetAsset[]; }>` |
+| `getAsset` | `(args: GetAssetArgs or GetAssetArgs[], request?: NextUploadRequest) => Promise<{ asset: GetAsset; assets: GetAsset[]; }>` |
 
 
 <!-- TSDOC_END -->

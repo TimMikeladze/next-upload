@@ -363,7 +363,8 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
   }
 
   public async verifyAsset(args: VerifyAssetArgs | VerifyAssetArgs[]): Promise<{
-    asset: Asset[];
+    asset: Asset;
+    assets: Asset[];
   }> {
     if (!this.store) {
       throw new Error(
@@ -403,7 +404,8 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
     );
 
     return {
-      asset: assets,
+      asset: assets?.[0],
+      assets,
     };
   }
 
@@ -452,7 +454,7 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
   public async getAsset(
     args: GetAssetArgs | GetAssetArgs[],
     request?: NextUploadRequest
-  ): Promise<{ asset: GetAsset[] }> {
+  ): Promise<{ asset: GetAsset; assets: GetAsset[] }> {
     const data = Array.isArray(args) ? args : [args];
 
     const assets = await Promise.all(
@@ -579,7 +581,8 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
     );
 
     return {
-      asset: assets,
+      asset: assets?.[0],
+      assets,
     };
   }
 }
