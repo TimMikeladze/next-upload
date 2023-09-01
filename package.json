@@ -117,7 +117,7 @@
     "@storybook/react-webpack5": "7.2.1",
     "@storybook/storybook-deployer": "2.8.16",
     "@storybook/testing-library": "0.2.0",
-    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@types/bytes": "^3.1.1",
     "@types/dotenv": "^8.2.0",
