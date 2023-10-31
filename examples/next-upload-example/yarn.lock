@@ -1750,10 +1750,10 @@ nanoid@^3.3.4:
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.6.tgz#443380c856d6e9f9824267d960b4236ad583ea4c"
   integrity sha512-BGcqMMJuToF7i1rt+2PWSNVnWIkGCU78jBG3RxO/bZlnZPK2Cmi2QaffxGO/2RvWi9sL+FAiRiXMgsyxQ1DIDA==
 
-nanoid@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-4.0.2.tgz#140b3c5003959adbebf521c170f282c5e7f9fb9e"
-  integrity sha512-7ZtY5KTCNheRGfEFxnedV5zFiORN1+Y1N6zvPTnHQd8ENUvfaDBeuJDZb2bN/oXwXxu3qkTXDzy57W5vAmDTBw==
+nanoid@^5.0.0:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-5.0.2.tgz#97588ebc70166d0feaf73ccd2799bb4ceaebf692"
+  integrity sha512-2ustYUX1R2rL/Br5B/FMhi8d5/QzvkJ912rBYxskcpu0myTHzSZfTr1LAS2Sm7jxRUObRrSBFoyzwAhL49aVSg==
 
 natural-compare@^1.4.0:
   version "1.4.0"
@@ -1765,14 +1765,14 @@ next-tool@^0.0.4:
   resolved "https://registry.yarnpkg.com/next-tool/-/next-tool-0.0.4.tgz#8fa8b143b81f359be377ed54c7ff2771aac95218"
   integrity sha512-ifhXfOhGbZQRI9hZEIge5u07IAV9N14M1sMYkd91HiGH7YyyZjHRSpoFHLW9o3wqgc2/n2P9XNcVQDQ88zCpnQ==
 
-next-upload@^0.0.27:
-  version "0.0.27"
-  resolved "https://registry.yarnpkg.com/next-upload/-/next-upload-0.0.27.tgz#b9b151407fcf27b1f8a8ef763b35c9972f5e3fd7"
-  integrity sha512-0fXRoVExYG2e+UNBp4eOKaDgdkUTNFD7vqWP/OgbES3CeUcghYJd4ftPfgOJsV8Fy4iG0yNWU+ZwgbA81Ubt/Q==
+next-upload@^0.0.28:
+  version "0.0.28"
+  resolved "https://registry.yarnpkg.com/next-upload/-/next-upload-0.0.28.tgz#b19df12438943cc1520300dc427c7f1729551501"
+  integrity sha512-6Yeicg/kn2ZRV2G0PL8SmfEpjtUVHdFEU4+1Gajvbk2YXzxKPk7iKRO4gMIjJy1qd1+Lkmh9yeKc1cIOHNPHEA==
   dependencies:
     bytes "^3.1.2"
     minio "^7.1.1"
-    nanoid "^4.0.2"
+    nanoid "^5.0.0"
     next-tool "^0.0.4"
 
 next@13.4.12:
