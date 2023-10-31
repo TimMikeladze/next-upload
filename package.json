@@ -170,7 +170,7 @@
     "yalc": "1.0.0-pre.53"
   },
   "peerDependencies": {
-    "drizzle-orm": ">=27",
+    "drizzle-orm": ">=0.27",
     "next": ">=13",
     "react": ">=17",
     "react-dom": ">=17",
