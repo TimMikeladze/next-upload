@@ -12,7 +12,10 @@
     "next uploads",
     "next s3",
     "next r2",
-    "signed upload"
+    "signed upload",
+    "file upload",
+    "next file upload",
+    "image upload"
   ],
   "repository": {
     "type": "git",
