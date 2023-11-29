@@ -1,8 +1,18 @@
 import bytes from 'bytes';
-import { Client, PostPolicy, BucketItem } from 'minio';
-
+// import { Client, PostPolicy, BucketItem } from 'minio';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { nanoid } from 'nanoid';
 import { NextTool, NextToolStorePromise } from 'next-tool';
+import {
+  S3,
+  HeadBucketCommand,
+  HeadObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
+import {
+  PresignedPostOptions,
+  createPresignedPost,
+} from '@aws-sdk/s3-presigned-post';
 import {
   NextUploadAction,
   Asset,
@@ -28,7 +38,7 @@ export const defaultEnabledHandlerActions = [
 export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
   private static DEFAULT_TYPE = `default`;
 
-  private client: Client;
+  private client: S3;
 
   private bucket: string;
 
@@ -55,7 +65,7 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
         [NextUploadAction.pruneAssets]: () => this.pruneAssets(),
       }
     );
-    this.client = new Client(config.client);
+    this.client = new S3(config.client);
     this.bucket = config.bucket || NextUpload.bucketFromEnv();
   }
 
@@ -120,12 +130,80 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
 
   public async init() {
     await super.init();
-    if (!(await this.client.bucketExists(this.bucket))) {
-      await this.client.makeBucket(this.bucket, this.config.client.region);
+    if (!(await this.bucketExists())) {
+      await this.client.createBucket({
+        Bucket: this.bucket,
+      });
     }
   }
 
-  private async makePostPolicy(
+  public async bucketExists(): Promise<boolean> {
+    const headBucketCommand = new HeadBucketCommand({
+      Bucket: this.bucket,
+    });
+
+    function PolyfillFileReader() {
+      // @ts-ignore
+      this.result = null;
+      // @ts-ignore
+      this.error = null;
+      // @ts-ignore
+      this.onload = null;
+      // @ts-ignore
+      this.onerror = null;
+      // @ts-ignore
+      this.onloadstart = null;
+      // @ts-ignore
+      this.onloadend = null;
+      // @ts-ignore
+      this.onprogress = null;
+      // @ts-ignore
+      this.readyState = 0;
+      // @ts-ignore
+      this.abort = function () {
+        // You can implement abort logic if needed
+      };
+      // @ts-ignore
+      this.readAsText = function (file) {
+        var reader = this;
+        var readerEvent = new Event('load');
+
+        reader.result = null;
+        reader.error = null;
+        reader.readyState = 1; // LOADING
+
+        // Simulate asynchronous reading
+        setTimeout(function () {
+          // Simulate successful reading
+          reader.result = 'Contents of the file: ' + file.name;
+          reader.readyState = 2; // DONE
+          if (reader.onload) {
+            reader.onload(readerEvent);
+          }
+          reader.onloadend && reader.onloadend(readerEvent);
+        }, 1000);
+      };
+      // @ts-ignore
+      this.readAsDataURL = function (file) {
+        // Use the extension from the filename to determine the MIME-TYPE
+        this.readAsText(file);
+      };
+    }
+
+    // Assign the polyfilled FileReader to the global scope
+    // @ts-ignore
+    // globalThis.FileReader = PolyfillFileReader;
+
+    try {
+      console.log(await this.client.send(headBucketCommand));
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  private async makeDefaultPostPolicy(
     config: RequiredField<UploadTypeConfig, 'path'>,
     {
       fileType,
@@ -138,8 +216,6 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       // metadata: Metadata;
     }
   ) {
-    const postPolicy = this.client.newPostPolicy();
-
     const {
       maxSize = this.config.maxSize,
       postPolicyExpirationSeconds = this.config.postPolicyExpirationSeconds ||
@@ -148,19 +224,27 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
 
     const maxSizeBytes = bytes.parse(maxSize);
 
-    postPolicy.setBucket(this.bucket);
-    postPolicy.setKey(config.path);
-    postPolicy.setContentLengthRange(1, Math.max(maxSizeBytes, 1024));
-    postPolicy.setExpires(
-      new Date(Date.now() + 1000 * postPolicyExpirationSeconds)
-    );
-    postPolicy.setContentType(fileType);
+    // postPolicy.setBucket(this.bucket);
+    // postPolicy.setKey(config.path);
+    // postPolicy.setContentLengthRange(1, Math.max(maxSizeBytes, 1024));
+    // postPolicy.setExpires();
+    // postPolicy.setContentType(fileType);
     // if (metadata && Object.keys(metadata).length > 0) {
     //   postPolicy.setUserMetaData(metadata);
     //   postPolicy.setContentDisposition(`attachment; filename=${id}`);
     // }
 
-    return postPolicy;
+    const postPolicyOptions: PresignedPostOptions = {
+      Bucket: this.bucket,
+      Key: config.path,
+      Expires: postPolicyExpirationSeconds,
+      Conditions: [
+        ['content-length-range', 0, maxSizeBytes],
+        ['eq', '$Content-Type', 'image/jpeg'],
+      ],
+    };
+
+    return postPolicyOptions;
   }
 
   public async generatePresignedPostPolicy(
@@ -233,10 +317,18 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       if (await this.store?.find(id)) {
         exists = true;
       }
-      await this.client.statObject(this.bucket, path);
-      exists = true;
+      try {
+        const headObjectCommand = new HeadObjectCommand({
+          Bucket: this.bucket,
+          Key: path,
+        });
+        await this.client.send(headObjectCommand);
+        exists = true;
+      } catch (error) {
+        // console.log(error);
+      }
     } catch (error) {
-      //
+      // console.log(error);
     }
 
     if (exists) {
@@ -271,8 +363,8 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       throw new Error(`fileType is required`);
     }
 
-    const postPolicy: PostPolicy = await postPolicyFn(
-      await this.makePostPolicy(
+    const postPolicyOptions: PresignedPostOptions = await postPolicyFn(
+      await this.makeDefaultPostPolicy(
         {
           ...uploadTypeConfig,
           path,
@@ -284,8 +376,9 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       )
     );
 
-    const presignedPostPolicy = await this.client.presignedPostPolicy(
-      postPolicy
+    const presignedPostPolicy = await createPresignedPost(
+      this.client,
+      postPolicyOptions
     );
 
     await this.store?.upsert?.(
@@ -304,11 +397,20 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       verifyAssets ? verifyAssetsExpirationSeconds * 1000 : 0
     );
 
+    console.log({
+      postPolicy: {
+        id,
+        data: presignedPostPolicy.fields,
+        url: presignedPostPolicy.url,
+        path: includeObjectPathInPostPolicyResponse ? path : null,
+      },
+    });
+
     return {
       postPolicy: {
         id,
-        data: presignedPostPolicy.formData,
-        url: presignedPostPolicy.postURL,
+        data: presignedPostPolicy.fields,
+        url: presignedPostPolicy.url,
         path: includeObjectPathInPostPolicyResponse ? path : null,
       },
     };
@@ -321,41 +423,58 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       );
     }
 
-    const objects = await new Promise<BucketItem[]>((resolve, reject) => {
-      const objectsStream = this.client.listObjectsV2(this.bucket, '', true);
+    // const objects = await new Promise<BucketItem[]>((resolve, reject) => {
+    //   const objectsStream = this.client.listObjectsV2(this.bucket, '', true);
 
-      const res: BucketItem[] = [];
+    //   const res: BucketItem[] = [];
 
-      objectsStream.on('data', (obj) => {
-        res.push(obj);
-      });
-      objectsStream.on('end', () => {
-        resolve(res);
-      });
-      objectsStream.on('error', (error) => {
-        reject(error);
-      });
+    //   objectsStream.on('data', (obj) => {
+    //     res.push(obj);
+    //   });
+    //   objectsStream.on('end', () => {
+    //     resolve(res);
+    //   });
+    //   objectsStream.on('error', (error) => {
+    //     reject(error);
+    //   });
+    // });
+
+    const listObjects = await this.client.listObjects({
+      Bucket: this.bucket,
     });
+
+    const objects = listObjects.Contents;
 
     const assets: Asset[] = await this.store.all();
 
     const pathsToRemove: string[] = [];
     const assetIdsToRemove: string[] = [];
 
-    objects.forEach((object) => {
-      const asset = assets.find((a) => a.path === object.name);
+    objects?.forEach((object) => {
+      const asset = assets.find((a) => a.path === object.Key);
 
-      if (!asset || asset.verified === false) {
-        pathsToRemove.push(object.name);
-        if (asset) {
-          assetIdsToRemove.push(asset.id);
+      if (object.Key) {
+        if (!asset || asset.verified === false) {
+          pathsToRemove.push(object.Key);
+          if (asset) {
+            assetIdsToRemove.push(asset.id);
+          }
         }
       }
     });
 
-    await Promise.all(
-      pathsToRemove.map((path) => this.client.removeObject(this.bucket, path))
-    );
+    if (pathsToRemove.length) {
+      await this.client.deleteObjects({
+        Bucket: this.bucket,
+        Delete: {
+          Objects: pathsToRemove.map((x) => ({
+            Key: x,
+          })),
+          // TODO surface errors?
+          Quiet: true,
+        },
+      });
+    }
 
     await Promise.all(assetIdsToRemove.map((id) => this.store?.delete(id)));
 
@@ -444,7 +563,10 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
           await this.store.delete(id);
         }
 
-        await this.client.removeObject(this.bucket, path);
+        await this.client.deleteObject({
+          Bucket: this.bucket,
+          Key: path,
+        });
       })
     );
 
@@ -484,10 +606,12 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
         }
 
         try {
-          const stat = await this.client.statObject(this.bucket, path);
-          if (!stat) {
-            throw new Error(`Not found`);
-          }
+          const headObjectCommand = new HeadObjectCommand({
+            Bucket: this.bucket,
+            Key: path,
+          });
+
+          await this.client.send(headObjectCommand);
         } catch {
           throw new Error(`Not found`);
         }
@@ -532,13 +656,23 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
 
         const makePresignedUrl = async () =>
           presignedUrlExpirationSeconds
-            ? this.client.presignedUrl(
-                `GET`,
-                this.bucket,
-                path as string,
-                presignedUrlExpirationSeconds
+            ? getSignedUrl(
+                this.client,
+                new GetObjectCommand({
+                  Bucket: this.bucket,
+                  Key: path as string,
+                }),
+                {
+                  expiresIn: presignedUrlExpirationSeconds,
+                }
               )
-            : this.client.presignedUrl(`GET`, this.bucket, path as string);
+            : getSignedUrl(
+                this.client,
+                new GetObjectCommand({
+                  Bucket: this.bucket,
+                  Key: path as string,
+                })
+              );
 
         let url: string = '';
 

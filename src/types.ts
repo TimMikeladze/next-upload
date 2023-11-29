@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
-import type { ClientOptions, PostPolicy } from 'minio';
 import { NextToolConfig } from 'next-tool';
+import { S3ClientConfig } from '@aws-sdk/client-s3';
+import { PresignedPostOptions } from '@aws-sdk/s3-presigned-post';
 
 export type Metadata = Record<string, string | number>;
 
@@ -28,7 +29,9 @@ type CommonConfig = {
 export type UploadTypeConfig = CommonConfig & {
   metadata?: Metadata;
   path?: string;
-  postPolicy?: (postPolicy: PostPolicy) => Promise<PostPolicy>;
+  postPolicy?: (
+    postPolicy: PresignedPostOptions
+  ) => Promise<PresignedPostOptions>;
 };
 
 export type Asset = {
@@ -62,7 +65,7 @@ export interface NextUploadStore {
   upsert(args: Asset, ttl: number): Promise<Asset>;
 }
 
-type ClientConfig = RequiredField<ClientOptions, 'region'>;
+type ClientConfig = RequiredField<S3ClientConfig, 'region'>;
 
 export type UploadTypeConfigFn = (
   args: Partial<GeneratePresignedPostPolicyArgs & GetAssetArgs>,

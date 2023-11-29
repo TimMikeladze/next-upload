@@ -14,6 +14,7 @@ export const GET = async (request: NextRequest) => {
       { status: 401 }
     );
   }
+  await nup.init();
   await nup.pruneAssets();
   return NextResponse.json({ success: true });
 };

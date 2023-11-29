@@ -23,9 +23,6 @@ const FileUpload = () => {
           acceptedFiles.map((file) => ({
             file,
             uploadType: NextUploadType.image,
-            metadata: {
-              lastModified: file.lastModified,
-            },
           }))
         ),
         {

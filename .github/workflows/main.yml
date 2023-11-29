@@ -6,12 +6,10 @@ jobs:
   run-ci:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      MINIO_REGION: us-west-1
-      MINIO_SSL: false
-      MINIO_PORT: 9000
-      MINIO_ACCESS_KEY: root
-      MINIO_SECRET_KEY: password
-      MINIO_ENDPOINT: localhost
+      S3_REGION: us-west-1
+      S3_ACCESS_KEY: root
+      S3_SECRET_KEY: password
+      S3_ENDPOINT: http://localhost:9000
       PG_CONNECTION_STRING: postgres://postgres:password@localhost:5432
       PG_DB: postgres
 

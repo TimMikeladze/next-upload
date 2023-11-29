@@ -28,7 +28,7 @@ First let's create a `NextUploadConfig` that defines how to connect to a storage
 export const config: NextUploadConfig = {
   maxSize: '10mb',
   client: {
-    endPoint: `s3.us-west-1.amazonaws.com`,
+    endPoint: `s3.amazonaws.com`,
     region: `us-west-1`,
     secretKey: process.env.AWS_SECRET,
     accessKey: process.env.AWS_KEY,
@@ -252,6 +252,7 @@ Consider setting up a cron job to run this function on a regular basis.
 - [getBucket](#gear-getbucket)
 - [getClient](#gear-getclient)
 - [init](#gear-init)
+- [bucketExists](#gear-bucketexists)
 - [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
 - [pruneAssets](#gear-pruneassets)
 - [verifyAsset](#gear-verifyasset)
@@ -310,13 +311,19 @@ Consider setting up a cron job to run this function on a regular basis.
 
 | Method | Type |
 | ---------- | ---------- |
-| `getClient` | `() => Client` |
+| `getClient` | `() => S3` |
 
 #### :gear: init
 
 | Method | Type |
 | ---------- | ---------- |
 | `init` | `() => Promise<void>` |
+
+#### :gear: bucketExists
+
+| Method | Type |
+| ---------- | ---------- |
+| `bucketExists` | `() => Promise<boolean>` |
 
 #### :gear: generatePresignedPostPolicy
 

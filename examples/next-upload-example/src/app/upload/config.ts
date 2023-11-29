@@ -6,14 +6,15 @@ export enum NextUploadType {
 
 export const config: NextUploadConfig = {
   maxSize: process.env.NEXT_PUBLIC_MAX_SIZE || '1mb',
-  verifyAssets: true,
+  // verifyAssets: true,
   client: {
-    secretKey: process.env.MINIO_SECRET_KEY,
-    accessKey: process.env.MINIO_ACCESS_KEY,
-    endPoint: process.env.MINIO_ENDPOINT,
-    port: process.env.MINIO_PORT ? Number(process.env.MINIO_PORT) : undefined,
-    useSSL: process.env.MINIO_SSL === `true`,
-    region: process.env.MINIO_REGION,
+    region: process.env.S3_REGION,
+    endpoint: process.env.S3_ENDPOINT,
+    credentials: {
+      secretAccessKey: process.env.S3_SECRET_KEY,
+      accessKeyId: process.env.S3_ACCESS_KEY,
+    },
+    forcePathStyle: true,
   },
   uploadTypes: {
     [NextUploadType.image]: {},
