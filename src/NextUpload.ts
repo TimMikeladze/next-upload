@@ -326,7 +326,7 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
         },
         {
           id,
-          fileType,
+          // fileType,
         }
       )
     );
