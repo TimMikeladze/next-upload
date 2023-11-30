@@ -5,6 +5,7 @@ import KeyvPostgres from '@keyv/postgres';
 import { nanoid } from 'nanoid';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
+import { HeadBucketCommand } from '@aws-sdk/client-s3';
 import {
   KeyvStore,
   NextUpload,
@@ -15,7 +16,6 @@ import {
 } from '../src';
 import { DrizzlePgStore } from '../src/store/drizzle/pg/DrizzlePgStore';
 import { getDb } from './db/getDb';
-import { HeadBucketCommand } from '@aws-sdk/client-s3';
 
 const runTests = async (
   name: string,

@@ -164,12 +164,12 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
   private async makeDefaultPostPolicy(
     config: RequiredField<UploadTypeConfig, 'path'>,
     {
-      fileType,
+      // fileType,
       // metadata,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       id,
     }: {
-      fileType: string;
+      // fileType: string;
       id: string;
       // metadata: Metadata;
     }
