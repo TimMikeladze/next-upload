@@ -5,4 +5,4 @@ export const POST = (request: NextRequest) => nup.handler(request);
 
 export const dynamic = 'force-dynamic';
 
-// export const runtime = 'edge';
+export const runtime = 'edge';

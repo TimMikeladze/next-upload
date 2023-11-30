@@ -1,5 +1,4 @@
 import bytes from 'bytes';
-// import { Client, PostPolicy, BucketItem } from 'minio';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { nanoid } from 'nanoid';
 import { NextTool, NextToolStorePromise } from 'next-tool';
@@ -29,6 +28,7 @@ import {
   DeleteArgs as DeleteAssetArgs,
   SignedPostPolicy,
 } from './types';
+import { FileReader } from './polyfills/FileReader';
 
 export const defaultEnabledHandlerActions = [
   NextUploadAction.generatePresignedPostPolicy,
@@ -142,63 +142,21 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       Bucket: this.bucket,
     });
 
-    function PolyfillFileReader() {
-      // @ts-ignore
-      this.result = null;
-      // @ts-ignore
-      this.error = null;
-      // @ts-ignore
-      this.onload = null;
-      // @ts-ignore
-      this.onerror = null;
-      // @ts-ignore
-      this.onloadstart = null;
-      // @ts-ignore
-      this.onloadend = null;
-      // @ts-ignore
-      this.onprogress = null;
-      // @ts-ignore
-      this.readyState = 0;
-      // @ts-ignore
-      this.abort = function () {
-        // You can implement abort logic if needed
-      };
-      // @ts-ignore
-      this.readAsText = function (file) {
-        var reader = this;
-        var readerEvent = new Event('load');
-
-        reader.result = null;
-        reader.error = null;
-        reader.readyState = 1; // LOADING
-
-        // Simulate asynchronous reading
-        setTimeout(function () {
-          // Simulate successful reading
-          reader.result = 'Contents of the file: ' + file.name;
-          reader.readyState = 2; // DONE
-          if (reader.onload) {
-            reader.onload(readerEvent);
-          }
-          reader.onloadend && reader.onloadend(readerEvent);
-        }, 1000);
-      };
-      // @ts-ignore
-      this.readAsDataURL = function (file) {
-        // Use the extension from the filename to determine the MIME-TYPE
-        this.readAsText(file);
-      };
+    // THIS IS A TOTAL HACK!!!
+    // AWS SDK v3 HeadBucketCommand does not support Edge runtime.
+    // Assign the polyfilled FileReader to the global scope.
+    // @ts-ignore
+    if (typeof EdgeRuntime === 'string') {
+      if (!globalThis.FileReader) {
+        // @ts-ignore
+        globalThis.FileReader = FileReader;
+      }
     }
 
-    // Assign the polyfilled FileReader to the global scope
-    // @ts-ignore
-    // globalThis.FileReader = PolyfillFileReader;
-
     try {
-      console.log(await this.client.send(headBucketCommand));
+      await this.client.send(headBucketCommand);
       return true;
     } catch (error) {
-      console.log(error);
       return false;
     }
   }
@@ -238,10 +196,7 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       Bucket: this.bucket,
       Key: config.path,
       Expires: postPolicyExpirationSeconds,
-      Conditions: [
-        ['content-length-range', 0, maxSizeBytes],
-        ['eq', '$Content-Type', 'image/jpeg'],
-      ],
+      Conditions: [['content-length-range', 0, maxSizeBytes]],
     };
 
     return postPolicyOptions;
@@ -396,15 +351,6 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       },
       verifyAssets ? verifyAssetsExpirationSeconds * 1000 : 0
     );
-
-    console.log({
-      postPolicy: {
-        id,
-        data: presignedPostPolicy.fields,
-        url: presignedPostPolicy.url,
-        path: includeObjectPathInPostPolicyResponse ? path : null,
-      },
-    });
 
     return {
       postPolicy: {
