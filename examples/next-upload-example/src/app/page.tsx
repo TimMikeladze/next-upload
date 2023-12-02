@@ -30,7 +30,10 @@ export default async function Home() {
 
       <div className={styles.divider} />
       <div className={styles.example}>
-        <FileUpload api="/upload/basic" title="Basic upload (no store)" />
+        <FileUpload
+          api="/upload/basic"
+          title="Basic upload (without database )"
+        />
         <FileUpload api="/upload/keyv" title="Upload with Keyv store" />
         <FileUpload
           api="/upload/drizzle-postgres-js"
@@ -40,7 +43,10 @@ export default async function Home() {
           api="/upload/drizzle-node-postgres"
           title="Upload with Drizzle Node-Postgres store"
         />
-        <FileUpload api="/upload/edge" title="Edge upload (no store) " />
+        <FileUpload
+          api="/upload/edge"
+          title="Edge upload (without database ) "
+        />
         <FileUpload
           api="/upload/edge-with-drizzle-neon"
           title="Edge upload with Drizzle Neon Serverless Postgres store "
