@@ -3,19 +3,19 @@ import { it, expect, describe, beforeEach, afterEach, vi } from 'vitest';
 import Keyv from 'keyv';
 import KeyvPostgres from '@keyv/postgres';
 import { nanoid } from 'nanoid';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
 
 import { HeadBucketCommand } from '@aws-sdk/client-s3';
 import {
-  KeyvStore,
   NextUpload,
   NextUploadStore,
   NextUploadConfig,
-  drizzlePgAssetsTable,
   NextUploadAction,
 } from '../src';
-import { DrizzlePgStore } from '../src/store/drizzle/pg/DrizzlePgStore';
+import { DrizzlePostgresStore } from '../src/store/drizzle/postgres-js/DrizzlePostgresStore';
 import { getDb } from './db/getDb';
+import { KeyvStore } from '../src/store/keyv';
+import { drizzlePostgresNextUploadAssetsTable } from '../src/store/drizzle/postgres-js';
 
 const runTests = async (
   name: string,
@@ -428,11 +428,11 @@ const keyv = new Keyv({
   }),
 });
 
-const keyvAssetStore = new KeyvStore(keyv);
+const keyvStore = new KeyvStore(keyv);
 
 runTests('No Store', {});
-runTests('KeyvAssetStore', {
-  store: () => Promise.resolve(keyvAssetStore),
+runTests('KeyvStore', {
+  store: () => Promise.resolve(keyvStore),
   beforeEach: async () => {
     await keyv.clear();
   },
@@ -440,15 +440,15 @@ runTests('KeyvAssetStore', {
     await keyv.clear();
   },
 });
-runTests(`DrizzlePgAssetStore`, {
-  store: async () => new DrizzlePgStore(await getDb()),
+runTests(`DrizzlePostgresStore`, {
+  store: async () => new DrizzlePostgresStore(await getDb()),
   beforeEach: async () => {
     await migrate(await getDb(), {
       migrationsFolder: resolve(`tests/db/migrations`),
     });
-    (await getDb()).delete(drizzlePgAssetsTable);
+    (await getDb()).delete(drizzlePostgresNextUploadAssetsTable);
   },
   afterEach: async () => {
-    (await getDb()).delete(drizzlePgAssetsTable);
+    (await getDb()).delete(drizzlePostgresNextUploadAssetsTable);
   },
 });

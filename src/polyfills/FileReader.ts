@@ -1,4 +1,6 @@
 /* eslint-disable */
+// THIS IS A TOTAL HACK!!!
+// AWS SDK v3 HeadBucketCommand does not support Edge runtime.
 export class FileReader {
   result: any = null;
 

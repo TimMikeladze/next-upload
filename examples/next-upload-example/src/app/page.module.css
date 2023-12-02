@@ -21,7 +21,7 @@
 }
 
 .builtBy {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: bold;
   text-align: left;
   display: flex;
@@ -39,6 +39,8 @@
 
 .example {
   margin: 1rem 0rem;
+  max-width: var(--max-width);
+  width: 100%;
 }
 
 .divider {

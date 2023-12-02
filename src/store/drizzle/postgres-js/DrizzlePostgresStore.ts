@@ -3,9 +3,9 @@ import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { Asset, NextUploadStore } from '../../../types';
 import { NextUpload } from '../../../NextUpload';
-import { drizzlePgAssetsTable } from './DrizzlePgSchema';
+import { drizzlePostgresNextUploadAssetsTable } from './DrizzlePostgresSchema';
 
-export class DrizzlePgStore implements NextUploadStore {
+export class DrizzlePostgresStore implements NextUploadStore {
   private db: ReturnType<typeof drizzle>;
 
   constructor(db: ReturnType<typeof drizzle>) {
@@ -18,11 +18,12 @@ export class DrizzlePgStore implements NextUploadStore {
   } | null> {
     const rows = await this.db
       .select({
-        presignedUrl: drizzlePgAssetsTable.presignedUrl,
-        presignedUrlExpires: drizzlePgAssetsTable.presignedUrlExpires,
+        presignedUrl: drizzlePostgresNextUploadAssetsTable.presignedUrl,
+        presignedUrlExpires:
+          drizzlePostgresNextUploadAssetsTable.presignedUrlExpires,
       })
-      .from(drizzlePgAssetsTable)
-      .where(eq(drizzlePgAssetsTable.id, id));
+      .from(drizzlePostgresNextUploadAssetsTable)
+      .where(eq(drizzlePostgresNextUploadAssetsTable.id, id));
 
     if (!rows?.[0]) {
       return null;
@@ -37,32 +38,34 @@ export class DrizzlePgStore implements NextUploadStore {
 
   async deletePresignedUrl(id: string): Promise<void> {
     await this.db
-      .update(drizzlePgAssetsTable)
+      .update(drizzlePostgresNextUploadAssetsTable)
       .set({
         presignedUrl: null,
         presignedUrlExpires: null,
       })
-      .where(eq(drizzlePgAssetsTable.id, id));
+      .where(eq(drizzlePostgresNextUploadAssetsTable.id, id));
   }
 
-  savePresignedUrl(
+  async savePresignedUrl(
     id: string,
     url: string,
     presignedUrlExpirationSeconds?: number
   ): Promise<void> {
-    return this.db
-      .update(drizzlePgAssetsTable)
+    await this.db
+      .update(drizzlePostgresNextUploadAssetsTable)
       .set({
         presignedUrl: url,
         presignedUrlExpires: presignedUrlExpirationSeconds
           ? NextUpload.calculateExpires(presignedUrlExpirationSeconds * 1000)
           : undefined,
       })
-      .where(eq(drizzlePgAssetsTable.id, id));
+      .where(eq(drizzlePostgresNextUploadAssetsTable.id, id));
   }
 
   async all(): Promise<Asset[]> {
-    const rows = await this.db.select().from(drizzlePgAssetsTable);
+    const rows = await this.db
+      .select()
+      .from(drizzlePostgresNextUploadAssetsTable);
 
     return rows.map((row) => ({
       ...(row.data as Asset),
@@ -84,12 +87,12 @@ export class DrizzlePgStore implements NextUploadStore {
         throw new Error(`Asset expired and was deleted`);
       }
       const rows = await this.db
-        .update(drizzlePgAssetsTable)
+        .update(drizzlePostgresNextUploadAssetsTable)
         .set({
           data: args,
           expires,
         })
-        .where(eq(drizzlePgAssetsTable.id, args.id))
+        .where(eq(drizzlePostgresNextUploadAssetsTable.id, args.id))
         .returning();
 
       return {
@@ -101,7 +104,7 @@ export class DrizzlePgStore implements NextUploadStore {
       };
     }
     const rows = await this.db
-      .insert(drizzlePgAssetsTable)
+      .insert(drizzlePostgresNextUploadAssetsTable)
       .values({
         id: args?.id || nanoid(),
         data: args,
@@ -123,15 +126,15 @@ export class DrizzlePgStore implements NextUploadStore {
 
   async delete(id: string): Promise<void> {
     await this.db
-      .delete(drizzlePgAssetsTable)
-      .where(eq(drizzlePgAssetsTable.id, id));
+      .delete(drizzlePostgresNextUploadAssetsTable)
+      .where(eq(drizzlePostgresNextUploadAssetsTable.id, id));
   }
 
   async find(id: string): Promise<Asset | undefined> {
     const rows = await this.db
       .select()
-      .from(drizzlePgAssetsTable)
-      .where(eq(drizzlePgAssetsTable.id, id));
+      .from(drizzlePostgresNextUploadAssetsTable)
+      .where(eq(drizzlePostgresNextUploadAssetsTable.id, id));
 
     if (rows?.[0]) {
       if (NextUpload.isExpired(rows?.[0]?.expires)) {

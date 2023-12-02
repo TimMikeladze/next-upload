@@ -65,7 +65,10 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
         [NextUploadAction.pruneAssets]: () => this.pruneAssets(),
       }
     );
-    this.client = new S3(config.client);
+    this.client = new S3({
+      forcePathStyle: true,
+      ...config.client,
+    });
     this.bucket = config.bucket || NextUpload.bucketFromEnv();
   }
 
