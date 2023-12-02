@@ -44,7 +44,9 @@
       "src/client",
       "src/react",
       "src/store/keyv",
-      "src/store/drizzle/postgres-js"
+      "src/store/drizzle/postgres-js",
+      "src/store/drizzle/neon",
+      "src/store/drizzle/node-postgres"
     ],
     "treeshake": true,
     "sourcemap": "inline",
@@ -82,6 +84,14 @@
     "./store/drizzle/postgres-js": {
       "require": "./dist/store/drizzle/postgres-js/index.js",
       "import": "./dist/store/drizzle/postgres-js/index.mjs"
+    },
+    "./store/drizzle/neon": {
+      "require": "./dist/store/drizzle/neon/index.js",
+      "import": "./dist/store/drizzle/neon/index.mjs"
+    },
+    "./store/drizzle/node-postgres": {
+      "require": "./dist/store/drizzle/node-postgres/index.js",
+      "import": "./dist/store/drizzle/node-postgres/index.mjs"
     }
   },
   "files": [

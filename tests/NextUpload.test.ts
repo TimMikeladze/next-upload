@@ -12,10 +12,10 @@ import {
   NextUploadConfig,
   NextUploadAction,
 } from '../src';
-import { DrizzlePostgresStore } from '../src/store/drizzle/postgres-js/DrizzlePostgresStore';
+import { DrizzlePostgresStore } from '../src/store/drizzle/postgres-js/DrizzlePgStore';
 import { getDb } from './db/getDb';
 import { KeyvStore } from '../src/store/keyv';
-import { drizzlePostgresNextUploadAssetsTable } from '../src/store/drizzle/postgres-js';
+import { DrizzlePgNextUploadAssetsTable } from '../src/store/drizzle/postgres-js';
 
 const runTests = async (
   name: string,
@@ -446,9 +446,9 @@ runTests(`DrizzlePostgresStore`, {
     await migrate(await getDb(), {
       migrationsFolder: resolve(`tests/db/migrations`),
     });
-    (await getDb()).delete(drizzlePostgresNextUploadAssetsTable);
+    (await getDb()).delete(DrizzlePgNextUploadAssetsTable);
   },
   afterEach: async () => {
-    (await getDb()).delete(drizzlePostgresNextUploadAssetsTable);
+    (await getDb()).delete(DrizzlePgNextUploadAssetsTable);
   },
 });

@@ -1,7 +1,7 @@
 import { nextUploadConfig } from '@/app/nextUploadConfig';
 import { getDbServerless } from '@/db/getDbServerless';
 import { NextUpload } from 'next-upload';
-import { DrizzlePostgresStore } from 'next-upload/store/drizzle/postgres-js';
+import { DrizzlePgStore } from 'next-upload/store/drizzle/neon';
 
 export const nup = new NextUpload(
   {
@@ -12,8 +12,5 @@ export const nup = new NextUpload(
     },
   },
 
-  new DrizzlePostgresStore(
-    // @ts-ignore
-    getDbServerless()
-  )
+  new DrizzlePgStore(getDbServerless())
 );
