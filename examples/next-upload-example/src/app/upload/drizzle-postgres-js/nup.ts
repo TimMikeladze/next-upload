@@ -1,7 +1,7 @@
 import { nextUploadConfig } from '@/app/nextUploadConfig';
-import { getDbPostgresJs } from '@/db/getDbPostgresJs';
+import { getDbPostgresJs } from '@/drizzle/getDbPostgresJs';
 import { NextUpload } from 'next-upload';
-import { DrizzlePgStore } from 'next-upload/store/drizzle/postgres-js';
+import { NextUploadDrizzlePgStore } from 'next-upload/store/drizzle/postgres-js';
 
 export const nup = new NextUpload(
   {
@@ -11,5 +11,5 @@ export const nup = new NextUpload(
       ['drizzle-postgres-js']: {},
     },
   },
-  new DrizzlePgStore(getDbPostgresJs())
+  new NextUploadDrizzlePgStore(getDbPostgresJs())
 );

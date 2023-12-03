@@ -52,9 +52,6 @@ jobs:
       - name: Run tests
         run: yarn test:ci
 
-      - name: Build storybook
-        run: yarn build-storybook
-
       - name: Build package
         run: yarn build
 

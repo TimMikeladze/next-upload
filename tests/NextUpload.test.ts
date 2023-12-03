@@ -12,10 +12,10 @@ import {
   NextUploadConfig,
   NextUploadAction,
 } from '../src';
-import { DrizzlePostgresStore } from '../src/store/drizzle/postgres-js/DrizzlePgStore';
+import { NextUploadDrizzlePgStore } from '../src/store/drizzle/postgres-js/store';
 import { getDb } from './db/getDb';
-import { KeyvStore } from '../src/store/keyv';
-import { DrizzlePgNextUploadAssetsTable } from '../src/store/drizzle/postgres-js';
+import { NextUploadKeyvStore } from '../src/store/keyv';
+import { nextUploadAssetsTable } from '../src/store/drizzle/postgres-js';
 
 const runTests = async (
   name: string,
@@ -428,7 +428,7 @@ const keyv = new Keyv({
   }),
 });
 
-const keyvStore = new KeyvStore(keyv);
+const keyvStore = new NextUploadKeyvStore(keyv);
 
 runTests('No Store', {});
 runTests('KeyvStore', {
@@ -440,15 +440,15 @@ runTests('KeyvStore', {
     await keyv.clear();
   },
 });
-runTests(`DrizzlePostgresStore`, {
-  store: async () => new DrizzlePostgresStore(await getDb()),
+runTests(`NextUploadDrizzlePgStore`, {
+  store: async () => new NextUploadDrizzlePgStore(await getDb()),
   beforeEach: async () => {
     await migrate(await getDb(), {
       migrationsFolder: resolve(`tests/db/migrations`),
     });
-    (await getDb()).delete(DrizzlePgNextUploadAssetsTable);
+    (await getDb()).delete(nextUploadAssetsTable);
   },
   afterEach: async () => {
-    (await getDb()).delete(DrizzlePgNextUploadAssetsTable);
+    (await getDb()).delete(nextUploadAssetsTable);
   },
 });

@@ -1,1 +1,1 @@
-export * from './KeyvStore';
+export * from './store';

@@ -1,7 +1,7 @@
 import { nextUploadConfig } from '@/app/nextUploadConfig';
-import { getDbNodePostgres } from '@/db/getDbNodePostgres';
+import { getDbNodePostgres } from '@/drizzle/getDbNodePostgres';
 import { NextUpload } from 'next-upload';
-import { DrizzlePgStore } from 'next-upload/store/drizzle/node-postgres';
+import { NextUploadDrizzlePgStore } from 'next-upload/store/drizzle/node-postgres';
 
 export const nup = new NextUpload(
   {
@@ -11,5 +11,5 @@ export const nup = new NextUpload(
       ['drizzle-node-postgres']: {},
     },
   },
-  async () => new DrizzlePgStore(await getDbNodePostgres())
+  async () => new NextUploadDrizzlePgStore(await getDbNodePostgres())
 );

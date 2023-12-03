@@ -3,5 +3,7 @@ CREATE TABLE IF NOT EXISTS "next_upload_assets" (
 	"updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
 	"id" varchar PRIMARY KEY NOT NULL,
 	"data" jsonb NOT NULL,
-	"expires" integer
+	"expires" bigint,
+	"presignedUrl" varchar,
+	"presignedUrlExpires" bigint
 );

@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node vercel.js && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "link:self": "yarn yalc link next-upload && yarn link next-upload"
+    "link:self": "yarn yalc link next-upload && yarn link next-upload",
+    "migrate:generate": "drizzle-kit generate:pg --out src/drizzle/migrations --schema src/drizzle/schema.ts",
+    "migrate": "yarn ts src/drizzle/migrate",
+    "ts": "node node_modules/.bin/ts-node -r tsconfig-paths/register -O '{\"module\": \"commonjs\", \"moduleResolution\": \"classic\", \"resolveJsonModule\": false }' --transpile-only --project ./tsconfig.json"
   },
   "dependencies": {
     "@keyv/postgres": "^1.4.9",
@@ -35,6 +38,8 @@
     "dotenv": "^16.3.1",
     "drizzle-kit": "^0.20.6",
     "pg": "^8.11.3",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
     "yalc": "^1.0.0-pre.53"
   }
 }

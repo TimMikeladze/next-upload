@@ -1,2 +1,2 @@
-export * from './DrizzlePgStore';
-export * from '../pg-core/DrizzlePgSchema';
+export * from './store';
+export * from '../pg-core/schema';

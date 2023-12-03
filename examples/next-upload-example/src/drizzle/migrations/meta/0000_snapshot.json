@@ -1,8 +1,8 @@
 {
+  "id": "4096a332-942b-4f5e-8e6f-78360e25a4fa",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
-  "id": "225f3f28-3a43-407e-8329-5f7f03929cd9",
-  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "next_upload_assets": {
       "name": "next_upload_assets",
@@ -36,7 +36,19 @@
         },
         "expires": {
           "name": "expires",
-          "type": "integer",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "presignedUrl": {
+          "name": "presignedUrl",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "presignedUrlExpires": {
+          "name": "presignedUrlExpires",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": false
         }
