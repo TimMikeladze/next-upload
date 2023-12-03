@@ -1,1 +1,1 @@
-export { nextUploadAssetsTable } from 'next-upload/store/drizzle/postgres-js';
+export { nextUploadAssetsTable } from 'next-upload/store/drizzle/pg-core';

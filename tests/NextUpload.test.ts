@@ -15,7 +15,7 @@ import {
 import { NextUploadDrizzlePgStore } from '../src/store/drizzle/postgres-js/store';
 import { getDb } from './db/getDb';
 import { NextUploadKeyvStore } from '../src/store/keyv';
-import { nextUploadAssetsTable } from '../src/store/drizzle/postgres-js';
+import { nextUploadAssetsTable } from '../src/store/drizzle/pg-core/schema';
 
 const runTests = async (
   name: string,

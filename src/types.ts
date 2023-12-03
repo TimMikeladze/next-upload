@@ -65,7 +65,7 @@ export interface NextUploadStore {
   upsert(args: Asset, ttl: number): Promise<Asset>;
 }
 
-type ClientConfig = RequiredField<S3ClientConfig, 'region'>;
+type ClientConfig = S3ClientConfig;
 
 export type UploadTypeConfigFn = (
   args: Partial<GeneratePresignedPostPolicyArgs & GetAssetArgs>,
