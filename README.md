@@ -1,8 +1,8 @@
 # 🗃️ next-upload
 
-A turn-key solution for integrating Next.js with signed & secure file-uploads to an S3 compliant storage service such as R2, AWS, or Minio.
+A turn-key solution for integrating Next.js with signed & secure file-uploads to an S3 compliant storage service such as R2, AWS, or Minio. Generates signed URLs for uploading files directly to your storage service and optionally integrates with your database to store additional metadata about your files.
 
-Check out this [example](https://github.com/TimMikeladze/next-upload/tree/master/examples/next-upload-example) of a Next.js codebase showcasing an advanced implementation of `next-upload`.
+Check out this [example](https://github.com/TimMikeladze/next-upload/tree/master/examples/next-upload-example) of a Next.js codebase showcasing an advanced implementation of `next-upload` with different storage services and databases.
 
 > 🚧 Under active development. Expect breaking changes until v1.0.0.
 
@@ -26,12 +26,15 @@ First let's create a `NextUploadConfig` that defines how to connect to a storage
 
 ```tsx
 export const config: NextUploadConfig = {
-  maxSize: '10mb',
+  maxSize: '1mb',
+  bucket: NextUpload.bucketFromEnv('my-project-name'),
   client: {
-    endPoint: `s3.us-west-1.amazonaws.com`,
-    region: `us-west-1`,
-    secretKey: process.env.AWS_SECRET,
-    accessKey: process.env.AWS_KEY,
+    region: 'us-west-1',
+    endpoint: 'https://s3.us-west-1.amazonaws.com',
+    credentials: {
+      secretAccessKey: process.env.S3_SECRET_KEY,
+      accessKeyId: process.env.S3_ACCESS_KEY,
+    },
   },
 };
 ```
@@ -52,6 +55,9 @@ const nup = new NextUpload(config);
 export const POST = (request: NextRequest) => nup.handler(request);
 
 export const dynamic = 'force-dynamic';
+
+// Optionally, if your application supports it you can run next-upload in the Edge runtime.
+export const runtime = 'edge'; 
 ```
 
 At this point you can import helper functions from `next-upload/client` to send files to your storage service in one line of code.
@@ -110,19 +116,19 @@ Works with any [keyv](https://github.com/jaredwray/) enabled store. This include
 
 **src/app/upload/nup.ts**
 ```tsx
-import { KeyvStore, NextUpload } from 'next-upload';
-import { config } from './config';
-import { NextRequest } from 'next/server';
-import Keyv from 'keyv';
+import { nextUploadConfig } from '@/app/upload/config';
 import KeyvPostgres from '@keyv/postgres';
+import Keyv from 'keyv';
+import { NextUpload } from 'next-upload';
+import { NextUploadKeyvStore } from 'next-upload/store/keyv';
 
 export const nup = new NextUpload(
-  config,
-  new KeyvStore(
+  nextUploadConfig,
+  new NextUploadKeyvStore(
     new Keyv({
-      namespace: NextUpload.namespaceFromEnv(),
+      namespace: NextUpload.namespaceFromEnv('my-project-name'),
       store: new KeyvPostgres({
-        uri: process.env.PG_CONNECTION_STRING + '/' + process.env.PG_DB,
+        uri: `${process.env.PG_CONNECTION_STRING}/${process.env.PG_DB}`,
       }),
     })
   )
@@ -133,27 +139,31 @@ export const nup = new NextUpload(
 
 Works with a [Drizzle](https://github.com/drizzle-team/drizzle-orm) enabled database. This is a great option if you are already using Drizzle in your application and want tighter integration with your database schema. It also provides a more performant option for high volume reads/writes to your asset store. 
 
-#### 🐘 DrizzlePgStore - Postgres
+#### 🐘 NextUploadDrizzlePgStore
 
-**Note:** You must import and reexport `drizzlePgAssetsTable` from your Drizzle schema file as part of the database migration process to setup the asset store table.
+The following Postgres clients are directly supported. Other Postgres clients most likely will work but may raise TypeScript errors during initialization of the `NextUploadDrizzlePgStore` instance.
+
+- [Postgres.JS](https://orm.drizzle.team/docs/quick-postgresql/postgresjs)
+- [node-postgres](https://orm.drizzle.team/docs/quick-postgresql/node-postgres)
+- [Neon](https://orm.drizzle.team/docs/quick-postgresql/neon)
 
 **src/db/schema.ts**
 ```tsx
-export { drizzlePgAssetsTable } from 'next-upload';
+export { nextUploadAssetsTable } from 'next-upload/store/drizzle/postgres-js';
 ```
 
 **src/app/upload/nup.ts**
 ```tsx
-import { DrizzlePgStore, NextUpload } from 'next-upload';
-import { config } from './config';
-import { NextRequest } from 'next/server';
+import { nextUploadConfig } from '@/app/nextUploadConfig';
+import { getDbPostgresJs } from '@/drizzle/getDbPostgresJs';
+import { NextUpload } from 'next-upload';
+import { NextUploadDrizzlePgStore } from 'next-upload/store/drizzle/postgres-js';
 
 export const nup = new NextUpload(
-  config,
-  async () => new DrizzlePgStore(
-    await getDb(); // however you get your drizzle instance
-  )
+  nextUploadConfig,
+  new NextUploadDrizzlePgStore(getDbPostgresJs())
 );
+
 ```
 
 ### 🔗 Getting an Asset Url
@@ -252,6 +262,7 @@ Consider setting up a cron job to run this function on a regular basis.
 - [getBucket](#gear-getbucket)
 - [getClient](#gear-getclient)
 - [init](#gear-init)
+- [bucketExists](#gear-bucketexists)
 - [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
 - [pruneAssets](#gear-pruneassets)
 - [verifyAsset](#gear-verifyasset)
@@ -310,13 +321,19 @@ Consider setting up a cron job to run this function on a regular basis.
 
 | Method | Type |
 | ---------- | ---------- |
-| `getClient` | `() => Client` |
+| `getClient` | `() => S3` |
 
 #### :gear: init
 
 | Method | Type |
 | ---------- | ---------- |
 | `init` | `() => Promise<void>` |
+
+#### :gear: bucketExists
+
+| Method | Type |
+| ---------- | ---------- |
+| `bucketExists` | `() => Promise<boolean>` |
 
 #### :gear: generatePresignedPostPolicy
 

@@ -18,7 +18,7 @@ const updatedAt = timestamp(`updatedAt`, {
   .notNull()
   .defaultNow();
 
-export const drizzlePgAssetsTable = pgTable(`next_upload_assets`, {
+export const nextUploadAssetsTable = pgTable(`next_upload_assets`, {
   createdAt,
   updatedAt,
   id: varchar(`id`).primaryKey(),

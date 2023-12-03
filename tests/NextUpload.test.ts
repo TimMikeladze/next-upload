@@ -3,18 +3,19 @@ import { it, expect, describe, beforeEach, afterEach, vi } from 'vitest';
 import Keyv from 'keyv';
 import KeyvPostgres from '@keyv/postgres';
 import { nanoid } from 'nanoid';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
 
+import { HeadBucketCommand } from '@aws-sdk/client-s3';
 import {
-  KeyvStore,
   NextUpload,
   NextUploadStore,
   NextUploadConfig,
-  drizzlePgAssetsTable,
   NextUploadAction,
 } from '../src';
-import { DrizzlePgStore } from '../src/store/drizzle/pg/DrizzlePgStore';
+import { NextUploadDrizzlePgStore } from '../src/store/drizzle/postgres-js/store';
 import { getDb } from './db/getDb';
+import { NextUploadKeyvStore } from '../src/store/keyv';
+import { nextUploadAssetsTable } from '../src/store/drizzle/pg-core/schema';
 
 const runTests = async (
   name: string,
@@ -26,14 +27,14 @@ const runTests = async (
 ) => {
   const nextUploadConfig: NextUploadConfig = {
     client: {
-      secretKey: process.env.MINIO_SECRET_KEY,
-      accessKey: process.env.MINIO_ACCESS_KEY,
-      endPoint: process.env.MINIO_ENDPOINT,
-      port: process.env.MINIO_PORT ? Number(process.env.MINIO_PORT) : undefined,
-      useSSL: process.env.MINIO_SSL === `true`,
-      region: process.env.MINIO_REGION,
+      region: process.env.S3_REGION,
+      endpoint: process.env.S3_ENDPOINT,
+      credentials: {
+        secretAccessKey: process.env.S3_SECRET_KEY,
+        accessKeyId: process.env.S3_ACCESS_KEY,
+      },
+      forcePathStyle: true,
     },
-    api: `/upload`,
     maxSize: '10mb',
   };
 
@@ -55,7 +56,11 @@ const runTests = async (
 
       const client = nup.getClient();
 
-      expect(await client.bucketExists(nup.getBucket())).toBe(true);
+      const headBucketCommand = new HeadBucketCommand({
+        Bucket: nup.getBucket(),
+      });
+
+      expect(await client.send(headBucketCommand)).toBeDefined();
     });
 
     describe(`deleteAsset`, () => {
@@ -75,9 +80,11 @@ const runTests = async (
             fileType,
           });
 
-        await nup
-          .getClient()
-          .putObject(nup.getBucket(), signedPostPolicy.data.key, `test`);
+        await nup.getClient().putObject({
+          Bucket: nup.getBucket(),
+          Key: signedPostPolicy.data.key,
+          Body: `test`,
+        });
 
         const { asset: presignedUrl } = await nup.getAsset({
           id: signedPostPolicy.id,
@@ -205,11 +212,11 @@ const runTests = async (
 
         expect(postPolicy.id).toEqual(id);
 
-        const buffer = `test`;
-
-        await nup
-          .getClient()
-          .putObject(nup.getBucket(), postPolicy.data.key, buffer);
+        await nup.getClient().putObject({
+          Bucket: nup.getBucket(),
+          Key: postPolicy.data.key,
+          Body: `test`,
+        });
 
         expect(
           nup.generatePresignedPostPolicy({
@@ -310,9 +317,11 @@ const runTests = async (
             fileType,
           });
 
-          await nup
-            .getClient()
-            .putObject(nup.getBucket(), postPolicy.data.key, `test`);
+          await nup.getClient().putObject({
+            Bucket: nup.getBucket(),
+            Key: postPolicy.data.key,
+            Body: `test`,
+          });
 
           const assetStore = nup.getStore();
 
@@ -419,11 +428,11 @@ const keyv = new Keyv({
   }),
 });
 
-const keyvAssetStore = new KeyvStore(keyv);
+const keyvStore = new NextUploadKeyvStore(keyv);
 
 runTests('No Store', {});
-runTests('KeyvAssetStore', {
-  store: () => Promise.resolve(keyvAssetStore),
+runTests('KeyvStore', {
+  store: () => Promise.resolve(keyvStore),
   beforeEach: async () => {
     await keyv.clear();
   },
@@ -431,15 +440,15 @@ runTests('KeyvAssetStore', {
     await keyv.clear();
   },
 });
-runTests(`DrizzlePgAssetStore`, {
-  store: async () => new DrizzlePgStore(await getDb()),
+runTests(`NextUploadDrizzlePgStore`, {
+  store: async () => new NextUploadDrizzlePgStore(await getDb()),
   beforeEach: async () => {
     await migrate(await getDb(), {
       migrationsFolder: resolve(`tests/db/migrations`),
     });
-    (await getDb()).delete(drizzlePgAssetsTable);
+    (await getDb()).delete(nextUploadAssetsTable);
   },
   afterEach: async () => {
-    (await getDb()).delete(drizzlePgAssetsTable);
+    (await getDb()).delete(nextUploadAssetsTable);
   },
 });

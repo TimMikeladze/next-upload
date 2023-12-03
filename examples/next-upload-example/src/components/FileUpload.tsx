@@ -4,16 +4,22 @@ import { useDropzone } from 'react-dropzone';
 import { useNextUpload } from 'next-upload/react';
 import toast from 'react-hot-toast';
 import bytes from 'bytes';
-import { NextUploadType } from '@/app/upload/config';
 
 const maxSize = process.env.NEXT_PUBLIC_MAX_SIZE || '1mb';
 
-const FileUpload = () => {
-  const nup = useNextUpload();
+export interface FileUploadProps {
+  api: string;
+  title: string;
+}
+
+const FileUpload = (props: FileUploadProps) => {
+  const nup = useNextUpload({
+    api: props.api,
+  });
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
-      'image/*': ['.jpeg', '.png'],
+      'image/*': [],
     },
     maxSize: bytes.parse(maxSize),
     onDropRejected: () => toast.error(`Maximum file upload size is ${maxSize}`),
@@ -22,10 +28,7 @@ const FileUpload = () => {
         nup.upload(
           acceptedFiles.map((file) => ({
             file,
-            uploadType: NextUploadType.image,
-            metadata: {
-              lastModified: file.lastModified,
-            },
+            uploadType: props.api.split('/').pop(),
           }))
         ),
         {
@@ -38,7 +41,22 @@ const FileUpload = () => {
   });
 
   return (
-    <div {...getRootProps()}>
+    <div
+      {...getRootProps()}
+      style={{
+        padding: '1rem',
+        border: '1px solid #ccc',
+        borderRadius: '5px',
+        marginBottom: '2rem',
+      }}
+    >
+      <div
+        style={{
+          marginBottom: '1rem',
+        }}
+      >
+        <h4>{props.title}</h4>
+      </div>
       <div
         style={{
           textAlign: 'center',
@@ -48,7 +66,7 @@ const FileUpload = () => {
         {isDragActive ? (
           <p>Drop the files here ...</p>
         ) : (
-          <p>Drag 'n' drop some files here, or click to select files</p>
+          <p>Drag 'n' drop some files here, or click here to select files</p>
         )}
       </div>
       {nup.files.length > 0 && (

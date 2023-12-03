@@ -4,31 +4,42 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node vercel.js && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "link:self": "yarn yalc link next-upload && yarn link next-upload"
+    "link:self": "yarn yalc link next-upload && yarn link next-upload",
+    "migrate:generate": "drizzle-kit generate:pg --out src/drizzle/migrations --schema src/drizzle/schema.ts",
+    "migrate": "yarn ts src/drizzle/migrate",
+    "ts": "node node_modules/.bin/ts-node -r tsconfig-paths/register -O '{\"module\": \"commonjs\", \"moduleResolution\": \"classic\", \"resolveJsonModule\": false }' --transpile-only --project ./tsconfig.json"
   },
   "dependencies": {
-    "@keyv/postgres": "^1.4.8",
-    "@types/node": "20.4.5",
-    "@types/react": "18.2.17",
-    "@types/react-dom": "18.2.7",
+    "@keyv/postgres": "^1.4.9",
+    "@neondatabase/serverless": "^0.6.0",
+    "@types/node": "20.10.2",
+    "@types/react": "18.2.40",
+    "@types/react-dom": "18.2.17",
     "bytes": "^3.1.2",
-    "eslint": "8.46.0",
-    "eslint-config-next": "13.4.12",
-    "keyv": "^4.5.3",
-    "next": "13.4.12",
-    "next-upload": "^0.0.28",
+    "drizzle-orm": "^0.29.1",
+    "eslint": "8.55.0",
+    "eslint-config-next": "14.0.3",
+    "keyv": "^4.5.4",
+    "next": "14.0.3",
+    "next-upload": "0.0.29",
+    "postgres": "^3.4.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-dropzone": "^14.2.3",
     "react-hot-toast": "^2.4.1",
-    "typescript": "5.1.6"
+    "typescript": "5.3.2"
   },
   "devDependencies": {
-    "@types/bytes": "^3.1.1",
+    "@types/bytes": "^3.1.4",
+    "@types/pg": "^8.10.9",
     "dotenv": "^16.3.1",
+    "drizzle-kit": "^0.20.6",
+    "pg": "^8.11.3",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
     "yalc": "^1.0.0-pre.53"
   }
 }
