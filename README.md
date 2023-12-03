@@ -25,6 +25,9 @@ First let's create a `NextUploadConfig` that defines how to connect to a storage
 **src/app/upload/config.ts**
 
 ```tsx
+import { type NextUploadConfig } from 'next-upload/client';
+import { NextUpload } from 'next-upload';
+
 export const config: NextUploadConfig = {
   maxSize: '1mb',
   bucket: NextUpload.bucketFromEnv('my-project-name'),
@@ -252,22 +255,39 @@ Consider setting up a cron job to run this function on a regular basis.
 
 ### Methods
 
-- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
-- [namespaceFromEnv](#gear-namespacefromenv)
-- [bucketFromEnv](#gear-bucketfromenv)
-- [getIdFromPath](#gear-getidfrompath)
-- [getUploadTypeFromPath](#gear-getuploadtypefrompath)
-- [calculateExpires](#gear-calculateexpires)
-- [isExpired](#gear-isexpired)
-- [getBucket](#gear-getbucket)
-- [getClient](#gear-getclient)
-- [init](#gear-init)
-- [bucketExists](#gear-bucketexists)
-- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
-- [pruneAssets](#gear-pruneassets)
-- [verifyAsset](#gear-verifyasset)
-- [deleteAsset](#gear-deleteasset)
-- [getAsset](#gear-getasset)
+- [🗃️ next-upload](#️-next-upload)
+  - [📡 Install](#-install)
+  - [🚀 Getting Started](#-getting-started)
+  - [🧳 Storage](#-storage)
+    - [🗝️ KeyvStore - all popular databases supported](#️-keyvstore---all-popular-databases-supported)
+    - [☔️ Drizzle](#️-drizzle)
+      - [🐘 NextUploadDrizzlePgStore](#-nextuploaddrizzlepgstore)
+    - [🔗 Getting an Asset Url](#-getting-an-asset-url)
+    - [🗑️ Deleting Assets](#️-deleting-assets)
+    - [🔎 Retrieving Assets](#-retrieving-assets)
+  - [📝 Metadata](#-metadata)
+  - [✅ Verifying uploads](#-verifying-uploads)
+  - [✂️ Pruning assets](#️-pruning-assets)
+  - [:wrench: Constants](#wrench-constants)
+    - [:gear: defaultEnabledHandlerActions](#gear-defaultenabledhandleractions)
+  - [:factory: NextUpload](#factory-nextupload)
+    - [Methods](#methods)
+      - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
+      - [:gear: namespaceFromEnv](#gear-namespacefromenv)
+      - [:gear: bucketFromEnv](#gear-bucketfromenv)
+      - [:gear: getIdFromPath](#gear-getidfrompath)
+      - [:gear: getUploadTypeFromPath](#gear-getuploadtypefrompath)
+      - [:gear: calculateExpires](#gear-calculateexpires)
+      - [:gear: isExpired](#gear-isexpired)
+      - [:gear: getBucket](#gear-getbucket)
+      - [:gear: getClient](#gear-getclient)
+      - [:gear: init](#gear-init)
+      - [:gear: bucketExists](#gear-bucketexists)
+      - [:gear: generatePresignedPostPolicy](#gear-generatepresignedpostpolicy-1)
+      - [:gear: pruneAssets](#gear-pruneassets)
+      - [:gear: verifyAsset](#gear-verifyasset)
+      - [:gear: deleteAsset](#gear-deleteasset)
+      - [:gear: getAsset](#gear-getasset)
 
 #### :gear: generatePresignedPostPolicy
 
