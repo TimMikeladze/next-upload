@@ -3,12 +3,14 @@ import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { Asset, NextUploadStore } from '../../../types';
 import { NextUpload } from '../../../NextUpload';
-import { drizzlePgAssetsTable } from './DrizzlePgSchema';
+import { nextUploadAssetsTable } from './schema';
 
-export class DrizzlePgStore implements NextUploadStore {
-  private db: ReturnType<typeof drizzle>;
+export class NextUploadDrizzlePgCoreStore<T extends typeof drizzle>
+  implements NextUploadStore
+{
+  private db: ReturnType<T>;
 
-  constructor(db: ReturnType<typeof drizzle>) {
+  constructor(db: ReturnType<T>) {
     this.db = db;
   }
 
@@ -18,11 +20,11 @@ export class DrizzlePgStore implements NextUploadStore {
   } | null> {
     const rows = await this.db
       .select({
-        presignedUrl: drizzlePgAssetsTable.presignedUrl,
-        presignedUrlExpires: drizzlePgAssetsTable.presignedUrlExpires,
+        presignedUrl: nextUploadAssetsTable.presignedUrl,
+        presignedUrlExpires: nextUploadAssetsTable.presignedUrlExpires,
       })
-      .from(drizzlePgAssetsTable)
-      .where(eq(drizzlePgAssetsTable.id, id));
+      .from(nextUploadAssetsTable)
+      .where(eq(nextUploadAssetsTable.id, id));
 
     if (!rows?.[0]) {
       return null;
@@ -37,32 +39,32 @@ export class DrizzlePgStore implements NextUploadStore {
 
   async deletePresignedUrl(id: string): Promise<void> {
     await this.db
-      .update(drizzlePgAssetsTable)
+      .update(nextUploadAssetsTable)
       .set({
         presignedUrl: null,
         presignedUrlExpires: null,
       })
-      .where(eq(drizzlePgAssetsTable.id, id));
+      .where(eq(nextUploadAssetsTable.id, id));
   }
 
-  savePresignedUrl(
+  async savePresignedUrl(
     id: string,
     url: string,
     presignedUrlExpirationSeconds?: number
   ): Promise<void> {
-    return this.db
-      .update(drizzlePgAssetsTable)
+    await this.db
+      .update(nextUploadAssetsTable)
       .set({
         presignedUrl: url,
         presignedUrlExpires: presignedUrlExpirationSeconds
           ? NextUpload.calculateExpires(presignedUrlExpirationSeconds * 1000)
           : undefined,
       })
-      .where(eq(drizzlePgAssetsTable.id, id));
+      .where(eq(nextUploadAssetsTable.id, id));
   }
 
   async all(): Promise<Asset[]> {
-    const rows = await this.db.select().from(drizzlePgAssetsTable);
+    const rows = await this.db.select().from(nextUploadAssetsTable);
 
     return rows.map((row) => ({
       ...(row.data as Asset),
@@ -84,12 +86,12 @@ export class DrizzlePgStore implements NextUploadStore {
         throw new Error(`Asset expired and was deleted`);
       }
       const rows = await this.db
-        .update(drizzlePgAssetsTable)
+        .update(nextUploadAssetsTable)
         .set({
           data: args,
           expires,
         })
-        .where(eq(drizzlePgAssetsTable.id, args.id))
+        .where(eq(nextUploadAssetsTable.id, args.id))
         .returning();
 
       return {
@@ -101,7 +103,7 @@ export class DrizzlePgStore implements NextUploadStore {
       };
     }
     const rows = await this.db
-      .insert(drizzlePgAssetsTable)
+      .insert(nextUploadAssetsTable)
       .values({
         id: args?.id || nanoid(),
         data: args,
@@ -123,15 +125,15 @@ export class DrizzlePgStore implements NextUploadStore {
 
   async delete(id: string): Promise<void> {
     await this.db
-      .delete(drizzlePgAssetsTable)
-      .where(eq(drizzlePgAssetsTable.id, id));
+      .delete(nextUploadAssetsTable)
+      .where(eq(nextUploadAssetsTable.id, id));
   }
 
   async find(id: string): Promise<Asset | undefined> {
     const rows = await this.db
       .select()
-      .from(drizzlePgAssetsTable)
-      .where(eq(drizzlePgAssetsTable.id, id));
+      .from(nextUploadAssetsTable)
+      .where(eq(nextUploadAssetsTable.id, id));
 
     if (rows?.[0]) {
       if (NextUpload.isExpired(rows?.[0]?.expires)) {
