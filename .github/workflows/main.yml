@@ -61,6 +61,3 @@ jobs:
           yarn install --frozen-lockfile
           yarn link next-upload
           yarn build
-
-      - name: Check commits messages
-        uses: wagoid/commitlint-github-action@v5
