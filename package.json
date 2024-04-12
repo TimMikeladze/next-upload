@@ -177,7 +177,7 @@
     "jsdom": "23.2.0",
     "keyv": "4.5.4",
     "lint-staged": "15.2.0",
-    "mysql2": "3.7.0",
+    "mysql2": "3.9.4",
     "next": "14.0.4",
     "postgres": "3.4.3",
     "prettier": "3.2.1",
