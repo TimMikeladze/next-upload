@@ -276,19 +276,19 @@ Consider setting up a cron job to run this function on a regular basis.
 
 | Method | Type |
 | ---------- | ---------- |
-| `generatePresignedPostPolicy` | `(args: any, request: NextToolRequest) => Promise<{ postPolicy: SignedPostPolicy; }>` |
+| `generatePresignedPostPolicy` | `(args: any, request: NextToolRequest or undefined) => Promise<{ postPolicy: SignedPostPolicy; }>` |
 
 #### :gear: namespaceFromEnv
 
 | Method | Type |
 | ---------- | ---------- |
-| `namespaceFromEnv` | `(project?: string) => string` |
+| `namespaceFromEnv` | `(project?: string or undefined) => string` |
 
 #### :gear: bucketFromEnv
 
 | Method | Type |
 | ---------- | ---------- |
-| `bucketFromEnv` | `(project?: string) => string` |
+| `bucketFromEnv` | `(project?: string or undefined) => string` |
 
 #### :gear: getIdFromPath
 
@@ -306,13 +306,13 @@ Consider setting up a cron job to run this function on a regular basis.
 
 | Method | Type |
 | ---------- | ---------- |
-| `calculateExpires` | `(ttl: number) => number` |
+| `calculateExpires` | `(ttl: number) => number or null` |
 
 #### :gear: isExpired
 
 | Method | Type |
 | ---------- | ---------- |
-| `isExpired` | `(timestamp: number) => boolean` |
+| `isExpired` | `(timestamp: number or null or undefined) => boolean or 0` |
 
 #### :gear: getBucket
 
@@ -342,7 +342,7 @@ Consider setting up a cron job to run this function on a regular basis.
 
 | Method | Type |
 | ---------- | ---------- |
-| `generatePresignedPostPolicy` | `(args: GeneratePresignedPostPolicyArgs, request?: NextUploadRequest) => Promise<{ postPolicy: SignedPostPolicy; }>` |
+| `generatePresignedPostPolicy` | `(args: GeneratePresignedPostPolicyArgs, request?: NextUploadRequest or undefined) => Promise<{ postPolicy: SignedPostPolicy; }>` |
 
 #### :gear: pruneAssets
 
@@ -366,7 +366,24 @@ Consider setting up a cron job to run this function on a regular basis.
 
 | Method | Type |
 | ---------- | ---------- |
-| `getAsset` | `(args: GetAssetArgs or GetAssetArgs[], request?: NextUploadRequest) => Promise<{ asset: GetAsset; assets: GetAsset[]; }>` |
+| `getAsset` | `(args: GetAssetArgs or GetAssetArgs[], request?: NextUploadRequest or undefined) => Promise<{ asset: GetAsset; assets: GetAsset[]; }>` |
+
+
+## :nut_and_bolt: Enum
+
+- [NextUploadAction](#gear-nextuploadaction)
+
+### :gear: NextUploadAction
+
+
+
+| Property | Type | Description |
+| ---------- | ---------- | ---------- |
+| `deleteAsset` | `'deleteAsset'` |  |
+| `generatePresignedPostPolicy` | `'generatePresignedPostPolicy'` |  |
+| `getAsset` | `'getAsset'` |  |
+| `pruneAssets` | `'pruneAssets'` |  |
+| `verifyAsset` | `'verifyAsset'` |  |
 
 
 <!-- TSDOC_END -->
