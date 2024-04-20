@@ -198,7 +198,8 @@
     "keyv": ">=4",
     "next": ">=13",
     "react": ">=17",
-    "react-dom": ">=17"
+    "react-dom": ">=17",
+    "@prisma/client": ">=5.12.1"
   },
   "resolutions": {
     "glob-parent": ">=5.1.2",
