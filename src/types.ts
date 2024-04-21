@@ -34,12 +34,12 @@ export type UploadTypeConfig = CommonConfig & {
   ) => Promise<PresignedPostOptions>;
 };
 
-export type Asset = {
+export type AssetWithOptionalId = {
   bucket: string;
   createdAt: Date;
   expires?: number | null;
   fileType: string;
-  id: string;
+  id?: string;
   metadata: Metadata;
   name: string;
   path: string;
@@ -47,6 +47,8 @@ export type Asset = {
   uploadType: string;
   verified: boolean | null;
 };
+
+export type Asset = Omit<AssetWithOptionalId, 'id'> & { id: string };
 
 export interface NextUploadStore {
   all(): Promise<Asset[]>;
@@ -155,4 +157,14 @@ export type VerifyAssetArgs = {
 export type DeleteArgs = {
   id?: string;
   path?: string | null;
+};
+
+export type NextUploadAssetsTable = {
+  createdAt: Date;
+  data: unknown;
+  expires: number | null;
+  id: string;
+  presignedUrl: string | null;
+  presignedUrlExpired: number | null;
+  updatedAt: Date;
 };

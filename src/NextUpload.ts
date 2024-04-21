@@ -70,6 +70,7 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       ...config.client,
     });
     this.bucket = config.bucket || NextUpload.bucketFromEnv();
+    this.store = store as NextUploadStore | undefined;
   }
 
   public static namespaceFromEnv(project?: string) {

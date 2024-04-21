@@ -51,6 +51,10 @@ export default async function Home() {
           api="/upload/edge-with-drizzle-neon"
           title="Edge upload with Drizzle Neon Serverless Postgres store "
         />
+        <FileUpload
+          api="/upload/prisma"
+          title="Edge upload with Prisma store "
+        />
       </div>
     </main>
   );

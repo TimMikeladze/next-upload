@@ -1,7 +1,7 @@
 {
   "name": "next-upload",
   "description": "A turn-key solution for integrating Next.js with signed & secure file-uploads to an S3 compliant storage service such as R2, AWS, or Minio.",
-  "version": "0.0.30",
+  "version": "0.1.0",
   "author": "Tim Mikeladze <tim.mikeladze@gmail.com>",
   "license": "MIT",
   "keywords": [
@@ -49,7 +49,8 @@
       "src/store/keyv",
       "src/store/drizzle/postgres-js",
       "src/store/drizzle/neon",
-      "src/store/drizzle/node-postgres"
+      "src/store/drizzle/node-postgres",
+      "src/store/prisma"
     ],
     "treeshake": true,
     "sourcemap": "inline",
@@ -95,6 +96,10 @@
     "./store/drizzle/node-postgres": {
       "require": "./dist/store/drizzle/node-postgres/index.js",
       "import": "./dist/store/drizzle/node-postgres/index.mjs"
+    },
+    "./store/prisma": {
+      "require": "./dist/store/prisma/index.js",
+      "import": "./dist/store/prisma/index.mjs"
     }
   },
   "files": [
@@ -198,7 +203,8 @@
     "keyv": ">=4",
     "next": ">=13",
     "react": ">=17",
-    "react-dom": ">=17"
+    "react-dom": ">=17",
+    "@prisma/client": ">=5.12.1"
   },
   "resolutions": {
     "glob-parent": ">=5.1.2",
