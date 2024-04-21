@@ -49,7 +49,8 @@
       "src/store/keyv",
       "src/store/drizzle/postgres-js",
       "src/store/drizzle/neon",
-      "src/store/drizzle/node-postgres"
+      "src/store/drizzle/node-postgres",
+      "src/store/prisma"
     ],
     "treeshake": true,
     "sourcemap": "inline",
@@ -95,6 +96,10 @@
     "./store/drizzle/node-postgres": {
       "require": "./dist/store/drizzle/node-postgres/index.js",
       "import": "./dist/store/drizzle/node-postgres/index.mjs"
+    },
+    "./store/prisma": {
+      "require": "./dist/store/prisma/index.js",
+      "import": "./dist/store/prisma/index.mjs"
     }
   },
   "files": [
