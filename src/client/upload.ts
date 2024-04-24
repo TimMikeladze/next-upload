@@ -1,6 +1,6 @@
-import { generatePresignedPostPolicy } from './generatePresignedPostPolicy';
+import { generatePresigned } from './generatePresigned';
 import { NextUploadClientConfig, UploadOptions } from '../types';
-import { uploadToPresignedUrl } from './uploadToPresignedUrl';
+import { uploadToPresignedUrl } from './uploadToPresigned';
 
 export const upload = async (
   options: UploadOptions | UploadOptions[],
@@ -24,7 +24,7 @@ export const upload = async (
   return Promise.all(
     optionsArray.map(async (x) => {
       const { requestInit, file, ...args } = x;
-      const signedUrl = await generatePresignedPostPolicy(
+      const res = await generatePresigned(
         {
           args,
           requestInit,
@@ -35,11 +35,11 @@ export const upload = async (
       await uploadToPresignedUrl({
         file,
         requestInit,
-        postPolicy: signedUrl,
         metadata: x.metadata,
+        ...res,
       });
 
-      return signedUrl;
+      return res;
     })
   );
 };

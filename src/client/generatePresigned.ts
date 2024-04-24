@@ -1,14 +1,14 @@
 import {
-  GeneratePresignedPostPolicyOptions,
+  GeneratePresigned,
+  GeneratePresignedOptions,
   NextUploadAction,
   NextUploadClientConfig,
-  SignedPostPolicy,
 } from '../types';
 
-export const generatePresignedPostPolicy = async (
-  options: GeneratePresignedPostPolicyOptions,
+export const generatePresigned = async (
+  options: GeneratePresignedOptions,
   config: NextUploadClientConfig
-): Promise<SignedPostPolicy> => {
+): Promise<GeneratePresigned> => {
   const api = config.api || `/upload`;
   const res = await fetch(api, {
     method: 'POST',
@@ -17,7 +17,7 @@ export const generatePresignedPostPolicy = async (
       ...options.requestInit?.headers,
     },
     body: JSON.stringify({
-      action: NextUploadAction.generatePresignedPostPolicy,
+      action: NextUploadAction.generatePresigned,
       input: options.args,
       ...options.requestInit?.body,
     }),
@@ -30,5 +30,5 @@ export const generatePresignedPostPolicy = async (
     throw new Error(json.error);
   }
 
-  return json?.data?.postPolicy;
+  return json?.data;
 };

@@ -75,10 +75,17 @@ const runTests = async (
 
         await nup.init();
 
-        const { postPolicy: signedPostPolicy } =
-          await nup.generatePresignedPostPolicy({
-            fileType,
-          });
+        const {
+          id,
+          path,
+          postPolicy: signedPostPolicy,
+        } = await nup.generatePresigned({
+          fileType,
+        });
+
+        if (!signedPostPolicy) {
+          throw new Error(`signedPostPolicy is undefined`);
+        }
 
         await nup.getClient().putObject({
           Bucket: nup.getBucket(),
@@ -87,30 +94,52 @@ const runTests = async (
         });
 
         const { asset: presignedUrl } = await nup.getAsset({
-          id: signedPostPolicy.id,
-          path: signedPostPolicy.path,
+          id,
+          path,
         });
 
-        expect(presignedUrl.id).toEqual(signedPostPolicy.id);
+        expect(presignedUrl.id).toEqual(id);
 
         if (args.store) {
-          expect(
-            nup.getStore()?.find(signedPostPolicy.id)
-          ).resolves.toMatchObject({
-            id: signedPostPolicy.id,
+          expect(nup.getStore()?.find(id)).resolves.toMatchObject({
+            id,
           });
         }
 
         await nup.deleteAsset({
-          id: signedPostPolicy.id,
-          path: signedPostPolicy.path,
+          id,
+          path,
         });
 
         if (args.store) {
-          expect(
-            nup.getStore()?.find(signedPostPolicy.id)
-          ).resolves.toBeFalsy();
+          expect(nup.getStore()?.find(id)).resolves.toBeFalsy();
         }
+      });
+    });
+
+    describe(`generatePresignedUrl`, () => {
+      it(`works`, async () => {
+        const nup = new NextUpload(
+          {
+            ...nextUploadConfig,
+            service: 'r2',
+          },
+          args.store
+        );
+
+        await nup.init();
+
+        const { id, signedUrl } = await nup.generatePresigned({
+          fileType,
+        });
+
+        if (!signedUrl) {
+          throw new Error(`signedUrl is undefined`);
+        }
+
+        expect(id).toEqual(expect.any(String));
+
+        expect(signedUrl.url).toEqual(expect.any(String));
       });
     });
 
@@ -120,21 +149,25 @@ const runTests = async (
 
         await nup.init();
 
-        const { postPolicy } = await nup.generatePresignedPostPolicy({
+        const { postPolicy, id } = await nup.generatePresigned({
           fileType,
         });
 
-        expect(postPolicy.id).toEqual(expect.any(String));
+        if (!postPolicy) {
+          throw new Error(`postPolicy is undefined`);
+        }
+
+        expect(id).toEqual(expect.any(String));
         expect(postPolicy.url).toEqual(expect.any(String));
         expect(postPolicy.data).toEqual(expect.any(Object));
 
         const assetStore = nup.getStore();
 
         if (assetStore) {
-          expect(assetStore.find(postPolicy.id)).resolves.toMatchObject({
-            id: postPolicy.id,
+          expect(assetStore.find(id)).resolves.toMatchObject({
+            id,
             name: '',
-            path: `default/${postPolicy.id}`,
+            path: `default/${id}`,
             uploadType: 'default',
             bucket: 'localhost-test',
             verified: null,
@@ -150,18 +183,18 @@ const runTests = async (
 
         const id = nanoid();
 
-        const { postPolicy } = await nup.generatePresignedPostPolicy({
+        const { id: returnedId } = await nup.generatePresigned({
           id,
           fileType,
         });
 
-        expect(postPolicy.id).toEqual(id);
+        expect(id).toEqual(id);
 
         const assetStore = nup.getStore();
 
         if (assetStore) {
-          expect(assetStore.find(postPolicy.id)).resolves.toMatchObject({
-            id,
+          expect(assetStore.find(id)).resolves.toMatchObject({
+            id: returnedId,
           });
         }
       });
@@ -178,17 +211,17 @@ const runTests = async (
         const assetStore = nup.getStore();
 
         if (assetStore) {
-          const { postPolicy } = await nup.generatePresignedPostPolicy({
+          const { id } = await nup.generatePresigned({
             metadata,
             fileType,
           });
 
-          expect(assetStore.find(postPolicy.id)).resolves.toMatchObject({
+          expect(assetStore.find(id)).resolves.toMatchObject({
             metadata,
           });
         } else {
           await expect(
-            nup.generatePresignedPostPolicy({
+            nup.generatePresigned({
               metadata,
               fileType,
             })
@@ -205,12 +238,16 @@ const runTests = async (
 
         const id = nanoid();
 
-        const { postPolicy } = await nup.generatePresignedPostPolicy({
+        const { postPolicy } = await nup.generatePresigned({
           id,
           fileType,
         });
 
-        expect(postPolicy.id).toEqual(id);
+        if (!postPolicy) {
+          throw new Error(`postPolicy is undefined`);
+        }
+
+        expect(id).toEqual(id);
 
         await nup.getClient().putObject({
           Bucket: nup.getBucket(),
@@ -219,7 +256,7 @@ const runTests = async (
         });
 
         expect(
-          nup.generatePresignedPostPolicy({
+          nup.generatePresigned({
             id,
             fileType,
           })
@@ -240,7 +277,7 @@ const runTests = async (
 
         await nup.init();
 
-        const { postPolicy } = await nup.generatePresignedPostPolicy({
+        const { id } = await nup.generatePresigned({
           uploadType,
           fileType,
         });
@@ -248,10 +285,10 @@ const runTests = async (
         const assetStore = nup.getStore();
 
         if (assetStore) {
-          const asset = await assetStore.find(postPolicy.id);
+          const asset = await assetStore.find(id);
 
           expect(asset).toMatchObject({
-            path: `${uploadType}/${postPolicy.id}`,
+            path: `${uploadType}/${id}`,
           });
         }
       });
@@ -274,30 +311,29 @@ const runTests = async (
             throw new Error(`assetStore is undefined`);
           }
 
-          const { postPolicy } = await nup.generatePresignedPostPolicy({
+          const { postPolicy, id } = await nup.generatePresigned({
             fileType,
           });
 
           expect(postPolicy).toMatchObject({
-            id: expect.any(String),
             url: expect.any(String),
             data: expect.any(Object),
           });
 
-          expect(assetStore.find(postPolicy.id)).resolves.toMatchObject({
-            id: postPolicy.id,
+          expect(assetStore.find(id)).resolves.toMatchObject({
+            id,
             name: '',
-            path: `default/${postPolicy.id}`,
+            path: `default/${id}`,
             uploadType: 'default',
             bucket: 'localhost-test',
             verified: false,
             fileType,
           });
 
-          await nup.verifyAsset({ id: postPolicy.id });
+          await nup.verifyAsset({ id });
 
-          expect(assetStore.find(postPolicy.id)).resolves.toMatchObject({
-            id: postPolicy.id,
+          expect(assetStore.find(id)).resolves.toMatchObject({
+            id,
             verified: true,
           });
         });
@@ -313,9 +349,13 @@ const runTests = async (
 
           await nup.init();
 
-          const { postPolicy } = await nup.generatePresignedPostPolicy({
+          const { postPolicy, id } = await nup.generatePresigned({
             fileType,
           });
+
+          if (!postPolicy) {
+            throw new Error(`postPolicy is undefined`);
+          }
 
           await nup.getClient().putObject({
             Bucket: nup.getBucket(),
@@ -330,14 +370,12 @@ const runTests = async (
           }
 
           expect(
-            (await assetStore.all()).find((a) => a.id === postPolicy.id)
+            (await assetStore.all()).find((a) => a.id === id)
           ).toBeTruthy();
 
           await nup.pruneAssets();
 
-          expect(
-            (await assetStore.all()).find((a) => a.id === postPolicy.id)
-          ).toBeFalsy();
+          expect((await assetStore.all()).find((a) => a.id === id)).toBeFalsy();
         });
       }
     });
