@@ -7,8 +7,11 @@ import {
   HeadBucketCommand,
   HeadObjectCommand,
   GetObjectCommand,
+  PutObjectCommand,
+  PutBucketCorsCommand,
 } from '@aws-sdk/client-s3';
 import {
+  PresignedPost,
   PresignedPostOptions,
   createPresignedPost,
 } from '@aws-sdk/s3-presigned-post';
@@ -17,7 +20,7 @@ import {
   Asset,
   GetAsset,
   GetAssetArgs,
-  GeneratePresignedPostPolicyArgs,
+  GeneratePresignedArgs,
   NextUploadStore,
   NextUploadConfig,
   NextUploadRequest,
@@ -26,12 +29,12 @@ import {
   VerifyAssetArgs,
   UploadTypeConfigFn,
   DeleteArgs as DeleteAssetArgs,
-  SignedPostPolicy,
+  GeneratePresigned,
 } from './types';
 import { FileReader } from './polyfills/FileReader';
 
 export const defaultEnabledHandlerActions = [
-  NextUploadAction.generatePresignedPostPolicy,
+  NextUploadAction.generatePresigned,
   NextUploadAction.getAsset,
 ];
 
@@ -42,22 +45,38 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
 
   private bucket: string;
 
+  private corsInitialized: boolean = false;
+
   constructor(
     config: NextUploadConfig,
     store?: NextToolStorePromise<NextUploadStore> | NextUploadStore
   ) {
+    const service = config.service || 's3';
+    if (service !== 's3' && service !== 'r2') {
+      throw new Error(`service must be 's3' or 'r2'`);
+    }
+    const generatePresigned =
+      service === 'r2' ? 'url' : config.generatePresigned || 'postPolicy';
+    if (generatePresigned !== 'postPolicy' && generatePresigned !== 'url') {
+      throw new Error(`generatePresigned must be 'postPolicy' or 'url'`);
+    }
+    if (service === 'r2' && generatePresigned === 'postPolicy') {
+      throw new Error(`'postPolicy' is not supported in R2`);
+    }
     super(
       {
         actions: {
-          [NextUploadAction.generatePresignedPostPolicy]: {},
+          [NextUploadAction.generatePresigned]: {},
           [NextUploadAction.getAsset]: {},
         },
         ...config,
+        service,
+        generatePresigned,
       },
       store,
       {
-        [NextUploadAction.generatePresignedPostPolicy]: (args, request) =>
-          this.generatePresignedPostPolicy(args, request),
+        [NextUploadAction.generatePresigned]: (args, request) =>
+          this.generatePresigned(args, request),
         [NextUploadAction.getAsset]: (args, request) =>
           this.getAsset(args, request),
         [NextUploadAction.deleteAsset]: (args) => this.deleteAsset(args),
@@ -70,6 +89,18 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       ...config.client,
     });
     this.bucket = config.bucket || NextUpload.bucketFromEnv();
+  }
+
+  public static defaultCorsRules(allowedOrigins: string[] = ['*']) {
+    return [
+      {
+        AllowedHeaders: ['content-type'],
+        AllowedMethods: ['GET', 'POST', 'PUT', 'DELETE'],
+        AllowedOrigins: allowedOrigins,
+        ExposeHeaders: [],
+        MaxAgeSeconds: 3000,
+      },
+    ];
   }
 
   public static namespaceFromEnv(project?: string) {
@@ -97,7 +128,7 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       .toLowerCase();
   }
 
-  private static getDefaultPostPolicyExpirationSeconds() {
+  private static getDefaultExpirationSeconds() {
     return 60 * 5;
   }
 
@@ -180,7 +211,7 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
     const {
       maxSize = this.config.maxSize,
       postPolicyExpirationSeconds = this.config.postPolicyExpirationSeconds ||
-        NextUpload.getDefaultPostPolicyExpirationSeconds(),
+        NextUpload.getDefaultExpirationSeconds(),
     } = config;
 
     const maxSizeBytes = bytes.parse(maxSize);
@@ -205,12 +236,10 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
     return postPolicyOptions;
   }
 
-  public async generatePresignedPostPolicy(
-    args: GeneratePresignedPostPolicyArgs,
+  public async generatePresigned(
+    args: GeneratePresignedArgs,
     request?: NextUploadRequest
-  ): Promise<{
-    postPolicy: SignedPostPolicy;
-  }> {
+  ): Promise<GeneratePresigned> {
     const {
       id = nanoid(),
       uploadType = NextUpload.DEFAULT_TYPE,
@@ -281,6 +310,7 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
           Key: path,
         });
         await this.client.send(headObjectCommand);
+
         exists = true;
       } catch (error) {
         // console.log(error);
@@ -293,6 +323,22 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       throw new Error(`${id} already exists`);
     }
 
+    if (this.config.corsEnabled) {
+      if (!this.corsInitialized) {
+        await this.client.send(
+          new PutBucketCorsCommand({
+            Bucket: this.bucket,
+            CORSConfiguration: {
+              CORSRules:
+                this.config.corsRules ||
+                NextUpload.defaultCorsRules(this.config.corsAllowedOrigins),
+            },
+          })
+        );
+        this.corsInitialized = true;
+      }
+    }
+
     const verifyAssets =
       uploadTypeConfig.verifyAssets || this.config.verifyAssets;
 
@@ -301,7 +347,7 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
         this.config.verifyAssetsExpirationSeconds ||
         uploadTypeConfig.postPolicyExpirationSeconds ||
         this.config.postPolicyExpirationSeconds ||
-        NextUpload.getDefaultPostPolicyExpirationSeconds()
+        NextUpload.getDefaultExpirationSeconds()
     );
 
     if (verifyAssets) {
@@ -312,38 +358,51 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       }
     }
 
-    const postPolicyFn =
-      typeof uploadTypeConfig.postPolicy === 'function'
-        ? uploadTypeConfig.postPolicy
-        : (x: any) => x;
+    let postPolicyOptions: PresignedPostOptions;
 
-    if (!args?.fileType) {
-      throw new Error(`fileType is required`);
+    let presignedPostPolicy: PresignedPost;
+
+    let signedUrl: string;
+
+    if (this.config.generatePresigned === 'postPolicy') {
+      const postPolicyFn =
+        typeof uploadTypeConfig.postPolicy === 'function'
+          ? uploadTypeConfig.postPolicy
+          : (x: any) => x;
+
+      postPolicyOptions = await postPolicyFn(
+        await this.makeDefaultPostPolicy(
+          {
+            ...uploadTypeConfig,
+            path,
+          },
+          {
+            id,
+            // fileType,
+          }
+        )
+      );
+
+      presignedPostPolicy = await createPresignedPost(
+        this.client,
+        postPolicyOptions
+      );
     }
-
-    const postPolicyOptions: PresignedPostOptions = await postPolicyFn(
-      await this.makeDefaultPostPolicy(
-        {
-          ...uploadTypeConfig,
-          path,
-        },
-        {
-          id,
-          // fileType,
-        }
-      )
-    );
-
-    const presignedPostPolicy = await createPresignedPost(
-      this.client,
-      postPolicyOptions
-    );
+    if (this.config.generatePresigned === 'url') {
+      const command = new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: path,
+      });
+      signedUrl = await getSignedUrl(this.client, command, {
+        expiresIn: NextUpload.getDefaultExpirationSeconds(),
+      });
+    }
 
     await this.store?.upsert?.(
       {
         id,
         path,
-        name: '',
+        name: name || '',
         bucket: this.bucket,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -355,12 +414,21 @@ export class NextUpload extends NextTool<NextUploadConfig, NextUploadStore> {
       verifyAssets ? verifyAssetsExpirationSeconds * 1000 : 0
     );
 
-    return {
-      postPolicy: {
+    if (this.config.generatePresigned === 'url') {
+      return {
         id,
-        data: presignedPostPolicy.fields,
-        url: presignedPostPolicy.url,
         path: includeObjectPathInPostPolicyResponse ? path : null,
+        signedUrl: {
+          url: signedUrl!,
+        },
+      };
+    }
+    return {
+      id,
+      path: includeObjectPathInPostPolicyResponse ? path : null,
+      postPolicy: {
+        data: presignedPostPolicy!.fields,
+        url: presignedPostPolicy!.url,
       },
     };
   }

@@ -1,15 +1,11 @@
 import { useState } from 'react';
-import {
-  NextUploadClientConfig,
-  SignedPostPolicy,
-  UploadOptions,
-} from '../types';
+import { GeneratePresigned, UploadOptions, UseNextUploadArgs } from '../types';
 import { upload as _upload } from '../client/upload';
 
-export const useNextUpload = (config: NextUploadClientConfig = {}) => {
+export const useNextUpload = (config: UseNextUploadArgs = {}) => {
   const [files, setFiles] = useState<File[]>([]);
-  const [signedPostPolicies, setSignedPostPolicies] = useState<
-    SignedPostPolicy[]
+  const [generatePresignedList, setGeneratePresignedList] = useState<
+    GeneratePresigned[]
   >([]);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -22,9 +18,11 @@ export const useNextUpload = (config: NextUploadClientConfig = {}) => {
 
     try {
       const res = await _upload(options, config);
-      await setSignedPostPolicies((prev) => [...prev, ...res]);
+      await setGeneratePresignedList((prev) => [...prev, ...res]);
     } catch (error) {
-      //
+      if (config.onError) {
+        config.onError(error as Error);
+      }
     } finally {
       setIsUploading(false);
     }
@@ -32,14 +30,14 @@ export const useNextUpload = (config: NextUploadClientConfig = {}) => {
 
   const reset = () => {
     setFiles([]);
-    setSignedPostPolicies([]);
+    setGeneratePresignedList([]);
   };
 
   return {
     files,
     setFiles,
-    signedPostPolicies,
-    setSignedPostPolicies,
+    signedPostPolicies: generatePresignedList,
+    setSignedPostPolicies: setGeneratePresignedList,
     isUploading,
     setIsUploading,
     upload,

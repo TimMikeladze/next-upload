@@ -57,7 +57,7 @@ const nup = new NextUpload(config);
 
 export const POST = (request: NextRequest) => nup.handler(request);
 
-export const dynamic = 'force-dynamic';
+
 
 // Optionally, if your application supports it you can run next-upload in the Edge runtime.
 export const runtime = 'edge'; 
@@ -255,7 +255,8 @@ Consider setting up a cron job to run this function on a regular basis.
 
 ### Methods
 
-- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
+- [generatePresigned](#gear-generatepresigned)
+- [defaultCorsRules](#gear-defaultcorsrules)
 - [namespaceFromEnv](#gear-namespacefromenv)
 - [bucketFromEnv](#gear-bucketfromenv)
 - [getIdFromPath](#gear-getidfrompath)
@@ -266,17 +267,23 @@ Consider setting up a cron job to run this function on a regular basis.
 - [getClient](#gear-getclient)
 - [init](#gear-init)
 - [bucketExists](#gear-bucketexists)
-- [generatePresignedPostPolicy](#gear-generatepresignedpostpolicy)
+- [generatePresigned](#gear-generatepresigned)
 - [pruneAssets](#gear-pruneassets)
 - [verifyAsset](#gear-verifyasset)
 - [deleteAsset](#gear-deleteasset)
 - [getAsset](#gear-getasset)
 
-#### :gear: generatePresignedPostPolicy
+#### :gear: generatePresigned
 
 | Method | Type |
 | ---------- | ---------- |
-| `generatePresignedPostPolicy` | `(args: any, request: NextToolRequest or undefined) => Promise<{ postPolicy: SignedPostPolicy; }>` |
+| `generatePresigned` | `(args: any, request: NextToolRequest or undefined) => Promise<GeneratePresigned>` |
+
+#### :gear: defaultCorsRules
+
+| Method | Type |
+| ---------- | ---------- |
+| `defaultCorsRules` | `(allowedOrigins?: string[]) => { AllowedHeaders: string[]; AllowedMethods: string[]; AllowedOrigins: string[]; ExposeHeaders: never[]; MaxAgeSeconds: number; }[]` |
 
 #### :gear: namespaceFromEnv
 
@@ -338,11 +345,11 @@ Consider setting up a cron job to run this function on a regular basis.
 | ---------- | ---------- |
 | `bucketExists` | `() => Promise<boolean>` |
 
-#### :gear: generatePresignedPostPolicy
+#### :gear: generatePresigned
 
 | Method | Type |
 | ---------- | ---------- |
-| `generatePresignedPostPolicy` | `(args: GeneratePresignedPostPolicyArgs, request?: NextUploadRequest or undefined) => Promise<{ postPolicy: SignedPostPolicy; }>` |
+| `generatePresigned` | `(args: GeneratePresignedArgs, request?: NextUploadRequest or undefined) => Promise<GeneratePresigned>` |
 
 #### :gear: pruneAssets
 
@@ -380,7 +387,7 @@ Consider setting up a cron job to run this function on a regular basis.
 | Property | Type | Description |
 | ---------- | ---------- | ---------- |
 | `deleteAsset` | `'deleteAsset'` |  |
-| `generatePresignedPostPolicy` | `'generatePresignedPostPolicy'` |  |
+| `generatePresigned` | `'generatePresigned'` |  |
 | `getAsset` | `'getAsset'` |  |
 | `pruneAssets` | `'pruneAssets'` |  |
 | `verifyAsset` | `'verifyAsset'` |  |

@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import { NextToolConfig } from 'next-tool';
-import { S3ClientConfig } from '@aws-sdk/client-s3';
+import { CORSRule, S3ClientConfig } from '@aws-sdk/client-s3';
 import { PresignedPostOptions } from '@aws-sdk/s3-presigned-post';
 
 export type Metadata = Record<string, string | number>;
@@ -10,7 +10,7 @@ export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 // eslint-disable-next-line no-shadow
 export enum NextUploadAction {
   deleteAsset = 'deleteAsset',
-  generatePresignedPostPolicy = 'generatePresignedPostPolicy',
+  generatePresigned = 'generatePresigned',
   getAsset = 'getAsset',
   pruneAssets = 'pruneAssets',
   verifyAsset = 'verifyAsset',
@@ -68,7 +68,7 @@ export interface NextUploadStore {
 type ClientConfig = S3ClientConfig;
 
 export type UploadTypeConfigFn = (
-  args: Partial<GeneratePresignedPostPolicyArgs & GetAssetArgs>,
+  args: Partial<GeneratePresignedArgs & GetAssetArgs>,
   request?: NextUploadRequest
 ) => Promise<UploadTypeConfig>;
 
@@ -77,6 +77,11 @@ export type NextUploadConfig = NextToolConfig &
     api?: string;
     bucket?: string;
     client: ClientConfig;
+    corsAllowedOrigins?: string[];
+    corsEnabled?: boolean;
+    corsRules?: CORSRule[];
+    generatePresigned?: 'url' | 'postPolicy';
+    service?: 's3' | 'r2';
     uploadTypes?: {
       [uploadType: string]: UploadTypeConfigFn | UploadTypeConfig;
     };
@@ -84,12 +89,16 @@ export type NextUploadConfig = NextToolConfig &
 
 export type NextUploadClientConfig = Pick<NextUploadConfig, 'api'>;
 
+export type UseNextUploadArgs = NextUploadClientConfig & {
+  onError?: (error: Error) => void;
+};
+
 export type NextUploadRequest = {
   body?: any;
   headers?: Headers;
 };
 
-export type GeneratePresignedPostPolicyArgs = {
+export type GeneratePresignedArgs = {
   fileType?: string;
   id?: string;
   metadata?: any;
@@ -97,14 +106,21 @@ export type GeneratePresignedPostPolicyArgs = {
   uploadType?: string;
 };
 
-export type SaveUploadArgs = GeneratePresignedPostPolicyArgs;
+export type GeneratePresigned = {
+  id: string;
+  path: string | null;
+  postPolicy?: PostPolicy;
+  signedUrl?: SignedUrl;
+};
+
+export type SaveUploadArgs = GeneratePresignedArgs;
 
 export interface Storage {
   saveUpload(args: SaveUploadArgs): Promise<string>;
 }
 
-export type GeneratePresignedPostPolicyOptions = {
-  args?: GeneratePresignedPostPolicyArgs;
+export type GeneratePresignedOptions = {
+  args?: GeneratePresignedArgs;
   requestInit?: any;
 };
 
@@ -113,22 +129,27 @@ export type GetAssetOptions = {
   requestInit?: any;
 };
 
-export type UploadToPresignedUrlOptions = {
+export type UploadToPresignedOptions = {
   file: File;
   formData?: FormData;
+  id: string;
   metadata?: Metadata;
-  postPolicy: SignedPostPolicy;
+  path: string | null;
+  postPolicy?: PostPolicy;
   requestInit?: any;
+  signedUrl?: SignedUrl;
 };
 
-export type SignedPostPolicy = {
+export type PostPolicy = {
   data: any;
-  id: string;
-  path: string | null;
   url: string;
 };
 
-export type UploadOptions = GeneratePresignedPostPolicyArgs & {
+export type SignedUrl = {
+  url: string;
+};
+
+export type UploadOptions = GeneratePresignedArgs & {
   file: File;
   requestInit?: any;
 };

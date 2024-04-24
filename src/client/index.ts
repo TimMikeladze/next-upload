@@ -1,5 +1,5 @@
 export * from '../types';
-export * from './generatePresignedPostPolicy';
-export * from './uploadToPresignedUrl';
+export * from './generatePresigned';
+export * from './uploadToPresigned';
 export * from './upload';
 export * from './getAsset';
