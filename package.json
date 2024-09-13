@@ -172,7 +172,7 @@
     "eslint-plugin-sort-class-members": "1.19.0",
     "eslint-plugin-storybook": "0.6.15",
     "eslint-plugin-typescript-sort-keys": "3.1.0",
-    "eslint-plugin-unused-imports": "3.0.0",
+    "eslint-plugin-unused-imports": "4.1.4",
     "husky": "9.0.11",
     "jsdom": "24.0.0",
     "keyv": "4.5.4",
