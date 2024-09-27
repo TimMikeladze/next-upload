@@ -132,7 +132,7 @@
     "@babel/preset-typescript": "7.24.1",
     "@commitlint/cli": "19.2.1",
     "@commitlint/config-conventional": "19.1.0",
-    "@keyv/postgres": "1.4.10",
+    "@keyv/postgres": "2.0.3",
     "@ryansonshine/commitizen": "4.2.8",
     "@ryansonshine/cz-conventional-changelog": "3.3.4",
     "@storybook/addon-essentials": "8.0.8",
