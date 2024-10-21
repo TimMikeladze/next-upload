@@ -175,7 +175,7 @@
     "eslint-plugin-unused-imports": "3.0.0",
     "husky": "9.0.11",
     "jsdom": "24.0.0",
-    "keyv": "4.5.4",
+    "keyv": "5.1.2",
     "lint-staged": "15.2.2",
     "mysql2": "3.9.4",
     "next": "14.2.1",
